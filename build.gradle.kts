@@ -62,7 +62,12 @@ tasks {
         }
     }
 
+    jar {
+        archiveClassifier.set("thin")
+    }
+
     shadowJar {
+        archiveClassifier.set("")
         minimize()
         relocate("dev.jorel.commandapi", "${project.group}.lib.commandapi")
         relocate("com.jeff_media.morepersistentdatatypes", "${project.group}.lib.morepersistentdatatypes")
@@ -92,7 +97,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "com.jtprince"
             artifactId = "CoordinateOffset"
-            from(components["java"])
+            artifact(tasks["jar"])
         }
     }
 }
