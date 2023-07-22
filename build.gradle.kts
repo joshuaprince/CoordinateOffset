@@ -90,6 +90,10 @@ tasks {
     test {
         useJUnitPlatform()
     }
+
+    withType<PublishToMavenLocal> {
+        dependsOn(copyJarToSnapshot)
+    }
 }
 
 publishing {
