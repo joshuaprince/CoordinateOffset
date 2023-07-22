@@ -86,3 +86,13 @@ tasks {
         useJUnitPlatform()
     }
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.jtprince"
+            artifactId = "CoordinateOffset"
+            from(components["java"])
+        }
+    }
+}
