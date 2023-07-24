@@ -15,7 +15,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
     compileOnly("org.jetbrains:annotations:24.0.0")
     compileOnly("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
-    compileOnly("com.jtprince:CoordinateOffset:jitpack2-SNAPSHOT")
+    compileOnly("com.jtprince:CoordinateOffset:v2.1.0")
 }
 
 java {
