@@ -8,6 +8,7 @@ plugins {
     java
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.palantir.git-version") version "3.0.0"
+    `maven-publish`
 }
 
 val gitVersion: groovy.lang.Closure<String> by extra
@@ -61,7 +62,12 @@ tasks {
         }
     }
 
+    jar {
+        archiveClassifier.set("thin")
+    }
+
     shadowJar {
+        archiveClassifier.set("")
         minimize()
         relocate("dev.jorel.commandapi", "${project.group}.lib.commandapi")
         relocate("com.jeff_media.morepersistentdatatypes", "${project.group}.lib.morepersistentdatatypes")
@@ -83,5 +89,19 @@ tasks {
 
     test {
         useJUnitPlatform()
+    }
+
+    withType<PublishToMavenLocal> {
+        dependsOn(copyJarToSnapshot)
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.jtprince"
+            artifactId = "CoordinateOffset"
+            artifact(tasks["shadowJar"])
+        }
     }
 }
