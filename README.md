@@ -4,13 +4,17 @@ CoordinateOffset
 
 ![Icon](.github/img/icon128.png)
 
-Minecraft offers an extremely useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the
-world. This makes it easy to save points of interest, share locations with friends (or enemies), and even add
-client-side mods that use these coordinates to build maps of the world while exploring.
+[Spigot](https://www.spigotmc.org/resources/coordinateoffset.111292/) |
+[Modrinth](https://modrinth.com/plugin/coordinateoffset) |
+[Hangar](https://hangar.papermc.io/jtchips/CoordinateOffset) |
+[CurseForge](https://legacy.curseforge.com/minecraft/bukkit-plugins/coordinateoffset)
 
-However, not all multiplayer servers want coordinates to be so easily accessible. Minecraft offers
-`/gamerule reducedDebugInfo` to administratively disable coordinate display in the F3 menu. But it is trivial for a
-player to add a client-side mod that lets them see coordinates again.
+Minecraft offers a useful "debug" (F3) menu that allows anyone to easily see their precise coordinates in the world.
+This makes it easy to save points of interest and share locations with friends (or enemies).
+
+However, not all multiplayer servers want coordinates to be so easily accessible. `/gamerule reducedDebugInfo` can
+administratively hide coordinates from the F3 menu, but it is trivial for a player to add a client-side mod that
+shows them.
 
 **CoordinateOffset** is a plugin for Spigot and Paper servers that **applies an offset to every coordinate in packets
 between the server and client**. The player still sees the exact same world they would normally see. But no matter which
@@ -29,6 +33,8 @@ Requirements and Installation
 * Spigot or [Paper (recommended)](https://papermc.io/) for Minecraft 1.19.4, 1.20, 1.20.1
 * [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) 5 **snapshot #657** or higher (you may need 
   to use a [dev build for 1.20+](https://ci.dmulloy2.net/job/ProtocolLib/))
+* An understanding of the [implications of installing this
+plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
 After ensuring that you meet the requirements, just grab the latest
 [release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
