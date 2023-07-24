@@ -30,9 +30,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.jetbrains:annotations:24.0.0")
-    compileOnly("org.spigotmc:spigot-api:$spigotApiVersion")
-    compileOnly("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
+    shadow("org.jetbrains:annotations:24.0.0")
+    shadow("org.spigotmc:spigot-api:$spigotApiVersion")
+    shadow("com.github.dmulloy2:ProtocolLib:master-SNAPSHOT")
     implementation("dev.jorel:commandapi-bukkit-shade:9.0.3")
     implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
 
@@ -73,9 +73,8 @@ tasks {
         relocate("com.jeff_media.morepersistentdatatypes", "${project.group}.lib.morepersistentdatatypes")
     }
 
-    val copyJarToSnapshot = register<Copy>("copyJarToSnapshot") {
+    register<Copy>("buildSnapshot") {
         // Copy the latest artifact from `assemble` task to a consistent place for symlinking into a server.
-        dependsOn(jar)
         dependsOn(shadowJar)
         from(shadowJar)
         into("build")
@@ -84,24 +83,19 @@ tasks {
 
     assemble {
         dependsOn(shadowJar)
-        dependsOn(copyJarToSnapshot)
     }
 
     test {
         useJUnitPlatform()
-    }
-
-    withType<PublishToMavenLocal> {
-        dependsOn(copyJarToSnapshot)
     }
 }
 
 publishing {
     publications {
         create<MavenPublication>("maven") {
+            from(components["java"])
             groupId = "com.jtprince"
             artifactId = "CoordinateOffset"
-            artifact(tasks["shadowJar"])
         }
     }
 }
