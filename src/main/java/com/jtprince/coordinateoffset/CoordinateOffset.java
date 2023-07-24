@@ -38,7 +38,7 @@ public final class CoordinateOffset extends JavaPlugin {
         new PacketOffsetAdapter(this).registerAdapters();
     }
 
-    public void onAllPluginsEnabled() {
+    void onAllPluginsEnabled() {
         // Wait to load providers until all plugins are loaded in case other plugins register their own providers.
         providerManager.loadProvidersFromConfig(getConfig());
     }
@@ -85,6 +85,22 @@ public final class CoordinateOffset extends JavaPlugin {
     @SuppressWarnings("unused")
     public @NotNull Offset getOffset(Player player) {
         return playerOffsetsManager.get(player, player.getWorld());
+    }
+
+    /**
+     * Register a new Offset Provider class, allowing an extending plugin to generate offsets in a custom way.
+     * <br><br>
+     * Since this only defines a new Provider <i>class</i>, server administrators will need to activate your new
+     * behavior by defining a Provider in the CoordinateOffset config.yml that uses the same {@code class} key.
+     *
+     * @param className A unique name to match on the {@code class} key in config.yml.
+     * @param providerConfigFactory Your custom Provider factory, which will accept a
+     *                              {@link org.bukkit.configuration.ConfigurationSection} the user has configured and
+     *                              should return your custom {@link OffsetProvider} with those specifications.
+     */
+    @SuppressWarnings("unused")
+    public void registerCustomProviderClass(String className, OffsetProvider.ConfigurationFactory<?> providerConfigFactory) {
+        providerManager.registerConfigurationFactory(className, providerConfigFactory);
     }
 
     PlayerOffsetsManager getPlayerManager() {
