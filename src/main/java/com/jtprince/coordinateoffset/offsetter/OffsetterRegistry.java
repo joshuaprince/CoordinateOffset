@@ -49,6 +49,7 @@ public class OffsetterRegistry {
             new OffsetterServerSoundEffect(),
             new OffsetterServerSpawnEntity(),
             new OffsetterServerSpawnExperienceOrb(),
+            new OffsetterServerSpawnPainting(),
             new OffsetterServerSpawnPosition(),
             new OffsetterServerUnloadChunk(),
             new OffsetterServerUpdateViewPosition(),

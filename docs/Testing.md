@@ -60,6 +60,7 @@ These items and blocks have some kind of interactions that use packets that need
   * Die and verify that it properly points to the place you died.
   * Change worlds and verify that it spins when in a different world from where you died.
   * Log out and back in in the world you died, and verify that it still points to the place you died.
+  * Log in on an empty profile (that has never played or died before) and verify that the compass spins.
 * Lodestone/Lodestone Compass
   * NOTE: These act strangely in Creative mode, so do these tests in Survival.
   * Verify that an attuned compass points to the Lodestone.
