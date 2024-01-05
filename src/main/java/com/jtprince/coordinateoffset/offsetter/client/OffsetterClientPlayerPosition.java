@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.offsetter.client;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
@@ -12,7 +13,7 @@ public class OffsetterClientPlayerPosition extends PacketOffsetter<WrapperPlayCl
     }
 
     @Override
-    public void offset(WrapperPlayClientPlayerFlying packet, Offset offset) {
+    public void offset(WrapperPlayClientPlayerFlying packet, Offset offset, User user) {
         packet.setLocation(unapply(packet.getLocation(), offset));
     }
 }

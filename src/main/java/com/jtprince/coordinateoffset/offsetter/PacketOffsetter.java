@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTInt;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.protocol.world.WorldBlockPosition;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
@@ -22,7 +23,7 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         this.wrapperClass = wrapperClass;
     }
 
-    public abstract void offset(T packet, Offset offset);
+    public abstract void offset(T packet, Offset offset, User user);
 
     protected static Vector3d apply(Vector3d vec, Offset offset) {
         return new Vector3d(vec.x - offset.x(), vec.y, vec.z - offset.z());
@@ -71,9 +72,9 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         return chunkZ - offset.chunkZ();
     }
 
-    protected static OffsettedColumn applyColumn(Column column, Offset offset) {
+    protected static OffsettedColumn applyColumn(Column column, Offset offset, User user) {
         if (column instanceof OffsettedColumn) return (OffsettedColumn) column;
-        return new OffsettedColumn(column, offset);
+        return new OffsettedColumn(column, offset, user);
     }
 
     protected static Vector3i applyTimes8(Vector3i vec, Offset offset) {

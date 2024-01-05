@@ -53,8 +53,12 @@ class BukkitEventListener implements Listener {
                 reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
             }
         } catch (NoClassDefFoundError | NoSuchMethodError e) {
-            if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
-                reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+            try {
+                if (event.getRespawnFlags().contains(PlayerRespawnEvent.RespawnFlag.END_PORTAL)) {
+                    reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+                }
+            } catch (NoClassDefFoundError | NoSuchMethodError e2) {
+                plugin.getLogger().fine("No supported method for determining respawn reason.");
             }
         }
 

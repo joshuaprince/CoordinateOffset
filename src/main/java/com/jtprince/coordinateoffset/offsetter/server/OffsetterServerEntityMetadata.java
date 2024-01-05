@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.offsetter.server;
 
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.jtprince.coordinateoffset.Offset;
@@ -15,7 +16,7 @@ public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlaySe
     }
 
     @Override
-    public void offset(WrapperPlayServerEntityMetadata packet, Offset offset) {
+    public void offset(WrapperPlayServerEntityMetadata packet, Offset offset, User user) {
         for (EntityData data : packet.getEntityMetadata()) {
             Object value = data.getValue();
             if (value == null) continue;

@@ -27,6 +27,7 @@ public class OffsetterRegistry {
             new OffsetterClientUpdateSign(),
             new OffsetterClientVehicleMove(),
 
+            new OffsetterServerAcknowledgePlayerDigging(),
             new OffsetterServerBlockAction(),
             new OffsetterServerBlockBreakAnimation(),
             new OffsetterServerBlockChange(),
@@ -49,7 +50,9 @@ public class OffsetterRegistry {
             new OffsetterServerSoundEffect(),
             new OffsetterServerSpawnEntity(),
             new OffsetterServerSpawnExperienceOrb(),
+            new OffsetterServerSpawnLivingEntity(),
             new OffsetterServerSpawnPainting(),
+            new OffsetterServerSpawnPlayer(),
             new OffsetterServerSpawnPosition(),
             new OffsetterServerUnloadChunk(),
             new OffsetterServerUpdateViewPosition(),
@@ -72,7 +75,7 @@ public class OffsetterRegistry {
 
         try {
             PacketWrapper wrapper = (PacketWrapper) associatedOffsetter.wrapperClass.getConstructor(PacketSendEvent.class).newInstance(event);
-            associatedOffsetter.offset(wrapper, offset);
+            associatedOffsetter.offset(wrapper, offset, event.getUser());
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -84,7 +87,7 @@ public class OffsetterRegistry {
 
         try {
             PacketWrapper wrapper = (PacketWrapper) associatedOffsetter.wrapperClass.getConstructor(PacketReceiveEvent.class).newInstance(event);
-            associatedOffsetter.offset(wrapper, offset);
+            associatedOffsetter.offset(wrapper, offset, event.getUser());
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
