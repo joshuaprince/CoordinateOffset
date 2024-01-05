@@ -1,0 +1,18 @@
+package com.jtprince.coordinateoffset.offsetter.server;
+
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerExplosion;
+import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+
+public class OffsetterServerExplosion extends PacketOffsetter<WrapperPlayServerExplosion> {
+    public OffsetterServerExplosion() {
+        super(WrapperPlayServerExplosion.class, PacketType.Play.Server.EXPLOSION);
+    }
+
+    @Override
+    public void offset(WrapperPlayServerExplosion packet, Offset offset) {
+        packet.setPosition(apply(packet.getPosition(), offset));
+        packet.setRecords(packet.getRecords().stream().map(v -> apply(v, offset)).toList());
+    }
+}

@@ -34,7 +34,7 @@ class PlayerOffsetsManager {
      * @return The player's current offset in the world they are in.
      */
     synchronized @NotNull Offset getOffset(@NotNull Player player) {
-        Map<UUID, Offset> offsetPerWorldCache = getPerWorldCacheFor(player);
+        Map<UUID, Offset> offsetPerWorldCache = getPerWorldCacheFor(player.getUniqueId(), player.getName());
 
         UUID positionedWorld = playerPositionedWorld.get(player.getUniqueId());
         if (positionedWorld == null) {
@@ -51,31 +51,32 @@ class PlayerOffsetsManager {
      * @return The player's current offset in the specified world.
      */
     synchronized @NotNull Offset getOffset(@NotNull Player player, @NotNull World world) {
-        Map<UUID, Offset> offsetPerWorldCache = getPerWorldCacheFor(player);
+        Map<UUID, Offset> offsetPerWorldCache = getPerWorldCacheFor(player.getUniqueId(), player.getName());
         return offsetPerWorldCache.get(world.getUID());
     }
 
     /**
      * Get an offset for a player in the "lookahead world" of that player. The lookahead world is set as soon as a
-     * player initiates a world change, but before the world change completes and the player is actually in that world.
-     * This is useful for RESPAWN packets. See docs/OffsetChangeHandling.md for details.
-     * @param player Player to query.
+     * player has a fixed spawn point on join or initiates a world change, but before the world change completes and
+     * the player is actually in that world.
+     * This is useful for JOIN and RESPAWN packets. See docs/OffsetChangeHandling.md for details.
+     * @param playerUuid Player to query.
      * @return The player's offset in the world they will soon be in.
      */
-    synchronized @NotNull Offset getOffsetLookahead(@NotNull Player player) {
-        Map<UUID, Offset> offsetPerWorldCache = getPerWorldCacheFor(player);
-        UUID respawningWorld = playerLookaheadWorld.get(player.getUniqueId());
+    synchronized @NotNull Offset getOffsetLookahead(@NotNull UUID playerUuid) {
+        Map<UUID, Offset> offsetPerWorldCache = getPerWorldCacheFor(playerUuid, playerUuid.toString());
+        UUID respawningWorld = playerLookaheadWorld.get(playerUuid);
         if (respawningWorld == null) {
-            throw new NoSuchElementException("Can't determine which world player is in: " + player.getName());
+            throw new NoSuchElementException("Can't determine which world player is in: " + playerUuid);
         }
 
         return offsetPerWorldCache.get(respawningWorld);
     }
 
-    private @NotNull Map<UUID, Offset> getPerWorldCacheFor(Player player) {
-        Map<UUID, Offset> offsetPerWorldCache = playerOffsets.get(player.getUniqueId());
+    private @NotNull Map<UUID, Offset> getPerWorldCacheFor(UUID player, String logName) {
+        Map<UUID, Offset> offsetPerWorldCache = playerOffsets.get(player);
         if (offsetPerWorldCache == null) {
-            throw new NoSuchElementException("Unknown player for Offset lookup: " + player.getName());
+            throw new NoSuchElementException("Unknown player for Offset lookup: " + logName);
         }
         return offsetPerWorldCache;
     }
@@ -86,14 +87,16 @@ class PlayerOffsetsManager {
      * {@link PlayerOffsetsManager#getOffset(Player)} - it only updates their "lookahead" world until a call to
      * {@link PlayerOffsetsManager#setPositionedWorld} is made.
      *
-     * <p>If is very important that this only be called at specific times, namely player login (not join), respawn
-     * events, and teleport events.</p>
+     * <p>If is very important that this only be called at specific times, namely when the player is <b>about to</b>
+     * join, respawn, or teleport.</p>
      * @param context Offset generation context, containing the player and world that should have an offset regenerated.
      */
     synchronized void regenerateOffset(OffsetProviderContext context) {
         Offset newOffset = plugin.getOffsetProviderManager().provideOffset(context);
+
         Map<UUID, Offset> offsetPerWorldCache = playerOffsets.computeIfAbsent(context.player().getUniqueId(), k -> new HashMap<>());
         offsetPerWorldCache.put(context.world().getUID(), newOffset);
+
         playerLookaheadWorld.put(context.player().getUniqueId(), context.world().getUID());
     }
 

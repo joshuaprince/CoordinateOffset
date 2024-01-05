@@ -1,19 +1,14 @@
 package com.jtprince.coordinateoffset;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.utility.MinecraftVersion;
-import com.google.common.collect.Sets;
-import com.jtprince.coordinateoffset.translator.Translator;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -27,133 +22,69 @@ class PacketOffsetAdapter {
     }
 
     void registerAdapters() {
-        final ProtocolManager pm = ProtocolLibrary.getProtocolManager();
-
-        Translator.Version translators = getTranslatorForRunningVersion();
-
-        try {
-            pm.addPacketListener(new AdapterServer(translators.clientbound().getDeclaredConstructor().newInstance()));
-            pm.addPacketListener(new AdapterClient(translators.serverbound().getDeclaredConstructor().newInstance()));
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException("Failed to create the packet listener! Please report this as a bug!", e);
-        }
+        PacketEvents.getAPI().getEventManager().registerListener(new Listener());
+        PacketEvents.getAPI().init();
     }
 
-    private Translator.Version getTranslatorForRunningVersion() {
-        if (MinecraftVersion.getCurrentVersion().compareTo(Translator.LATEST_SUPPORTED) > 0) {
-            String runningVersion = MinecraftVersion.getCurrentVersion().getVersion();
-            logger.warning("This plugin version has not been tested with the protocol version in your server (" + runningVersion + ") yet.");
-            logger.warning("Some packets may not be properly obfuscated, and others may create errors.");
-            logger.warning("Please wait for an update or proceed at your own risk.");
+    private class Listener extends PacketListenerAbstract {
+        Listener() {
+            super(PacketListenerPriority.HIGH);
         }
 
-        Translator.Version chosen = null;
-        boolean outdatedServer = true;
-        for (Translator.Version v : Translator.VERSIONS) {
-            chosen = v;
-            if (v.minVersion().atOrAbove()) {
-                outdatedServer = false;
-                break;
-            }
-        }
-
-        if (outdatedServer) {
-            String earliest = Objects.requireNonNull(chosen).minVersion().getVersion();
-            logger.severe("This plugin only supports Minecraft " + earliest + " and above - it will very likely break!");
-        }
-
-        logger.info("Using protocol translator for Minecraft " + chosen.statedVersionRange() + ".");
-
-        return chosen;
-    }
-
-    private class AdapterServer extends PacketAdapter {
-        private final Translator.Clientbound translator;
-        private AdapterServer(Translator.Clientbound translator) {
-            super(coPlugin, ListenerPriority.HIGHEST, Sets.union(translator.getPacketTypes(), Sets.union(PACKETS_ALWAYS_LISTEN, PACKETS_WORLD_BORDER)));
-            this.translator = translator;
-        }
-
-        private static final Set<PacketType> PACKETS_ALWAYS_LISTEN = Set.of(
-                PacketType.Play.Server.LOGIN,
-                PacketType.Play.Server.POSITION,
-                PacketType.Play.Server.RESPAWN
-        );
-
-        private static final Set<PacketType> PACKETS_WORLD_BORDER = Set.of(
+        private static final Set<PacketType.Play.Server> PACKETS_WORLD_BORDER = Set.of(
                 // These packets are translated in WorldBorderObfuscator, not this file.
-                PacketType.Play.Server.INITIALIZE_BORDER,
-                PacketType.Play.Server.SET_BORDER_CENTER,
-                PacketType.Play.Server.SET_BORDER_LERP_SIZE,
-                PacketType.Play.Server.SET_BORDER_SIZE,
-                PacketType.Play.Server.SET_BORDER_WARNING_DELAY,
-                PacketType.Play.Server.SET_BORDER_WARNING_DISTANCE
+                PacketType.Play.Server.INITIALIZE_WORLD_BORDER,
+                PacketType.Play.Server.WORLD_BORDER_CENTER,
+                PacketType.Play.Server.WORLD_BORDER_LERP_SIZE,
+                PacketType.Play.Server.WORLD_BORDER_SIZE,
+                PacketType.Play.Server.WORLD_BORDER_WARNING_DELAY,
+                PacketType.Play.Server.WORLD_BORDER_WARNING_REACH
         );
 
-        public void onPacketSending(PacketEvent event) {
-            PacketContainer packet = event.getPacket();
-            Player player = event.getPlayer();
-
-            if (packet.getType() == PacketType.Play.Server.LOGIN) {
-                OffsetProviderContext context = new OffsetProviderContext(
-                        player, player.getWorld(), player.getLocation(),
-                        OffsetProviderContext.ProvideReason.JOIN, coPlugin
-                );
-                coPlugin.getPlayerManager().regenerateOffset(context);
-                coPlugin.getPlayerManager().setPositionedWorld(context.player(), context.world());
-            }
-
-            if (packet.getType() == PacketType.Play.Server.POSITION) {
+        @Override
+        public void onPacketSend(PacketSendEvent event) {
+            if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
+                Player player = (Player) event.getPlayer();
                 coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
             }
 
             Offset offset;
-            if (packet.getType() == PacketType.Play.Server.RESPAWN) {
+            if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
+                    || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
                 /*
+                 * Join packets happen before the Player object exists.
                  * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that new
                  * world.
                  * See `docs/OffsetChangeHandling.md`
                  */
-                offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getPlayer());
+                offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getUser().getUUID());
             } else {
-                offset = coPlugin.getPlayerManager().getOffset(event.getPlayer());
+                if (event.getPlayer() == null) return;
+
+                offset = coPlugin.getPlayerManager().getOffset((Player) event.getPlayer());
             }
 
+            // Short-circuit when no offset is applied
             if (offset.equals(Offset.ZERO)) return;
 
-            if (PACKETS_WORLD_BORDER.contains(packet.getType())) {
-                // Border packets need special handling, more than just applying an offset with the versioned Translator
-                packet = coPlugin.getWorldBorderObfuscator().translate(packet, event.getPlayer());
-            } else {
-                packet = translator.translate(event, offset);
+            // World border packets must only be manipulated by the World Border Obfuscator
+            if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
+                coPlugin.getWorldBorderObfuscator().translate(event, (Player) event.getPlayer());
+                return;
             }
 
-            if (packet != null) {
-                event.setPacket(packet);
-            } else {
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    private class AdapterClient extends PacketAdapter {
-        private final Translator.Serverbound translator;
-        private AdapterClient(Translator.Serverbound translator) {
-            super(coPlugin, ListenerPriority.LOWEST, translator.getPacketTypes());
-            this.translator = translator;
+            OffsetterRegistry.attemptToOffset(event, offset);
         }
 
         @Override
-        public void onPacketReceiving(PacketEvent event) {
-            var offset = coPlugin.getPlayerManager().getOffset(event.getPlayer(), event.getPlayer().getWorld());
+        public void onPacketReceive(PacketReceiveEvent event) {
+            Player player = (Player) event.getPlayer();
+            if (player == null) return;
+
+            Offset offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
             if (offset.equals(Offset.ZERO)) return;
 
-            PacketContainer packet = translator.translate(event, offset);
-            if (packet != null) {
-                event.setPacket(packet);
-            } else {
-                event.setCancelled(true);
-            }
+            OffsetterRegistry.attemptToUnOffset(event, offset);
         }
     }
 }

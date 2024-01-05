@@ -52,8 +52,8 @@ The solutions are built primarily in `java/com/jtprince/coordinateoffset/PlayerO
     this new offset is generated.
 
 To rephrase, this is the general order of operations:
-* Generate a new offset as early as possible, during the LOGIN packet, PlayerTeleportEvent, or PlayerRespawnEvent.
-  Put that offset into a cache indexed by the world that they're going *to*.
+* Generate a new offset as early as possible, during PlayerSpawnLocationEvent, PlayerTeleportEvent, or 
+  PlayerRespawnEvent. Put that offset into a cache indexed by the world that they're going *to*.
 * Continue applying the old offset unless a packet explicitly asks for the world of the new offset.
 * When we see a POSITION packet, only then do we update the implicit offset that gets applied to all packets.
 

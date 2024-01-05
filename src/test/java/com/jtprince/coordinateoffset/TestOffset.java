@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import org.bukkit.Location;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -62,27 +61,11 @@ public class TestOffset {
     }
 
     @Test
-    void testApplyProtocolLibBlockPosition() {
-        Offset offset = new Offset(-128, 48);
-        Assertions.assertNull(offset.apply((BlockPosition) null));
-        Assertions.assertEquals(new BlockPosition(138, 48, -281),
-                offset.apply(new BlockPosition(10, 48, -233)));
-    }
-
-    @Test
     void testUnApplyBukkitLocation() {
         Offset offset = new Offset(-128, 48);
         Assertions.assertNull(offset.unapply((Location) null));
         assertLocationsApproximatelyEqual(new Location(null, 10.7, 48.2, -233.5),
                 offset.unapply(new Location(null, 138.7, 48.2, -281.5)));
-    }
-
-    @Test
-    void testUnApplyProtocolLibBlockPosition() {
-        Offset offset = new Offset(-128, 48);
-        Assertions.assertNull(offset.unapply((BlockPosition) null));
-        Assertions.assertEquals(new BlockPosition(10, 48, -233),
-                offset.unapply(new BlockPosition(138, 48, -281)));
     }
 
     private void assertLocationsApproximatelyEqual(Location expected, Location actual) {

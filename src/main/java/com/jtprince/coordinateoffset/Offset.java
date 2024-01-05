@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset;
 
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.jeff_media.morepersistentdatatypes.DataType;
 import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
 import org.bukkit.Location;
@@ -152,23 +151,6 @@ public record Offset (int x, int z) {
     }
 
     /**
-     * Apply this Offset to a ProtocolLib BlockPosition, resulting in the position that a player who has this Offset
-     * would see if they were at that position.
-     *
-     * <p>Care should be taken not to use the returned BlockPosition for anything internal to the server. The
-     * returned BlockPosition is primarily intended to be sent to a Player who this Offset is applied to.</p>
-     *
-     * @param realPosition A BlockPosition on the server, in real coordinate space.
-     * @return A new BlockPosition object that represents the coordinates that the player will see.
-     */
-    @Pure
-    @Contract("null -> null; !null -> !null")
-    public BlockPosition apply(BlockPosition realPosition) {
-        if (realPosition == null) return null;
-        return realPosition.subtract(new BlockPosition(this.x, 0, this.z));
-    }
-
-    /**
      * Apply the inverse of this Offset to a Bukkit Location, resulting in a real server Location.
      *
      * @param offsettedLocation An offsetted Location coming from a Player who has this offset.
@@ -179,19 +161,6 @@ public record Offset (int x, int z) {
     public Location unapply(Location offsettedLocation) {
         if (offsettedLocation == null) return null;
         return offsettedLocation.clone().add(this.x, 0, this.z);
-    }
-
-    /**
-     * Apply the inverse of this Offset to a ProtocolLib BlockPosition, resulting in a real server position.
-     *
-     * @param offsettedPosition An offsetted BlockPosition coming from a Player who has this offset.
-     * @return A new BlockPosition object that represents the real BlockPosition for the server to use.
-     */
-    @Pure
-    @Contract("null -> null; !null -> !null")
-    public BlockPosition unapply(BlockPosition offsettedPosition) {
-        if (offsettedPosition == null) return null;
-        return offsettedPosition.add(new BlockPosition(this.x, 0, this.z));
     }
 
     private static Offset fromPdt(int[] arr) {

@@ -1,12 +1,16 @@
 package com.jtprince.coordinateoffset;
 
-import com.comphenix.protocol.events.PacketContainer;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerInitializeWorldBorder;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderCenter;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderSize;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayWorldBorderLerpSize;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -80,7 +84,7 @@ class WorldBorderObfuscator {
         return seen;
     }
 
-    @Nullable PacketContainer translate(@NotNull PacketContainer packet, @NotNull Player player) {
+    void translate(@NotNull PacketSendEvent packet, @NotNull Player player) {
         Offset offset = plugin.getPlayerManager().getOffset(player);
 
         /*
@@ -105,13 +109,16 @@ class WorldBorderObfuscator {
                 (seenWalls.contains(Wall.Z_POSITIVE) && seenWalls.contains(Wall.Z_NEGATIVE))) {
             // If the player can see opposing walls, or obfuscation is disabled, we should just send the complete
             // offsetted border. No diameter change.
-            switch (packet.getType().name()) {
-                case "INITIALIZE_BORDER", "SET_BORDER_CENTER" -> {
-                    packet.getDoubles().modify(0, x -> x - (offset.x() * scaleFactor));
-                    packet.getDoubles().modify(1, z -> z - (offset.z() * scaleFactor));
-                }
+            if (packet.getPacketType().equals(PacketType.Play.Server.INITIALIZE_WORLD_BORDER)) {
+                WrapperPlayServerInitializeWorldBorder wrapper = new WrapperPlayServerInitializeWorldBorder(packet);
+                wrapper.setX(wrapper.getX() - (offset.x() * scaleFactor));
+                wrapper.setZ(wrapper.getZ() - (offset.z() * scaleFactor));
+            } else if (packet.getPacketType().equals(PacketType.Play.Server.WORLD_BORDER_CENTER)) {
+                WrapperPlayServerWorldBorderCenter wrapper = new WrapperPlayServerWorldBorderCenter(packet);
+                wrapper.setX(wrapper.getX() - (offset.x() * scaleFactor));
+                wrapper.setZ(wrapper.getZ() - (offset.z() * scaleFactor));
             }
-            return packet;
+            return;
         }
 
         WorldBorder border;
@@ -122,7 +129,8 @@ class WorldBorderObfuscator {
              * Spigot API added per-player world border interface in 1.18. Previous versions will not support proper
              * obfuscation, and instead we obfuscate by blocking all world border packets for players on those versions.
              */
-            return null;
+            packet.setCancelled(true);
+            return;
         }
 
         // Player may not have a world border override, fall back on global world border
@@ -159,25 +167,24 @@ class WorldBorderObfuscator {
             centerX = centerZ = 0.0;
         }
 
-        switch (packet.getType().name()) {
-            case "INITIALIZE_BORDER" -> {
-                packet.getDoubles().write(0, centerX * scaleFactor);
-                packet.getDoubles().write(1, centerZ * scaleFactor);
-                packet.getDoubles().write(2, diameter);
-                packet.getDoubles().write(3, diameter);
-            }
-            case "SET_BORDER_CENTER" -> {
-                packet.getDoubles().write(0, centerX * scaleFactor);
-                packet.getDoubles().write(1, centerZ * scaleFactor);
-            }
-            case "SET_BORDER_LERP_SIZE" -> {
-                packet.getDoubles().write(0, diameter);
-                packet.getDoubles().write(1, diameter);
-            }
-            case "SET_BORDER_SIZE" -> packet.getDoubles().write(0, diameter);
+        if (packet.getPacketType().equals(PacketType.Play.Server.INITIALIZE_WORLD_BORDER)) {
+            var wrapper = new WrapperPlayServerInitializeWorldBorder(packet);
+            wrapper.setX(centerX * scaleFactor);
+            wrapper.setZ(centerZ * scaleFactor);
+            wrapper.setOldDiameter(diameter);
+            wrapper.setNewDiameter(diameter);
+        } else if (packet.getPacketType().equals(PacketType.Play.Server.WORLD_BORDER_CENTER)) {
+            var wrapper = new WrapperPlayServerWorldBorderCenter(packet);
+            wrapper.setX(centerX * scaleFactor);
+            wrapper.setZ(centerZ * scaleFactor);
+        } else if (packet.getPacketType().equals(PacketType.Play.Server.WORLD_BORDER_LERP_SIZE)) {
+            var wrapper = new WrapperPlayWorldBorderLerpSize(packet);
+            wrapper.setOldDiameter(diameter);
+            wrapper.setNewDiameter(diameter);
+        } else if (packet.getPacketType().equals(PacketType.Play.Server.WORLD_BORDER_SIZE)) {
+            var wrapper = new WrapperPlayServerWorldBorderSize(packet);
+            wrapper.setDiameter(diameter);
         }
-
-        return packet;
     }
 
     enum Wall {

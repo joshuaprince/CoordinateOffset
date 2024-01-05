@@ -2,7 +2,7 @@ name: CoordinateOffset
 version: "${version}"
 main: com.jtprince.coordinateoffset.CoordinateOffset
 api-version: "${apiVersion}"
-depend: [ ProtocolLib ]
+depend: [ packetevents ]
 authors: [ jtprince, Cavallium ]
 website: https://github.com/joshuaprince/CoordinateOffset
 description: Configurably obfuscate players' coordinates.
