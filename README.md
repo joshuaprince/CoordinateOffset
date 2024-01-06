@@ -17,9 +17,9 @@ However, not all multiplayer servers want coordinates to be so easily accessible
 administratively hide coordinates from the F3 menu, but it is trivial for a player to add a client-side mod that
 shows them.
 
-**CoordinateOffset** is a plugin for Spigot and Paper servers that applies an offset to every coordinate in packets
-between the server and client. The player still sees the exact same world they would normally see. But no matter which
-mods they install, **it is impossible for them to know their real coordinates**.
+**CoordinateOffset** is a plugin for Spigot and Paper servers that modifies every coordinate in packets between the
+server and client. The player still sees the exact same world they would normally see. But no matter which mods they
+install, they cannot see their real coordinates.
 
 Features
 --------
@@ -29,13 +29,13 @@ Features
 * Persist the same offset every time a player joins so that they don't notice coordinates changing
 * Configure different offsets per-player, per-world, and with permissions
 * Extensible API to flexibly get and set offsets
+* (Beta) Compatible with ViaVersion and ViaBackwards
 
 Requirements and Installation
 -----------------------------
 * Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
   1.17.x, 1.18.x, 1.19.x, 1.20, 1.20.1, 1.20.2, 1.20.3, 1.20.4
-* [ProtocolLib](https://github.com/dmulloy2/ProtocolLib/releases) **5.1.0** or higher
-  (1.20.2: [Dev build](https://ci.dmulloy2.net/job/ProtocolLib/) #669+, 1.20.4: Dev build #676+)
+* [PacketEvents](https://github.com/retrooper/packetevents/releases) (for Spigot) **2.2.0** or higher
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
@@ -101,10 +101,10 @@ Credits
 -------
 Special thanks to [Cavallium](https://github.com/cavallium) for developing
 [**CoordinatesObfuscator**](https://github.com/cavallium/CoordinatesObfuscator), which CoordinateOffset is a fork of.
-CoordinateOffset uses most of the original logic for packet translation.
+CoordinateOffset's packet translation logic was heavily modeled after the work done by CoordinatesObfuscator.
 
 Libraries used:
 * [bStats](https://bstats.org/) ([Statistics for this plugin](https://bstats.org/plugin/bukkit/CoordinateOffset/19988))
-* [ProtocolLib](https://github.com/dmulloy2/ProtocolLib)
+* [PacketEvents](https://github.com/retrooper/packetevents)
 * [CommandAPI](https://commandapi.jorel.dev/)
 * [MorePersistentDataTypes](https://github.com/JEFF-Media-GbR/MorePersistentDataTypes)

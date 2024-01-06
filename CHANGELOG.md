@@ -1,3 +1,16 @@
+# v3.0.0 (beta)
+- Plugin is now compatible with: (in beta; please report issues)
+    - ViaVersion
+    - ViaBackwards
+    - Model Engine
+- Plugin is compatible with Geyser (in alpha; not recommended for production)
+    - With Geyser installed as a plugin, movement is buggy because Geyser's collision-fixing code processes real
+      coordinates, while its translation layer deals with shifted coordinates.
+    - If possible, it is currently recommended to use Geyser standalone so that the collision-fixing code is disabled.
+- Rewrite packet offsetting logic with [PacketEvents](https://github.com/retrooper/packetevents) library
+    - Plugin now depends on PacketEvents (v2), and no longer depends on ProtocolLib
+- Fix exceptions and improperly offsetted coordinates when a player logs in from another location
+
 # v2.3.2
 - Support 1.20.4 (requires ProtocolLib dev build #676+)
 

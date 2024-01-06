@@ -16,7 +16,7 @@ dependencies {
 
     compileOnly("com.jtprince:CoordinateOffset:master-SNAPSHOT")
     // Also an option, use the latest version: https://github.com/joshuaprince/CoordinateOffset/releases
-    // compileOnly("com.jtprince:CoordinateOffset:v2.3.2")
+    // compileOnly("com.jtprince:CoordinateOffset:v3.0.0")
 }
 
 java {
