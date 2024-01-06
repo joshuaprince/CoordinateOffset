@@ -103,6 +103,7 @@ Command Tests
 -------------
 * Verify that you can properly face an entity with `/tp @p ~ ~ ~ facing entity <UUID>`.
 * Verify that you can properly face a coordinate with `/tp @p ~ ~ ~ facing <x> <y> <z>`.
+* Verify that /playsound works and players can hear the sounds.
 
 World Border Tests
 ------------------
