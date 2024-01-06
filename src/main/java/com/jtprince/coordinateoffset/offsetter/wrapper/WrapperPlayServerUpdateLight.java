@@ -15,7 +15,7 @@ public class WrapperPlayServerUpdateLight extends PacketWrapper<WrapperPlayServe
     }
 
     public WrapperPlayServerUpdateLight(int chunkX, int chunkZ, byte[] remainingData) {
-        super(Server.EFFECT);
+        super(Server.UPDATE_LIGHT);
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.remainingData = remainingData;

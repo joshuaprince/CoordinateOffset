@@ -46,6 +46,7 @@ public class OffsetterRegistry {
             new OffsetterServerParticle(),
             new OffsetterServerPlayerPositionAndLook(),
             new OffsetterServerRespawn(),
+            new OffsetterServerSculkVibrationSignal(),
             new OffsetterServerSetSlot(),
             new OffsetterServerSoundEffect(),
             new OffsetterServerSpawnEntity(),
