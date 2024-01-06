@@ -46,7 +46,9 @@ class PacketOffsetAdapter {
             if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
                     || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
                 Player player = (Player) event.getPlayer();
-                coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                if (player != null) {
+                    coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                }
             }
 
             Offset offset;

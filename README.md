@@ -29,7 +29,7 @@ Features
 * Persist the same offset every time a player joins so that they don't notice coordinates changing
 * Configure different offsets per-player, per-world, and with permissions
 * Extensible API to flexibly get and set offsets
-* (Beta) Compatible with ViaVersion and ViaBackwards
+* (Beta) Compatible with ViaVersion, ViaBackwards, BungeeCord, Waterfall, and Velocity
 
 Requirements and Installation
 -----------------------------
