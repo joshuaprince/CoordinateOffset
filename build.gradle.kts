@@ -26,7 +26,6 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://repo.codemc.org/repository/maven-public/") // PacketEvents
-    maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") // MorePDTs
 }
 
 dependencies {
@@ -37,7 +36,7 @@ dependencies {
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
     implementation("com.github.retrooper:packetevents-spigot:2.4.1-SNAPSHOT")
     implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
+    implementation("com.jeff-media:MorePersistentDataTypes:2.4.0")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testImplementation("io.papermc.paper:paper-api:$paperApiVersion")
