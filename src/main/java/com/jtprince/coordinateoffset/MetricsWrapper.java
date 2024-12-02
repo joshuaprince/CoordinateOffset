@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
+import com.jtprince.coordinateoffset.provider.PlaceholderOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import com.jtprince.coordinateoffset.provider.util.ResetConfig;
@@ -43,6 +44,8 @@ public class MetricsWrapper {
                 sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
 
                 result.put("ZeroAtLocationOffsetProvider", Map.of(sb.toString(), 1));
+            } else if (defaultProvider instanceof PlaceholderOffsetProvider placeholderOffsetProvider) {
+                result.put("PlaceholderOffsetProvider", Map.of("PlaceholderOffsetProvider", 1));
             } else {
                 // Intentionally obfuscate the name of any extensions made to CoordinateOffset.
                 result.put("Custom Provider", Map.of("Unknown Offset Provider", 1));
