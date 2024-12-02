@@ -1,3 +1,21 @@
+# v4.1.0-alpha1
+- Add basic PlaceholderAPI support
+    - Placeholders defined by CoordinateOffset:
+        - `%coordinateoffset%`: Resolves to a player's current offset as a comma-separated string, e.g. "1600,-320"
+        - `%coordinateoffset_x%`: Resolves to the X-component of a player's current offset, e.g. "1600"
+        - `%coordinateoffset_z%`: Resolves to the Z-component of a player's current offset, e.g. "-320"
+    - Add PlaceholderOffsetProvider class to set offsets based on an external placeholder
+        - Supports `placeholderXZ` required key to define the placeholder string (must resolve to a comma-separated
+          pair of integers which are both divisible by 16)
+        - Supports `worldScaling` key with identical syntax to ConstantOffsetProvider
+- Known limitations
+    - Things WILL break if any player on the server does not have proper placeholder values set when resolving the
+      `placeholderXZ` value. A proper fallback mechanism is necessary for a non-alpha release.
+    - Things WILL break if a PlaceholderOffsetProvider attempts to resolve an offset which is not divisible by 16.
+      Things will also break if a `worldScaling` setting divides the resolved offset such that the result is not
+      divisible by 16. **Use at your own risk** and ensure that all offsets provided by a placeholder are divisible by
+      (16 * 8) for the default worldScaling configuration.
+
 # v4.0.6
 - Fix packet decoding error and kick caused by potions in inventory or in a container
 - Update packetevents dependency

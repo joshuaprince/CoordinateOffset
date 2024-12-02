@@ -33,10 +33,13 @@ public class PlaceholderOffsetProvider extends OffsetProvider {
             String resolved = PlaceholderAPI.setPlaceholders(player, placeholderXZ).trim();
 
             if (PlaceholderAPI.containsPlaceholders(resolved)) {
-                // Only a verbose info message because we'll try moving to the next placeholder resolution method.
-                if (context.plugin().isVerboseLoggingEnabled()) {
-                    context.plugin().getLogger().info("Could not resolve all placeholders for X/Z offset: " + resolved);
-                }
+                // FUTURE: Only a verbose info message because we'll try moving to the next placeholder resolution method.
+//                if (context.plugin().isVerboseLoggingEnabled()) {
+//                    context.plugin().getLogger().info("Could not resolve all placeholders for X/Z offset: " + resolved);
+//                }
+                // TODO Temporary error message to accompany the incoming exception
+                context.plugin().getLogger().severe("Could not resolve all placeholders for X/Z offset on " +
+                        player.getName() + ": \"" + placeholderXZ + "\" -> \"" + resolved + "\"");
             } else {
                 Matcher matcher = Pattern.compile("(-?\\d+),(-?\\d+)").matcher(resolved);
                 if (!matcher.matches()) {

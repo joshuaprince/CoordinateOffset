@@ -111,14 +111,14 @@ offsetProviders:
 
     # Direct placeholder offsets can be multiplied by a constant factor in
     #   specific worlds so that portal travel lines up. Make sure that the
-    #   placeholder offsets multiplied by these values still result in a
+    #   resolved offsets multiplied by these values still result in a
     #   multiple of 16.
     worldScaling:
       world_nether: 0.125
 
-  # Add custom offset modes here. For example:
-  # myCustomOffsetMode:
-  #   provider: constant
+  # Add custom offset providers here. For example:
+  # myCustomConstantProvider:
+  #   class: ConstantOffsetProvider
   #   offsetX: -16000
   #   offsetZ: 16000
 
