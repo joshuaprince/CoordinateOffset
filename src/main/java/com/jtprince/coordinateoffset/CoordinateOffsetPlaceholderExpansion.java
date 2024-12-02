@@ -37,6 +37,12 @@ public class CoordinateOffsetPlaceholderExpansion extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
+
+        // TODO remove
+        if (params.equals("testx")) return "1600";
+        if (params.equals("testz")) return "-3200";
+
+
         // For now, only online players have an offset, so offline players return an invalid placeholder
         Player player = offlinePlayer.getPlayer();
         if (player == null) return null;

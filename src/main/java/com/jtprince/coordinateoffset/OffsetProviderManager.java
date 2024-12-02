@@ -125,7 +125,11 @@ class OffsetProviderManager {
         plugin.getLogger().info("Loaded " + newProviders.size() + " offset providers from config. Default offset provider is \"" + defaultProvider.name + "\"" + overrideCountStr);
     }
 
-    OffsetProvider getDefaultProvider() {
+    public OffsetProvider getProvider(@NotNull String providerName) {
+        return providersFromConfig.get(providerName);
+    }
+
+    public OffsetProvider getDefaultProvider() {
         return defaultProvider;
     }
 

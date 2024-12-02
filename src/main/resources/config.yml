@@ -91,10 +91,23 @@ offsetProviders:
     #   installed.
     class: PlaceholderOffsetProvider
 
+    # Only 1 of these placeholders will resolve to a player's offset. They will
+    #   be tried for each player in the following order: placeholderXZ,
+    #   placeholderOtherProvider, fallbackProvider.
+
     # Use a placeholder to directly set both the X and Z components of the
     #   player's offset. This placeholder must resolve to a comma-separated
     #   pair of integers which are multiples of 16 (e.g. "1600,-32")
     placeholderXZ: "%my_placeholder_x%,%my_placeholder_z%"
+
+    # Use a placeholder to apply a different offset provider in this config.
+    #   Each placeholder must resolve to the name of another provider in the
+    #   offsetProviders section of this file.
+    placeholderOtherProvider: "%my_placeholder%"
+
+    # If no placeholders are found for a player matching the above rules, fall
+    #   back on this provider.
+    fallbackProvider: random
 
     # Direct placeholder offsets can be multiplied by a constant factor in
     #   specific worlds so that portal travel lines up. Make sure that the
