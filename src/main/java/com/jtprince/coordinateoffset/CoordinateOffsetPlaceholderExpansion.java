@@ -41,12 +41,11 @@ public class CoordinateOffsetPlaceholderExpansion extends PlaceholderExpansion {
         Player player = offlinePlayer.getPlayer();
         if (player == null) return null;
 
-        Offset offset = plugin.getOffset(player);
-
         return switch (params) {
-            case "" -> offset.x() + "," + offset.z();
-            case "x" -> String.valueOf(offset.x());
-            case "z" -> String.valueOf(offset.z());
+            case "" -> plugin.getOffset(player).x() + "," + plugin.getOffset(player).z();
+            case "x" -> String.valueOf(plugin.getOffset(player).x());
+            case "z" -> String.valueOf(plugin.getOffset(player).z());
+
             // No match for any cases above, so invalid placeholder
             default -> null;
         };

@@ -85,6 +85,24 @@ offsetProviders:
     worldAlignment:
       - world:world_nether:8
 
+  placeholder:
+    # The "placeholder" offset provider class provides offsets to players based
+    #   on a PlaceholderAPI placeholder. The PlaceholderAPI plugin must also be
+    #   installed.
+    class: PlaceholderOffsetProvider
+
+    # Use a placeholder to directly set both the X and Z components of the
+    #   player's offset. This placeholder must resolve to a comma-separated
+    #   pair of integers which are multiples of 16 (e.g. "1600,-32")
+    placeholderXZ: "%my_placeholder_x%,%my_placeholder_z%"
+
+    # Direct placeholder offsets can be multiplied by a constant factor in
+    #   specific worlds so that portal travel lines up. Make sure that the
+    #   placeholder offsets multiplied by these values still result in a
+    #   multiple of 16.
+    worldScaling:
+      world_nether: 0.125
+
   # Add custom offset modes here. For example:
   # myCustomOffsetMode:
   #   provider: constant
