@@ -52,6 +52,7 @@ public final class CoordinateOffset extends JavaPlugin {
         if (collisionFixBambooEnabled || collisionFixDripstoneEnabled) {
             try {
                 collisionFix = new CollisionFix(this, collisionFixBambooEnabled, collisionFixDripstoneEnabled);
+                Bukkit.getPluginManager().registerEvents(collisionFix, this);
             } catch (Exception e) {
                 getLogger().severe("Failed to enable bamboo/dripstone collision fix: " + e.getMessage());
                 if (isVerboseLoggingEnabled()) {
