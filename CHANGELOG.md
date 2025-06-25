@@ -1,3 +1,6 @@
+# v4.0.13
+- Support 1.21.6
+
 # v4.0.12
 - Fix ghost items appearing on the cursor when moving items with data components in an inventory with an offset applied
   in 1.21.5
