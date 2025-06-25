@@ -69,6 +69,7 @@ public class OffsetterRegistry {
             new OffsetterServerUnloadChunk(),
             new OffsetterServerUpdateViewPosition(),
             new OffsetterServerVehicleMove(),
+            new OffsetterServerWaypoint(),
             new OffsetterServerWindowItems()
     );
 

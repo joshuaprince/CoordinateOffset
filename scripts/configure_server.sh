@@ -3,7 +3,7 @@ set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <server folder>"
-  echo "Example: $0 ./run-1.20.6"
+  echo "Example: $0 ./run-1.21.6"
   exit 1
 fi
 

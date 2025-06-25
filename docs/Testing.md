@@ -122,6 +122,7 @@ These tests require 2 accounts or offline mode. They all expect that each player
 * Verify that players can see each other enter beds.
 * Give a second player an attuned lodestone compass. Ensure that when P2 is holding the compass, it visibly points to
   the lodestone from the perspective of P1, moving P2 at various angles around the lodestone.
+* Verify that players can see each other in the locator bar at the correct locations (1.21.6+).
 
 Command Tests
 -------------
