@@ -54,7 +54,7 @@ Features
 Requirements and Installation
 -----------------------------
 * Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
-  1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21-1.21.7
+  1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21-1.21.8
 * An understanding of the [implications of installing this
 plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
