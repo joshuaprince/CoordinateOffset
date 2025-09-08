@@ -19,6 +19,7 @@ public final class CoordinateOffset extends JavaPlugin {
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
     private WorldBorderObfuscator worldBorderObfuscator;
+    private PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
 
     @Override
@@ -45,7 +46,8 @@ public final class CoordinateOffset extends JavaPlugin {
         providerManager.registerConfigurationFactory("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         providerManager.registerConfigurationFactory("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
 
-        new PacketOffsetAdapter(this).registerAdapters();
+        packetOffsetAdapter = new PacketOffsetAdapter(this);
+        packetOffsetAdapter.registerAdapters();
 
         boolean collisionFixBambooEnabled = getConfig().getBoolean("fixCollision.bamboo", true);
         boolean collisionFixDripstoneEnabled = getConfig().getBoolean("fixCollision.dripstone", true);
@@ -71,7 +73,7 @@ public final class CoordinateOffset extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        packetOffsetAdapter.onDisable();
     }
 
     /**
