@@ -115,6 +115,7 @@ obfuscateWorldBorder: true
 verbose: false
 
 # Enable additional logging when errors occur in the plugin.
+# Do not enable in production!
 debug:
   enable: false
   packetHistorySize: 8
