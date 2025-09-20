@@ -50,20 +50,42 @@ public class MetricsWrapper {
             return result;
         }));
 
-        metrics.addCustomChart(new SimplePie("world_border_obfuscation", () -> {
-            if (plugin.getWorldBorderObfuscator().enableObfuscation()) {
-                return "enabled";
+        metrics.addCustomChart(new SimplePie("world_border_obfuscation", () ->
+            enabledDisabledStr(plugin.getWorldBorderObfuscator().enableObfuscation())));
+
+        metrics.addCustomChart(new SimplePie("unsafe_reset_on_teleport", () ->
+            enabledDisabledStr(plugin.isUnsafeResetOnTeleportEnabled())));
+
+        metrics.addCustomChart(new SimplePie("fix_collision", () -> {
+            boolean enabled = false;
+            StringBuilder sb = new StringBuilder();
+            if (plugin.getConfig().getBoolean("fixCollision.bamboo", true)) {
+                enabled = true;
+                sb.append("B");
+            } else {
+                sb.append("x");
+            }
+            if (plugin.getConfig().getBoolean("fixCollision.dripstone", true)) {
+                enabled = true;
+                sb.append("D");
+            } else {
+                sb.append("x");
+            }
+            if (enabled) {
+                return "enabled (" + sb + ")";
             } else {
                 return "disabled";
             }
         }));
 
-        metrics.addCustomChart(new SimplePie("unsafe_reset_on_teleport", () -> {
-            if (plugin.isUnsafeResetOnTeleportEnabled()) {
-                return "enabled";
-            } else {
-                return "disabled";
-            }
-        }));
+        metrics.addCustomChart(new SimplePie("verbose", () ->
+            enabledDisabledStr(plugin.isVerboseLoggingEnabled())));
+
+        metrics.addCustomChart(new SimplePie("offset_provider_override_count", () ->
+            String.valueOf(plugin.getOffsetProviderManager().getLoadedOverrideCount())));
+    }
+
+    private static String enabledDisabledStr(boolean enabled) {
+        return enabled ? "enabled" : "disabled";
     }
 }

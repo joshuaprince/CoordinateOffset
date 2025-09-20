@@ -226,4 +226,8 @@ class OffsetProviderManager {
             provider.onPlayerDisconnect(playerUuid);
         }
     }
+
+    int getLoadedOverrideCount() {
+        return overrides.size();
+    }
 }
