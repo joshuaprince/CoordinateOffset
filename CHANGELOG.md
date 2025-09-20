@@ -1,3 +1,7 @@
+# v4.0.16
+- Fix console errors on player login for versions up to 1.21.4
+- Rate-limit console spam during packet error conditions
+
 # v4.0.15
 - Support 1.21.8
 
