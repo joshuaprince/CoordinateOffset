@@ -58,6 +58,12 @@ class PacketOffsetAdapter {
 
         @Override
         public void onPacketSend(PacketSendEvent event) {
+            /*
+             * Ignore LOGIN and CONFIGURATION packets; these are sent before the players spawn (and therefore before
+             * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
+             */
+            if (!(event.getPacketType() instanceof PacketType.Play.Server)) return;
+
             if (coPlugin.isDebugEnabled()) {
                 packetHistory.logPacket(event.getUser(), event.getPacketType());
             }
@@ -111,6 +117,12 @@ class PacketOffsetAdapter {
 
         @Override
         public void onPacketReceive(PacketReceiveEvent event) {
+            /*
+             * Ignore LOGIN and CONFIGURATION packets; these are sent before the players spawn (and therefore before
+             * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
+             */
+            if (!(event.getPacketType() instanceof PacketType.Play.Client)) return;
+
             if (coPlugin.isDebugEnabled()) {
                 packetHistory.logPacket(event.getUser(), event.getPacketType());
             }

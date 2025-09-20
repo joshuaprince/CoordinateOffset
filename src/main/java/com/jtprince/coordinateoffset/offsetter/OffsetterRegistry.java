@@ -18,6 +18,11 @@ public class OffsetterRegistry {
     private static final Map<PacketTypeCommon, PacketOffsetter> byPacketType;
 
     private static final List<PacketOffsetter> offsetters = List.of(
+            /*
+             * NOTE: Only PLAY packets are supported. The server can send LOGIN and CONFIGURATION packets before an
+             * offset is applied. If other packet type offsets are needed, be sure to update PacketOffsetAdapter to
+             * handle those packet types.
+             */
             new OffsetterClientClickWindow(),
             new OffsetterClientCreativeInventoryAction(),
             new OffsetterClientGenerateStructure(),
