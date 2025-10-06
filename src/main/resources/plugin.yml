@@ -23,6 +23,8 @@ commands:
   offsetreload:
     description: "Reload CoordinateOffset config.yml"
     permission: coordinateoffset.reload
+depend:
+  - packetevents
 softdepend:
   - ProtocolLib
   - ProtocolSupport

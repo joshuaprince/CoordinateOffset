@@ -1,11 +1,9 @@
 package com.jtprince.coordinateoffset;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import com.jtprince.lib.org.geysermc.hurricane.CollisionFix;
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,12 +19,6 @@ public final class CoordinateOffset extends JavaPlugin {
     private WorldBorderObfuscator worldBorderObfuscator;
     private PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
-
-    @Override
-    public void onLoad() {
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        PacketEvents.getAPI().load();
-    }
 
     @Override
     public void onEnable() {
