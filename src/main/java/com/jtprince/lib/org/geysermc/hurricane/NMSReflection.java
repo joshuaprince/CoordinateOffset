@@ -25,19 +25,29 @@ public final class NMSReflection {
         }
     }
 
-    public static Class<?> getNMSClass(String post1_16Prefix, String name) {
-        Class<?> newNMSClass = getMojmapNMSClass(post1_16Prefix + "." + name);
-        if (newNMSClass != null) {
-            return newNMSClass;
+    public static Class<?> getNMSClass(String post1_16Prefix, String... names) {
+        for (String name : names) {
+            Class<?> newNMSClass = getMojmapNMSClass(post1_16Prefix + "." + name);
+            if (newNMSClass != null) {
+                return newNMSClass;
+            }
         }
 
         // Else Mojmap/post-1.17 is not in effect
         mojmap = false;
-        try {
-            return Class.forName("net.minecraft.server." + getVersion() + "." + name);
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-            return null;
+        Exception ex = null;
+        for (String name : names) {
+            try {
+                return Class.forName("net.minecraft.server." + getVersion() + "." + name);
+            } catch (ClassNotFoundException e) {
+                if (ex == null) {
+                    ex = e;
+                }
+            }
         }
+        if (ex != null) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 }

@@ -33,7 +33,7 @@ public final class CollisionFix implements Listener {
 
         if (bambooEnabled) {
             try {
-                final Class<?> bambooBlockClass = NMSReflection.getNMSClass("world.level.block", "BlockBamboo");
+                final Class<?> bambooBlockClass = NMSReflection.getNMSClass("world.level.block", "BambooStalkBlock", "BlockBamboo");
                 // CoordinateOffset start - Improve bamboo collision box field lookup to try Mojang-mapped names first
                 Field bambooBoundingBox;
                 bambooBoundingBox = ReflectionAPI.getFieldAccessible(bambooBlockClass, "SHAPE_COLLISION"); // 1.21.5+ Mojang
@@ -161,10 +161,10 @@ public final class CollisionFix implements Listener {
             Method createVoxelShape;
             try {
                 // 1.18+ - obfuscated methods
-                createVoxelShape = ReflectionAPI.getMethod(NMSReflection.getNMSClass("world.phys.shapes", "VoxelShapes"), "b",
+                createVoxelShape = ReflectionAPI.getMethod(NMSReflection.getNMSClass("world.phys.shapes", "Shapes", "VoxelShapes"), "b",
                         double.class, double.class, double.class, double.class, double.class, double.class);
             } catch (NoSuchMethodException e) {
-                createVoxelShape = ReflectionAPI.getMethod(NMSReflection.getNMSClass("world.phys.shapes", "VoxelShapes"), "create",
+                createVoxelShape = ReflectionAPI.getMethod(NMSReflection.getNMSClass("world.phys.shapes", "Shapes", "VoxelShapes"), "create",
                         double.class, double.class, double.class, double.class, double.class, double.class);
             }
             Object boundingBox = ReflectionAPI.invokeMethod(createVoxelShape, x1, y1, z1, x2, y2, z2);
