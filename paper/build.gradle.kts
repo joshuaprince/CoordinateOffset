@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":core"))
     implementation(libs.bstats.bukkit)
+    implementation(libs.configlib.paper)
     implementation(libs.morepdt)
 
     testImplementation(libs.paper.api)

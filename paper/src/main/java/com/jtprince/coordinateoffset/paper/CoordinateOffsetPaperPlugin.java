@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin implements CoordinateOffset {
     private static CoordinateOffsetPaperPlugin instance;
+    private PaperConfigProvider configProvider;
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
     private WorldBorderObfuscator worldBorderObfuscator;
@@ -26,6 +27,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin implements Coo
         instance = this;
         CoordinateOffsetPlatform.setInstance(this);
         saveDefaultConfig();
+        configProvider = new PaperConfigProvider(this);
 
         playerOffsetsManager = new PlayerOffsetsManager(this);
         providerManager = new OffsetProviderManager(this);
