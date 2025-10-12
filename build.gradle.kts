@@ -7,8 +7,8 @@ buildscript {
 plugins {
     java
     `java-library`
-    id("com.gradleup.shadow") version "8.3.3"
-    id("com.palantir.git-version") version "3.1.0"
+    id("com.gradleup.shadow") version "9.2.2"
+    id("com.palantir.git-version") version "4.0.0"
     `maven-publish`
 }
 
@@ -71,7 +71,7 @@ tasks {
 
     shadowJar {
         archiveClassifier.set("")
-        isEnableRelocation = true
+        enableAutoRelocation = true
         relocationPrefix = "${project.group}.coordinateoffset.lib"
         minimize()
     }
