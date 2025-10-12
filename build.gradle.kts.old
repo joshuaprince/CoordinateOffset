@@ -30,11 +30,9 @@ repositories {
 dependencies {
     // API dependencies: Not shaded into plugin, but needed for API consumers
     api("org.jetbrains:annotations:24.0.1")
+    api("com.github.retrooper:packetevents-api:2.10.0-SNAPSHOT.jar")
     // Compile Only dependencies: Neither shaded nor needed by API consumers (assumed they'll already add it themselves)
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
-    // TODO: Remove local dependency when PacketEvents for MC 1.21.9+ is available on a public repo
-    // TODO: Consider an api dependency
-    compileOnly(files("./lib/packetevents-spigot-2.9.6-SNAPSHOT.jar"))
 
     // Shade and Relocate: Shaded into plugin, exposed to API consumers with relocated names if necessary
     implementation("org.bstats:bstats-bukkit:3.0.2")
