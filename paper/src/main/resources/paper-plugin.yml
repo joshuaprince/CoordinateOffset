@@ -1,0 +1,16 @@
+name: CoordinateOffset
+version: "${version}"
+main: com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin
+api-version: "${apiVersion}"
+authors: [ joshuaprince ]
+contributors: [ Cavallium ]
+website: https://github.com/joshuaprince/CoordinateOffset
+description: Configurably obfuscate players' coordinates.
+dependencies:
+  server:
+    packetevents:
+      load: BEFORE
+      required: true
+    GrimAC:
+      load: AFTER
+      required: false

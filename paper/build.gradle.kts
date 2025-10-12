@@ -27,7 +27,7 @@ tasks {
             "apiVersion" to libs.versions.paper.apiversion.get(),
         )
         placeholders.forEach { (k, v) -> inputs.property(k, v) } // ensure cache is invalidated after version bumps
-        files(listOf("plugin.yml", "config.yml")) {
+        files(listOf("paper-plugin.yml", "config.yml")) {
             expand(placeholders)
         }
     }
