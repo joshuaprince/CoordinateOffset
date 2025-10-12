@@ -11,6 +11,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.protocol.world.WorldBlockPosition;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
+import com.github.retrooper.packetevents.util.Vector2i;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3f;
 import com.github.retrooper.packetevents.util.Vector3i;
@@ -70,6 +71,10 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
 
     protected static Vector3i applyChunk(Vector3i vec, Offset offset) {
         return new Vector3i(vec.x - offset.chunkX(), vec.y, vec.z - offset.chunkZ());
+    }
+
+    protected static Vector2i applyChunk(Vector2i vec, Offset offset) {
+        return new Vector2i(vec.getX() - offset.chunkX(), vec.getZ() - offset.chunkZ());
     }
 
     protected static double applyX(double x, Offset offset) {

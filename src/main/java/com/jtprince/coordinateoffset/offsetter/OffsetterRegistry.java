@@ -44,6 +44,11 @@ public class OffsetterRegistry {
             new OffsetterServerBlockChange(),
             new OffsetterServerBlockEntityData(),
             new OffsetterServerChunkData(),
+            new OffsetterServerDebugBlockValue(),
+            new OffsetterServerDebugChunkValue(),
+            // new OffsetterServerDebugEntityValue(), // TODO: see class file
+            // new OffsetterServerDebugEvent(),       // TODO: see class file
+            // new OffsetterServerDebugSample(),      // TODO: see class file
             new OffsetterServerEffect(),
             new OffsetterServerEntityEquipment(),
             new OffsetterServerEntityMetadata(),
@@ -51,6 +56,7 @@ public class OffsetterRegistry {
             new OffsetterServerEntityTeleport(),
             new OffsetterServerExplosion(),
             new OffsetterServerFacePlayer(),
+            new OffsetterServerGameTestHighlightPos(),
             new OffsetterServerJoinGame(),
             new OffsetterServerUpdateLight(),
             new OffsetterServerMoveMinecart(),
