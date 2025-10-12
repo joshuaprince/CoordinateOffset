@@ -13,7 +13,7 @@ import java.util.UUID;
  * Container for the offsets all players currently have.
  */
 class PlayerOffsetsManager {
-    private final CoordinateOffset plugin;
+    private final CoordinateOffsetPaperPlugin plugin;
 
     private final Map<UUID, Map<UUID, Offset>> playerOffsets = new HashMap<>();
 
@@ -23,7 +23,7 @@ class PlayerOffsetsManager {
     /** World the player has initiated a world change to and will be in soon (updated by Bukkit events) */
     private final Map<UUID, UUID> playerLookaheadWorld = new HashMap<>();
 
-    PlayerOffsetsManager(CoordinateOffset plugin) {
+    PlayerOffsetsManager(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
     }
 

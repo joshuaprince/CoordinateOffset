@@ -15,7 +15,7 @@ public class MetricsWrapper {
     // https://bstats.org/plugin/bukkit/CoordinateOffset/19988
     private static final int BSTATS_PLUGIN_METRICS_ID = 19988;
 
-    public static void reportMetrics(CoordinateOffset plugin) {
+    public static void reportMetrics(CoordinateOffsetPaperPlugin plugin) {
         Metrics metrics = new Metrics(plugin, BSTATS_PLUGIN_METRICS_ID);
 
         metrics.addCustomChart(new DrilldownPie("default_offset_provider", () -> {

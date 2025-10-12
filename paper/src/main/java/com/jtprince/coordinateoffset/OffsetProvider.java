@@ -68,7 +68,7 @@ public abstract class OffsetProvider {
      */
     public interface ConfigurationFactory<T extends OffsetProvider> {
         @NotNull T createProvider(
-                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+            @NotNull String name, @NotNull CoordinateOffsetPaperPlugin plugin, @NotNull ConfigurationSection providerConfig
         ) throws IllegalArgumentException;
     }
 }

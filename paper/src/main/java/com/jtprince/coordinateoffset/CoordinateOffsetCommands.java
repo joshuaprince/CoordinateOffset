@@ -14,10 +14,10 @@ import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 class CoordinateOffsetCommands {
-    private final CoordinateOffset plugin;
+    private final CoordinateOffsetPaperPlugin plugin;
     private final ComponentBuilder prefix = new ComponentBuilder("[CoordinateOffset] ").color(ChatColor.AQUA);
 
-    public CoordinateOffsetCommands(CoordinateOffset plugin) {
+    public CoordinateOffsetCommands(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
     }
 

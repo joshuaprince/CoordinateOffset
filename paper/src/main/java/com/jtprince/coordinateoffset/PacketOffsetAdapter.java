@@ -13,14 +13,14 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 class PacketOffsetAdapter {
-    private final CoordinateOffset coPlugin;
+    private final CoordinateOffsetPaperPlugin coPlugin;
     private final Logger logger;
     private final PacketDebugger packetHistory;
     private final PartialStacktraceLogger partialStacktraceLogger;
 
     private final long stacktraceRateLimitMs = 2500; // 2.5 seconds
 
-    PacketOffsetAdapter(CoordinateOffset plugin) {
+    PacketOffsetAdapter(CoordinateOffsetPaperPlugin plugin) {
         this.coPlugin = plugin;
         this.logger = plugin.getLogger();
         this.packetHistory = new PacketDebugger(plugin);

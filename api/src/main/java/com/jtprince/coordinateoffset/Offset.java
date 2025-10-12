@@ -1,12 +1,7 @@
 package com.jtprince.coordinateoffset;
 
-import com.jeff_media.morepersistentdatatypes.DataType;
-import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
-import org.bukkit.Location;
-import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.dataflow.qual.Pure;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Random;
 
@@ -21,17 +16,12 @@ import java.util.Random;
  * @param x Offset amount for the X coordinate. Must be a multiple of 16 to align with chunk boundaries.
  * @param z Offset amount for the Z coordinate. Must be a multiple of 16 to align with chunk boundaries.
  */
+@NullMarked
 public record Offset (int x, int z) {
     /**
      * The "zero" or identity Offset, which results in no transformation from real-world coordinates.
      */
     public static final Offset ZERO = new Offset(0, 0);
-
-    /**
-     * Type for storing Offsets in Persistent Data Containers (PDC).
-     */
-    public static final PersistentDataType<int[], Offset> PDT_TYPE =
-            new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class, Offset::fromPdt, Offset::toPdt);
 
     /**
      * Argument for the {@code toChunksPower} parameter of {@link #align(int, int, int)} that results in an Overworld
@@ -54,7 +44,7 @@ public record Offset (int x, int z) {
      * @param bound Maximum absolute value of each offset component.
      * @return A new Offset with values that are multiples of 128 blocks.
      */
-    public static @NotNull Offset random(int bound) {
+    public static Offset random(int bound) {
         Random random = new Random();
         return align(random.nextInt(-bound, bound), random.nextInt(-bound, bound), ALIGN_OVERWORLD);
     }
@@ -72,7 +62,7 @@ public record Offset (int x, int z) {
      *                      aligning the Overworld offset (since 2^3 == 8).
      * @return A new Offset.
      */
-    public static @NotNull Offset align(int x, int z, int toChunksPower) {
+    public static Offset align(int x, int z, int toChunksPower) {
         int shift = toChunksPower + 4;
 
         // Add half of the divisor so that the output is rounded instead of just floored
@@ -82,7 +72,7 @@ public record Offset (int x, int z) {
         return new Offset(x >> shift << shift, z >> shift << shift);
     }
 
-    public static @NotNull Offset align(int x, int z) {
+    public static Offset align(int x, int z) {
         return Offset.align(x, z, 0);
     }
 
@@ -103,7 +93,7 @@ public record Offset (int x, int z) {
      * @return A new Offset aligned to 1 chunk.
      */
     @Pure
-    public @NotNull Offset scale(int rightShiftAmount) {
+    public Offset scale(int rightShiftAmount) {
         if (rightShiftAmount <= 0) {
             return new Offset(x << -rightShiftAmount, z << -rightShiftAmount);
         } else {
@@ -119,7 +109,7 @@ public record Offset (int x, int z) {
      * @return A new Offset aligned to 1 chunk.
      */
     @Pure
-    public @NotNull Offset scaleByDouble(double scaleFactor) {
+    public Offset scaleByDouble(double scaleFactor) {
         return Offset.align((int) Math.round(x * scaleFactor), (int) Math.round(z * scaleFactor));
     }
 
@@ -128,46 +118,7 @@ public record Offset (int x, int z) {
      * @return A new Offset.
      */
     @Pure
-    public @NotNull Offset negate() {
+    public Offset negate() {
         return new Offset(-x, -z);
-    }
-
-    /**
-     * Apply this Offset to a Bukkit Location, resulting in the Location that a player who has this Offset would see
-     * if they were at that Location.
-     *
-     * <p>Care should be taken not to use the returned Location for anything internal to the server, such as getting the
-     * Block at that Location. The returned Location is primarily intended to be sent to a Player who this Offset is
-     * applied to, such as in a message.</p>
-     *
-     * @param realLocation A Location on the server, in real coordinate space.
-     * @return A new Location object that represents the coordinates that the player will see.
-     */
-    @Pure
-    @Contract("null -> null; !null -> !null")
-    public Location apply(Location realLocation) {
-        if (realLocation == null) return null;
-        return realLocation.clone().subtract(this.x, 0, this.z);
-    }
-
-    /**
-     * Apply the inverse of this Offset to a Bukkit Location, resulting in a real server Location.
-     *
-     * @param offsettedLocation An offsetted Location coming from a Player who has this offset.
-     * @return A new Location object that represents the real Location for the server to use.
-     */
-    @Pure
-    @Contract("null -> null; !null -> !null")
-    public Location unapply(Location offsettedLocation) {
-        if (offsettedLocation == null) return null;
-        return offsettedLocation.clone().add(this.x, 0, this.z);
-    }
-
-    private static Offset fromPdt(int[] arr) {
-        return new Offset(arr[0], arr[1]);
-    }
-
-    private int[] toPdt() {
-        return new int[] { x, z };
     }
 }

@@ -12,8 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public final class CoordinateOffset extends JavaPlugin {
-    private static CoordinateOffset instance;
+public final class CoordinateOffsetPaperPlugin extends JavaPlugin implements CoordinateOffset {
+    private static CoordinateOffsetPaperPlugin instance;
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
     private WorldBorderObfuscator worldBorderObfuscator;
@@ -23,6 +23,7 @@ public final class CoordinateOffset extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        CoordinateOffsetPlatform.setInstance(this);
         saveDefaultConfig();
 
         playerOffsetsManager = new PlayerOffsetsManager(this);
@@ -82,7 +83,7 @@ public final class CoordinateOffset extends JavaPlugin {
      * @return The instance of the plugin, or <code>null</code> if the plugin is not loaded.
      */
     @SuppressWarnings("unused")
-    public static @Nullable CoordinateOffset getInstance() {
+    public static @Nullable CoordinateOffsetPaperPlugin getInstance() {
         return instance;
     }
 

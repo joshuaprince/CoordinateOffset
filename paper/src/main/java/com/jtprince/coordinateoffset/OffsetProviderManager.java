@@ -12,14 +12,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 class OffsetProviderManager {
-    private final CoordinateOffset plugin;
+    private final CoordinateOffsetPaperPlugin plugin;
     private final Map<String, OffsetProvider.ConfigurationFactory<?>> configFactories = new HashMap<>();
     private Map<String, OffsetProvider> providersFromConfig = new HashMap<>();
 
     private OffsetProvider defaultProvider;
     private List<ProviderOverride> overrides = Collections.emptyList();
 
-    OffsetProviderManager(CoordinateOffset plugin) {
+    OffsetProviderManager(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
     }
 

@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.provider;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetPaperPlugin;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
@@ -23,7 +23,7 @@ public class RandomOffsetProvider extends OffsetProvider {
 
     private final PerWorldOffsetStore perWorldOffsetStore;
 
-    private RandomOffsetProvider(String name, @Nullable String persistenceKey, CoordinateOffset plugin) {
+    private RandomOffsetProvider(String name, @Nullable String persistenceKey, CoordinateOffsetPaperPlugin plugin) {
         super(name);
         if (persistenceKey == null) {
             this.perWorldOffsetStore = new PerWorldOffsetStore.Cached();
@@ -83,7 +83,7 @@ public class RandomOffsetProvider extends OffsetProvider {
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<RandomOffsetProvider> {
         @Override
         public @NotNull RandomOffsetProvider createProvider(
-                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+            @NotNull String name, @NotNull CoordinateOffsetPaperPlugin plugin, @NotNull ConfigurationSection providerConfig
         ) throws IllegalArgumentException {
             if (!providerConfig.isInt("randomBound")) {
                 throw new IllegalArgumentException("Missing field randomBound for RandomOffsetProvider.");

@@ -13,9 +13,9 @@ import java.util.Map;
  * up to any given error.
  */
 public class PacketDebugger {
-    private final CoordinateOffset coPlugin;
+    private final CoordinateOffsetPaperPlugin coPlugin;
 
-    public PacketDebugger(CoordinateOffset coPlugin) {
+    public PacketDebugger(CoordinateOffsetPaperPlugin coPlugin) {
         this.coPlugin = coPlugin;
     }
 

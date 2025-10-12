@@ -1,6 +1,6 @@
 name: CoordinateOffset
 version: "${version}"
-main: com.jtprince.coordinateoffset.CoordinateOffset
+main: com.jtprince.coordinateoffset.CoordinateOffsetPaperPlugin
 api-version: "${apiVersion}"
 authors: [ jtprince, Cavallium ]
 website: https://github.com/joshuaprince/CoordinateOffset

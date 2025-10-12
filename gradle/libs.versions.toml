@@ -5,6 +5,8 @@ paper-apiversion = "1.21.5" # plugin.yml apiVersion
 
 [libraries]
 bstats-bukkit = { group = "org.bstats", name = "bstats-bukkit", version = "3.0.2" }
+jetbrains-annotations = { group = "org.jetbrains", name = "annotations", version = "24.0.1" }
+jspecify = { group = "org.jspecify", name = "jspecify", version = "1.0.0" }
 morepdt = { group = "com.jeff-media", name = "MorePersistentDataTypes", version = "2.4.0" }
 packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", version.ref = "packetevents" }
 paper-api = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper-api" }

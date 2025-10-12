@@ -1,8 +1,9 @@
 package com.jtprince.coordinateoffset.provider.util;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
-import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetPaperPlugin;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.PaperOffset;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -53,7 +54,7 @@ public interface PerWorldOffsetStore {
 
     class Persistent implements PerWorldOffsetStore {
         private final NamespacedKey key;
-        private final PersistentDataType<PersistentDataContainer, Map<String, Offset>> PDT_TYPE = DataType.asMap(DataType.STRING, Offset.PDT_TYPE);
+        private final PersistentDataType<PersistentDataContainer, Map<String, Offset>> PDT_TYPE = DataType.asMap(DataType.STRING, PaperOffset.PDT_TYPE);
         public Persistent(@NotNull NamespacedKey key) {
             this.key = key;
         }
@@ -85,7 +86,7 @@ public interface PerWorldOffsetStore {
             if (player != null) {
                 player.getPersistentDataContainer().remove(key);
             } else {
-                CoordinateOffset.getInstance().getLogger().warning("Failed to reset a persistent offset! " +
+                CoordinateOffsetPaperPlugin.getInstance().getLogger().warning("Failed to reset a persistent offset! " +
                         "Is \"persistent\" enabled at the same time as a \"resetOn\" option? (Player UUID: " +
                         playerUuid + ")");
             }

@@ -9,4 +9,5 @@ dependencyResolutionManagement {
 }
 
 include("api")
+include("core")
 include("paper")

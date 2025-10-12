@@ -25,8 +25,7 @@ import com.github.retrooper.packetevents.protocol.sound.SoundCategory;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /*
  * In 1.19.3, the NAMED_SOUND_EFFECT packet was merged with the standard SOUND_EFFECT packet and 3 optional fields added:

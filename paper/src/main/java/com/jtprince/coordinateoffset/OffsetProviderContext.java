@@ -22,7 +22,7 @@ public record OffsetProviderContext(
     @NotNull World world,
     @NotNull Location playerLocation,
     @NotNull ProvideReason reason,
-    @NotNull CoordinateOffset plugin
+    @NotNull CoordinateOffsetPaperPlugin plugin
 ) {
     public enum ProvideReason {
         /**

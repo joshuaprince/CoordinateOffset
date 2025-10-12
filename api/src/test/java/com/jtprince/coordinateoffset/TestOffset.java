@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset;
 
-import org.bukkit.Location;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,29 +49,5 @@ public class TestOffset {
         // Truncated scaling (dividing inputs by 8 does NOT result in a multiple of 16, so they must be aligned)
         Assertions.assertEquals(new Offset(-48, 16), new Offset(-432, 144).scale(3));
         Assertions.assertEquals(new Offset(-64, 32), new Offset(-464, 192).scale(3));
-    }
-
-    @Test
-    void testApplyBukkitLocation() {
-        Offset offset = new Offset(-128, 48);
-        Assertions.assertNull(offset.apply((Location) null));
-        assertLocationsApproximatelyEqual(new Location(null, 138.7, 48.2, -281.5),
-                offset.apply(new Location(null, 10.7, 48.2, -233.5)));
-    }
-
-    @Test
-    void testUnApplyBukkitLocation() {
-        Offset offset = new Offset(-128, 48);
-        Assertions.assertNull(offset.unapply((Location) null));
-        assertLocationsApproximatelyEqual(new Location(null, 10.7, 48.2, -233.5),
-                offset.unapply(new Location(null, 138.7, 48.2, -281.5)));
-    }
-
-    private void assertLocationsApproximatelyEqual(Location expected, Location actual) {
-        // Deal with floating-point imprecision when we add/subtract for applying offsets
-        Assertions.assertEquals(expected.getWorld(), actual.getWorld());
-        Assertions.assertEquals(expected.getX(), actual.getX(), 0.001);
-        Assertions.assertEquals(expected.getY(), actual.getY(), 0.001);
-        Assertions.assertEquals(expected.getZ(), actual.getZ(), 0.001);
     }
 }

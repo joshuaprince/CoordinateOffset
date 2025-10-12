@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.provider;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetPaperPlugin;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.OffsetProviderContext;
@@ -64,7 +64,7 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
     public static class ConfigFactory implements OffsetProvider.ConfigurationFactory<ZeroAtLocationOffsetProvider> {
         @Override
         public @NotNull ZeroAtLocationOffsetProvider createProvider(
-                @NotNull String name, @NotNull CoordinateOffset plugin, @NotNull ConfigurationSection providerConfig
+            @NotNull String name, @NotNull CoordinateOffsetPaperPlugin plugin, @NotNull ConfigurationSection providerConfig
         ) throws IllegalArgumentException {
             ZeroAtLocationOffsetProvider p = new ZeroAtLocationOffsetProvider(name);
             p.resetConfig = ResetConfig.fromConfigSection(providerConfig);

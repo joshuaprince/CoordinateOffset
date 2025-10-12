@@ -15,11 +15,11 @@ import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 import java.util.Objects;
 
 class BukkitEventListener implements Listener {
-    private final CoordinateOffset plugin;
+    private final CoordinateOffsetPaperPlugin plugin;
     private final PlayerOffsetsManager players;
     private final WorldBorderObfuscator worldBorderObfuscator;
 
-    BukkitEventListener(CoordinateOffset plugin, PlayerOffsetsManager playerOffsetsManager, WorldBorderObfuscator worldBorderObfuscator) {
+    BukkitEventListener(CoordinateOffsetPaperPlugin plugin, PlayerOffsetsManager playerOffsetsManager, WorldBorderObfuscator worldBorderObfuscator) {
         this.plugin = plugin;
         this.players = playerOffsetsManager;
         this.worldBorderObfuscator = worldBorderObfuscator;

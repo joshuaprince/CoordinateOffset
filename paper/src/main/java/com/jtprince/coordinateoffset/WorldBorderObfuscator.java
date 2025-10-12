@@ -25,10 +25,10 @@ import java.util.*;
 class WorldBorderObfuscator {
     private static final double BASELINE_SIZE = 60_000_000;
 
-    private final CoordinateOffset plugin;
+    private final CoordinateOffsetPaperPlugin plugin;
     private final Map<UUID, EnumSet<Wall>> knownSeenWalls = new HashMap<>();
 
-    WorldBorderObfuscator(CoordinateOffset plugin) {
+    WorldBorderObfuscator(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
     }
 
