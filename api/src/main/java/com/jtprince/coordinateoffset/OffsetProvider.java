@@ -1,13 +1,12 @@
 package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import com.jtprince.coordinateoffset.adapter.OffsetWorld;
 import de.exlll.configlib.Configuration;
 import de.exlll.configlib.Polymorphic;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.SequencedMap;
 import java.util.UUID;
 
 @Polymorphic
@@ -29,7 +28,7 @@ public abstract class OffsetProvider {
      * might be changing are enumerated in {@link OffsetProviderContext.ProvideReason}.</p>
      *
      * @param context Container for all context associated with this Offset change, such as the {@link OffsetPlayer}
-     *                this Offset will be for, and the {@link OffsetWorld} the Offset will be applied in.
+     *                this Offset will be for, and the name of the World the Offset will be applied in.
      * @return The desired offset for this player.
      */
     public abstract Offset provideOffset(OffsetProviderContext context);
@@ -64,9 +63,8 @@ public abstract class OffsetProvider {
      */
     public void onPlayerDisconnect(UUID playerUuid) {}
 
-    public abstract SortedMap<String, ?> serialize();
-
+    public abstract SequencedMap<String, ?> serialize();
     public interface ConfigurationFactory<T extends OffsetProvider> {
-        T createProvider(String name, Map<String, ?> element) throws IllegalArgumentException;
+        T deserialize(String name, Map<String, ?> element) throws IllegalArgumentException;
     }
 }

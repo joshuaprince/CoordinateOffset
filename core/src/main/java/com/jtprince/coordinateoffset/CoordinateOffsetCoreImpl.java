@@ -2,6 +2,8 @@ package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
+import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
+import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -19,6 +21,8 @@ public class CoordinateOffsetCoreImpl implements CoordinateOffsetCore {
 
         // Register built-in providers
         CoordinateOffset.get().getProviderRegistry().registerProviderClass("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
+        CoordinateOffset.get().getProviderRegistry().registerProviderClass("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
+        CoordinateOffset.get().getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
     }
 
     @Override

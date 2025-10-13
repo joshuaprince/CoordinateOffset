@@ -6,9 +6,9 @@ import com.jtprince.coordinateoffset.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SequencedMap;
 
 @NullMarked
 public class ConstantOffsetProvider extends OffsetProvider {
@@ -24,7 +24,7 @@ public class ConstantOffsetProvider extends OffsetProvider {
     @Override
     public Offset provideOffset(OffsetProviderContext context) {
         if (worldScaling != null) {
-            Double scaling = worldScaling.get(context.world().getName());
+            Double scaling = worldScaling.get(context.worldName());
             if (scaling != null) {
                 return offset.scaleByDouble(scaling);
             }
@@ -33,8 +33,8 @@ public class ConstantOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public SortedMap<String, ?> serialize() {
-        SortedMap<String, Object> map = new TreeMap<>();
+    public SequencedMap<String, ?> serialize() {
+        SequencedMap<String, Object> map = new LinkedHashMap<>();
         map.put("offsetX", (long) offset.x());
         map.put("offsetZ", (long) offset.z());
         if (worldScaling != null) {
@@ -45,34 +45,34 @@ public class ConstantOffsetProvider extends OffsetProvider {
 
     public static class ConfigFactory implements ConfigurationFactory<ConstantOffsetProvider> {
         @Override
-        public ConstantOffsetProvider createProvider(String name, Map<String, ?> element) throws IllegalArgumentException {
+        public ConstantOffsetProvider deserialize(String name, Map<String, ?> element) throws IllegalArgumentException {
             if (!element.containsKey("offsetX") || !(element.get("offsetX") instanceof Number offsetXNum)) {
-                throw new IllegalArgumentException("Missing or invalid field offsetX for ConstantOffsetProvider.");
+                throw new IllegalArgumentException("Provider \"" + name + "\": Required key `offsetX` for ConstantOffsetProvider is missing or invalid.");
             }
             if (!element.containsKey("offsetZ") || !(element.get("offsetZ") instanceof Number offsetZNum)) {
-                throw new IllegalArgumentException("Missing or invalid field offsetZ for ConstantOffsetProvider.");
+                throw new IllegalArgumentException("Provider \"" + name + "\": Required key `offsetZ` for ConstantOffsetProvider is missing or invalid.");
             }
 
             int offsetX = offsetXNum.intValue();
             int offsetZ = offsetZNum.intValue();
 
             if (Math.abs(offsetX) > OffsetProvider.OFFSET_MAX) {
-                throw new IllegalArgumentException("Provider " + name + ": offsetX is too large! (Max 30M)");
+                throw new IllegalArgumentException("Provider \"" + name + "\": `offsetX` value " + offsetX + " is too large! (Max 30M)");
             }
             if (Math.abs(offsetZ) > OffsetProvider.OFFSET_MAX) {
-                throw new IllegalArgumentException("Provider " + name + ": offsetZ is too large! (Max 30M)");
+                throw new IllegalArgumentException("Provider \"" + name + "\": `offsetZ` value " + offsetZ + " is too large! (Max 30M)");
             }
 
             Map<String, Double> worldScaling = null;
             if (element.containsKey("worldScaling")) {
                 if (!(element.get("worldScaling") instanceof Map<?, ?> worldScalingMap)) {
-                    throw new IllegalArgumentException("Provider " + name + ": worldScaling is not a map.");
+                    throw new IllegalArgumentException("Provider \"" + name + "\": `worldScaling` is not a map.");
                 }
                 worldScaling = new java.util.HashMap<>();
                 for (Map.Entry<?, ?> entry : worldScalingMap.entrySet()) {
                     String worldName = entry.getKey().toString();
                     if (!(entry.getValue() instanceof Number scalingNum)) {
-                        throw new IllegalArgumentException("Provider " + name + ": worldScaling for world " + worldName + " is not a number.");
+                        throw new IllegalArgumentException("Provider \"" + name + "\": `worldScaling` value " + entry.getValue() + " for world \"" + worldName + "\" is not a number.");
                     }
                     worldScaling.put(worldName, scalingNum.doubleValue());
                 }

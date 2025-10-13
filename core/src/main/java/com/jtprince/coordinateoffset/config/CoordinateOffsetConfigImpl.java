@@ -8,7 +8,7 @@ import de.exlll.configlib.SerializeWith;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
-import java.util.Map;
+import java.util.SequencedMap;
 
 @NullMarked
 @Configuration
@@ -53,9 +53,9 @@ public class CoordinateOffsetConfigImpl implements CoordinateOffsetConfig {
         "https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide"
     })
     @SerializeWith(serializer = OffsetProviderListSerializer.class)
-    Map<String, OffsetProvider> offsetProviders = DefaultOffsetProviders.PROVIDERS;
+    SequencedMap<String, OffsetProvider> offsetProviders = DefaultOffsetProviders.PROVIDERS;
     @Override
-    public Map<String, OffsetProvider> getAllOffsetProviderConfigs() {
+    public SequencedMap<String, OffsetProvider> getAllOffsetProviderConfigs() {
         return offsetProviders;
     }
 

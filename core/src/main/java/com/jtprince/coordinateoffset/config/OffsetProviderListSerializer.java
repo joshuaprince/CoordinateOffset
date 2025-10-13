@@ -4,17 +4,16 @@ import com.jtprince.coordinateoffset.CoordinateOffset;
 import com.jtprince.coordinateoffset.OffsetProvider;
 import de.exlll.configlib.Serializer;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SequencedMap;
 
-public class OffsetProviderListSerializer implements Serializer<Map<String, OffsetProvider>, Map<String, ?>> {
+public class OffsetProviderListSerializer implements Serializer<SequencedMap<String, OffsetProvider>, SequencedMap<String, ?>> {
     @Override
-    public Map<String, ?> serialize(Map<String, OffsetProvider> map) {
-        HashMap<String, Object> providers = new HashMap<>();
+    public SequencedMap<String, ?> serialize(SequencedMap<String, OffsetProvider> map) {
+        SequencedMap<String, Object> providers = new LinkedHashMap<>();
         for (Map.Entry<String, OffsetProvider> entry : map.entrySet()) {
-            SortedMap<String, Object> serialized = new TreeMap<>();
+            SequencedMap<String, Object> serialized = new LinkedHashMap<>();
             serialized.put("class", entry.getValue().getClass().getSimpleName());
             serialized.putAll(entry.getValue().serialize());
             providers.put(entry.getKey(), serialized);
@@ -23,8 +22,8 @@ public class OffsetProviderListSerializer implements Serializer<Map<String, Offs
     }
 
     @Override
-    public Map<String, OffsetProvider> deserialize(Map<String, ?> element) {
-        HashMap<String, OffsetProvider> providers = new HashMap<>();
+    public SequencedMap<String, OffsetProvider> deserialize(SequencedMap<String, ?> element) {
+        SequencedMap<String, OffsetProvider> providers = new LinkedHashMap<>();
         for (Map.Entry<String, ?> entry : element.entrySet()) {
             if (!(entry.getValue() instanceof Map<?, ?> providerMap)) {
                 throw new IllegalArgumentException("Invalid provider config for key " + entry.getKey());
@@ -38,7 +37,7 @@ public class OffsetProviderListSerializer implements Serializer<Map<String, Offs
                 throw new IllegalArgumentException("Unknown provider class " + className + " for provider " + entry.getKey());
             }
 
-            OffsetProvider provider = factory.createProvider(entry.getKey(), (Map<String, ?>) providerMap);
+            OffsetProvider provider = factory.deserialize(entry.getKey(), (Map<String, ?>) providerMap);
             providers.put(entry.getKey(), provider);
         }
         return providers;

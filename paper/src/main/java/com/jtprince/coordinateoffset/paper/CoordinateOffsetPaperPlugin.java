@@ -1,13 +1,14 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
+import com.jtprince.coordinateoffset.CoordinateOffsetInternalsAdapter;
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
 import com.jtprince.coordinateoffset.paper.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.paper.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.paper.provider.ZeroAtLocationOffsetProvider;
+import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,7 +30,10 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private @Nullable CollisionFix collisionFix;
 
     @NullMarked
-    class CoordinateOffsetPaperAdapter implements CoordinateOffsetAdapter {
+    class CoordinateOffsetPaperAdapter implements CoordinateOffsetInternalsAdapter {
+        private final PaperPlayerOffsetPersistence offsetPersistence =
+            new PaperPlayerOffsetPersistence(CoordinateOffsetPaperPlugin.this);
+
         @Override
         public CoordinateOffsetConfig getConfig() {
             return configProvider.get();
@@ -38,6 +42,11 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         @Override
         public Logger getLogger() {
             return CoordinateOffsetPaperPlugin.this.getLogger();
+        }
+
+        @Override
+        public PlayerOffsetPersistence getPlayerOffsetPersistence() {
+            return offsetPersistence;
         }
     }
 
