@@ -1,8 +1,9 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.CoordinateOffsetPlatform;
+import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
 import com.jtprince.coordinateoffset.paper.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.paper.provider.RandomOffsetProvider;
@@ -12,9 +13,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
-public final class CoordinateOffsetPaperPlugin extends JavaPlugin implements CoordinateOffset {
+import java.util.logging.Logger;
+
+public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private static CoordinateOffsetPaperPlugin instance;
+    private CoordinateOffsetPaperAdapter adapter;
+
     private PaperConfigProvider configProvider;
     private PlayerOffsetsManager playerOffsetsManager;
     private OffsetProviderManager providerManager;
@@ -22,10 +28,26 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin implements Coo
     private PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
 
+    @NullMarked
+    class CoordinateOffsetPaperAdapter implements CoordinateOffsetAdapter {
+        @Override
+        public CoordinateOffsetConfig getConfig() {
+            return configProvider.get();
+        }
+
+        @Override
+        public Logger getLogger() {
+            return CoordinateOffsetPaperPlugin.this.getLogger();
+        }
+    }
+
     @Override
     public void onEnable() {
         instance = this;
-        CoordinateOffsetPlatform.setInstance(this);
+
+        adapter = new CoordinateOffsetPaperAdapter();
+        CoordinateOffsetCoreImpl.bootstrap(adapter);
+
         saveDefaultConfig();
         configProvider = new PaperConfigProvider(this);
 

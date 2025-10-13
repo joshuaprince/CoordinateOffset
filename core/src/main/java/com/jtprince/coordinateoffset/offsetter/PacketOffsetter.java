@@ -131,7 +131,7 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
                 // No error logged here because this Components branch only affects 1.20.5+, and PE will hit other
                 //  issues if an outdated version is installed. (i.e. this branch only happens on <1.20.5 where it does
                 //  not matter)
-                CoordinateOffset.getInstance().getLogger().fine("Outdated PacketEvents! Failed to get item components.");
+                CoordinateOffset.get().getLogger().fine("Outdated PacketEvents! Failed to get item components.");
             }
             if (lodestoneComponent != null
                     && lodestoneComponent.isPresent()

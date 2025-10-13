@@ -9,6 +9,7 @@ dependencies {
     compileOnly(libs.jspecify)
     compileOnly(libs.jetbrains.annotations)
 
+    shadow(libs.configlib.core)
     shadow(libs.packetevents.api)
 
     implementation(project(":api"))

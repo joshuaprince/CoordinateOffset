@@ -9,8 +9,9 @@ project.group = "com.jtprince.coordinateoffset"
 dependencies {
     compileOnly(libs.jspecify)
 
-    shadow(libs.paper.api)
+    shadow(libs.configlib.core)
     shadow(libs.packetevents.api)
+    shadow(libs.paper.api)
     implementation(libs.morepdt)
 
     testImplementation(libs.paper.api)

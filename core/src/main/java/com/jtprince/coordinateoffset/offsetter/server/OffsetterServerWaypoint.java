@@ -27,7 +27,7 @@ public class OffsetterServerWaypoint extends PacketOffsetter<WrapperPlayServerWa
             // No offset needed for these types
             return;
         } else {
-            CoordinateOffset.getInstance().getLogger().warning("Unknown waypoint type: " + oldInfo.getClass().getName());
+            CoordinateOffset.get().getLogger().warning("Unknown waypoint type: " + oldInfo.getClass().getName());
             return;
         }
 
