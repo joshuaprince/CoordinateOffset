@@ -1,7 +1,7 @@
 package com.jtprince.coordinateoffset.config;
 
-import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.DefaultOffsetProviders;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import de.exlll.configlib.SerializeWith;

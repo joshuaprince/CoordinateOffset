@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.waypoint.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWaypoint;
-import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 
@@ -27,7 +27,7 @@ public class OffsetterServerWaypoint extends PacketOffsetter<WrapperPlayServerWa
             // No offset needed for these types
             return;
         } else {
-            CoordinateOffset.get().getLogger().warning("Unknown waypoint type: " + oldInfo.getClass().getName());
+            CoordinateOffsetCore.get().getLogger().warning("Unknown waypoint type: " + oldInfo.getClass().getName());
             return;
         }
 

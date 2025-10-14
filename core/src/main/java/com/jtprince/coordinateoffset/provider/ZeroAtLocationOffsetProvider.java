@@ -1,9 +1,7 @@
 package com.jtprince.coordinateoffset.provider;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.OffsetProvider;
-import com.jtprince.coordinateoffset.OffsetProviderContext;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.provider.util.PerWorldOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.ResetConfig;
@@ -46,13 +44,13 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
             Offset alignedWorldOffset = perWorldOffsetStore.get(context.player(), alignment.targetWorldName());
             if (alignedWorldOffset != null) {
                 offset = alignedWorldOffset.scale(alignment.rightShiftAmount());
-                if (CoordinateOffset.get().getConfig().getVerbose()) {
+                if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
                     String scaleStr;
                     if (alignment.rightShiftAmount() == 0) scaleStr = ".";
                     else if (alignment.rightShiftAmount() < 0)
                         scaleStr = " (scaled up by " + (1 << -alignment.rightShiftAmount()) + ").";
                     else scaleStr = " (scaled down by " + (1 << alignment.rightShiftAmount()) + ").";
-                    CoordinateOffset.get().getLogger().info("Provider \"" + name + "\": Aligning new offset for world \"" +
+                    CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Aligning new offset for world \"" +
                         context.worldName() + "\" to offset from world \"" + alignment.targetWorldName() + "\"" + scaleStr);
                 }
             }

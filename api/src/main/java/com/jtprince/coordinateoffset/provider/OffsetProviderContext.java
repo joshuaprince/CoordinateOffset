@@ -1,5 +1,6 @@
-package com.jtprince.coordinateoffset;
+package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.jspecify.annotations.NullMarked;

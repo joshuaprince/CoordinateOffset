@@ -1,7 +1,6 @@
 package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 

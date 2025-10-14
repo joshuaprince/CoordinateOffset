@@ -1,6 +1,8 @@
-package com.jtprince.coordinateoffset;
+package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import de.exlll.configlib.Configuration;
 import de.exlll.configlib.Polymorphic;
 import org.jspecify.annotations.NullMarked;
@@ -9,6 +11,18 @@ import java.util.Map;
 import java.util.SequencedMap;
 import java.util.UUID;
 
+/**
+ * An OffsetProvider is responsible for generating {@link Offset Offsets} for players in worlds.
+ *
+ * <p>External API consumers may register their own OffsetProvider classes (see
+ * {@link CoordinateOffsetAPI#registerOffsetProviderClass}). Users may then configure the registered provider class
+ * in an OffsetProvider in the CoordinateOffset config.yml. A registered provider class does nothing until a user
+ * creates an OffsetProvider in config.yml AND applies the provider.</p>
+ *
+ * <p>OffsetProviders may maintain state about players, either transiently (in memory) or persistently (on disk). If
+ * persistent state is maintained, it is the responsibility of the OffsetProvider to save that state when appropriate,
+ * and to load that state when appropriate.
+ */
 @Polymorphic
 @Configuration
 @NullMarked

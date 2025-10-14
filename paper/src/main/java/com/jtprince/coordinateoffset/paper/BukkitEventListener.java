@@ -1,9 +1,9 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
-import com.jtprince.coordinateoffset.OffsetProviderContext;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -20,10 +20,10 @@ import java.util.Objects;
 
 class BukkitEventListener implements Listener {
     private final CoordinateOffsetPaperPlugin plugin;
-    private final CoordinateOffsetCoreImpl core;
+    private final CoordinateOffsetCore core;
     private final WorldBorderObfuscator worldBorderObfuscator;
 
-    BukkitEventListener(CoordinateOffsetPaperPlugin plugin, CoordinateOffsetCoreImpl core, WorldBorderObfuscator worldBorderObfuscator) {
+    BukkitEventListener(CoordinateOffsetPaperPlugin plugin, CoordinateOffsetCore core, WorldBorderObfuscator worldBorderObfuscator) {
         this.plugin = plugin;
         this.core = core;
         this.worldBorderObfuscator = worldBorderObfuscator;
@@ -143,10 +143,11 @@ class BukkitEventListener implements Listener {
          */
         int minimumBlocks = ((viewDistance + 1) * 2) * 16;
 
-        if (plugin.getConfig().isInt("distantTeleportMinimumDistance")) {
-            // TODO: Not documented for now. Need to either fix the problem described above or document around it.
-            minimumBlocks = plugin.getConfig().getInt("distantTeleportMinimumDistance");
-        }
+        // TODO: Reinstate this config option, but document it better.
+//        if (plugin.getConfig().isInt("distantTeleportMinimumDistance")) {
+//            // TODO: Not documented for now. Need to either fix the problem described above or document around it.
+//            minimumBlocks = plugin.getConfig().getInt("distantTeleportMinimumDistance");
+//        }
 
         return minimumBlocks * minimumBlocks;
     }

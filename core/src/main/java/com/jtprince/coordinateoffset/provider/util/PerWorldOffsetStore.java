@@ -1,7 +1,6 @@
 package com.jtprince.coordinateoffset.provider.util;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.CoordinateOffsetInternalsAdapter;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.jetbrains.annotations.Nullable;
@@ -56,21 +55,21 @@ public sealed interface PerWorldOffsetStore {
 
         @Override
         public @Nullable Offset get(OffsetPlayer player, String worldName) {
-            return ((CoordinateOffsetInternalsAdapter) CoordinateOffset.get().getAdapter())
+            return CoordinateOffsetCore.get().getAdapter()
                 .getPlayerOffsetPersistence()
                 .getPlayerOffset(player, persistenceKey, worldName);
         }
 
         @Override
         public void put(OffsetPlayer player, String worldName, Offset offset) {
-            ((CoordinateOffsetInternalsAdapter) CoordinateOffset.get().getAdapter())
+            CoordinateOffsetCore.get().getAdapter()
                 .getPlayerOffsetPersistence()
                 .storePlayerOffset(player, persistenceKey, worldName, offset);
         }
 
         @Override
         public void reset(OffsetPlayer player) {
-            ((CoordinateOffsetInternalsAdapter) CoordinateOffset.get().getAdapter())
+            CoordinateOffsetCore.get().getAdapter()
                 .getPlayerOffsetPersistence()
                 .clearPlayerOffsets(player.getUuid(), persistenceKey);
         }

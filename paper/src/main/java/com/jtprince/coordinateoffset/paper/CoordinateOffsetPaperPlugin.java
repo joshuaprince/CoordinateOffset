@@ -1,17 +1,20 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
-import com.jtprince.coordinateoffset.CoordinateOffsetInternalsAdapter;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
+import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
+import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperPlayerOffsetPersistence;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
 import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
@@ -24,7 +27,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private @Nullable CollisionFix collisionFix;
 
     @NullMarked
-    class CoordinateOffsetPaperAdapter implements CoordinateOffsetInternalsAdapter {
+    class CoordinateOffsetPaperAdapter implements CoordinateOffsetAdapter {
         private final PaperPlayerOffsetPersistence offsetPersistence =
             new PaperPlayerOffsetPersistence(CoordinateOffsetPaperPlugin.this);
 
@@ -39,6 +42,24 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         }
 
         @Override
+        public @Nullable OffsetPlayer getPlayer(UUID playerUuid) {
+            Player bukkitPlayer = Bukkit.getPlayer(playerUuid);
+            if (bukkitPlayer == null) {
+                return null;
+            }
+            return new PaperOffsetPlayer(bukkitPlayer);
+        }
+
+        @Override
+        public OffsetPlayer adaptPlayer(Object platformPlayerObject) {
+            if (!(platformPlayerObject instanceof Player bukkitPlayer)) {
+                throw new IllegalArgumentException("Object \"" + platformPlayerObject + "\" of class " +
+                    platformPlayerObject.getClass().getName() + " is not a valid Bukkit Player.");
+            }
+            return new PaperOffsetPlayer(bukkitPlayer);
+        }
+
+        @Override
         public PlayerOffsetPersistence getPlayerOffsetPersistence() {
             return offsetPersistence;
         }
@@ -49,13 +70,13 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         instance = this;
 
         adapter = new CoordinateOffsetPaperAdapter();
-        CoordinateOffsetCoreImpl.bootstrap(adapter);
+        CoordinateOffsetCore.bootstrap(adapter);
 
         configProvider = new PaperConfigProvider(this);
 
         worldBorderObfuscator = new WorldBorderObfuscator(this);
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(
-            this, (CoordinateOffsetCoreImpl) CoordinateOffset.get(), worldBorderObfuscator), this);
+            this, CoordinateOffsetCore.get(), worldBorderObfuscator), this);
 
         CoordinateOffsetCommands commands = new CoordinateOffsetCommands(this);
         //  TODO! FIXME: Re-enable commands when updated for Paper API

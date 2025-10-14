@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.paper;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -13,12 +14,6 @@ import java.util.Map;
  * up to any given error.
  */
 public class PacketDebugger {
-    private final CoordinateOffsetPaperPlugin coPlugin;
-
-    public PacketDebugger(CoordinateOffsetPaperPlugin coPlugin) {
-        this.coPlugin = coPlugin;
-    }
-
     private static class LoggedPacket {
         private final PacketTypeCommon type;
         private int consecutiveCount = 1;
@@ -66,6 +61,6 @@ public class PacketDebugger {
     }
 
     private int getDebugHistorySize() {
-        return coPlugin.getConfig().getInt("debug.packetHistorySize", 8);
+        return CoordinateOffsetCore.get().getConfig().getDebugPacketHistorySize();
     }
 }

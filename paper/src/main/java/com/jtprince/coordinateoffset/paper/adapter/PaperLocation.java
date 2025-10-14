@@ -32,6 +32,11 @@ public class PaperLocation implements OffsetLocation {
     }
 
     @Override
+    public Object getPlatformLocationObject() {
+        return location;
+    }
+
+    @Override
     public String toString() {
         return location.toString();
     }

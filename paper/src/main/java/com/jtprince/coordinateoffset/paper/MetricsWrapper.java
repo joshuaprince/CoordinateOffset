@@ -1,12 +1,7 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
-import com.jtprince.coordinateoffset.OffsetProvider;
-import com.jtprince.coordinateoffset.OffsetProviderContext;
-import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
-import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
-import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.provider.*;
 import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
@@ -22,7 +17,7 @@ public class MetricsWrapper {
     public static void reportMetrics(CoordinateOffsetPaperPlugin plugin) {
         Metrics metrics = new Metrics(plugin, BSTATS_PLUGIN_METRICS_ID);
 
-        CoordinateOffsetCoreImpl core = (CoordinateOffsetCoreImpl) CoordinateOffset.get();
+        CoordinateOffsetCore core = CoordinateOffsetCore.get();
 
         metrics.addCustomChart(new DrilldownPie("default_offset_provider", () -> {
             Map<String, Map<String, Integer>> result = new HashMap<>();

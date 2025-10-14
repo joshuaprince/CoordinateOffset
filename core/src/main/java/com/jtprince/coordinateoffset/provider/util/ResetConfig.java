@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.provider.util;
 
-import com.jtprince.coordinateoffset.OffsetProviderContext;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;

@@ -9,9 +9,9 @@ import java.util.Random;
  * Represents the amount by which a player's clientside X and Z coordinates will appear shifted compared to their real
  * position in a world.
  *
- * <p>An offset of <code>(16, 16)</code> would result in a player seeing themselves at <code>(0, 0)</code> when they are
- * standing at <code>(16, 16)</code> in the Overworld, and seeing themselves standing at <code>(-16, -16)</code> when
- * they are standing at the real origin.</p>
+ * <p>Offsets are <b>subtracted</b> from real coordinates. An offset of <code>(16, 16)</code> would result in a player
+ * seeing themselves at <code>(0, 0)</code> when they are standing at <code>(16, 16)</code> in the Overworld, and
+ * seeing themselves standing at <code>(-16, -16)</code> when they are standing at the real origin.</p>
  *
  * @param x Offset amount for the X coordinate. Must be a multiple of 16 to align with chunk boundaries.
  * @param z Offset amount for the Z coordinate. Must be a multiple of 16 to align with chunk boundaries.
@@ -31,10 +31,10 @@ public record Offset (int x, int z) {
 
     public Offset {
         if (x % 16 != 0) {
-            throw new IllegalArgumentException("Offset x=" + x + " is not aligned with the chunks! (must be a multiple of 16)");
+            throw new IllegalArgumentException("Offset x=" + x + " is not chunk-aligned! (must be a multiple of 16)");
         }
         if (z % 16 != 0) {
-            throw new IllegalArgumentException("Offset z=" + z + " is not aligned with the chunks! (must be a multiple of 16)");
+            throw new IllegalArgumentException("Offset z=" + z + " is not chunk-aligned! (must be a multiple of 16)");
         }
     }
 

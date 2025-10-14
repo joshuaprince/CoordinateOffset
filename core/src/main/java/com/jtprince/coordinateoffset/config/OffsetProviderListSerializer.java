@@ -1,7 +1,7 @@
 package com.jtprince.coordinateoffset.config;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.OffsetProvider;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import de.exlll.configlib.Serializer;
 
 import java.util.LinkedHashMap;
@@ -32,7 +32,7 @@ public class OffsetProviderListSerializer implements Serializer<SequencedMap<Str
                 throw new IllegalArgumentException("Missing or invalid field 'class' for provider " + entry.getKey());
             }
             OffsetProvider.ConfigurationFactory<? extends OffsetProvider> factory =
-                CoordinateOffset.get().getProviderRegistry().getProviderFactory(className);
+                CoordinateOffsetCore.get().getProviderRegistry().getProviderFactory(className);
             if (factory == null) {
                 throw new IllegalArgumentException("Unknown provider class " + className + " for provider " + entry.getKey());
             }

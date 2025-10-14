@@ -1,7 +1,6 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermissions;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
@@ -53,7 +52,7 @@ class CoordinateOffsetCommands {
                 pronoun = target.getName() + "'s";
             }
 
-            Offset offset = ((CoordinateOffsetCoreImpl)CoordinateOffset.get()).getOffsetHolder().getOffset(new PaperOffsetPlayer(target));
+            Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(target));
 
             sender.spigot().sendMessage(new ComponentBuilder(prefix)
                     .append("[x=" + offset.x() + ", z=" + offset.z() + "]").color(ChatColor.GOLD)

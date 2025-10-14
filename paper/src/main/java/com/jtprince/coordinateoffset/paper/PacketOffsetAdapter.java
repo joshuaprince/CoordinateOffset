@@ -3,8 +3,7 @@ package com.jtprince.coordinateoffset.paper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.jtprince.coordinateoffset.CoordinateOffset;
-import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
@@ -17,7 +16,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 class PacketOffsetAdapter {
-    private final CoordinateOffsetCoreImpl core;
+    private final CoordinateOffsetCore core;
     private final CoordinateOffsetPaperPlugin coPlugin;
     private final Logger logger;
     private final PacketDebugger packetHistory;
@@ -26,10 +25,10 @@ class PacketOffsetAdapter {
     private final long stacktraceRateLimitMs = 2500; // 2.5 seconds
 
     PacketOffsetAdapter(CoordinateOffsetPaperPlugin plugin) {
-        this.core = (CoordinateOffsetCoreImpl) CoordinateOffset.get();
+        this.core = CoordinateOffsetCore.get();
         this.coPlugin = plugin;
         this.logger = plugin.getLogger();
-        this.packetHistory = new PacketDebugger(plugin);
+        this.packetHistory = new PacketDebugger();
 
         this.partialStacktraceLogger = new PartialStacktraceLogger(logger);
         Bukkit.getServer().getScheduler().runTaskTimer(coPlugin, () -> {

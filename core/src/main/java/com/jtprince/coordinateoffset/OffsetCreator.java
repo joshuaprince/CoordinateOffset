@@ -1,15 +1,17 @@
 package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.config.OffsetProviderOverrideConfig;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 class OffsetCreator {
-    private final CoordinateOffsetCoreImpl core;
+    private final CoordinateOffsetCore core;
 
-    OffsetCreator(CoordinateOffsetCoreImpl core) {
+    OffsetCreator(CoordinateOffsetCore core) {
         this.core = core;
     }
 

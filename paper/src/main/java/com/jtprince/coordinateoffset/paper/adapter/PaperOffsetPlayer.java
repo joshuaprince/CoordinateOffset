@@ -33,6 +33,11 @@ public class PaperOffsetPlayer implements OffsetPlayer {
     }
 
     @Override
+    public Object getPlatformPlayerObject() {
+        return player;
+    }
+
+    @Override
     public String toString() {
         return player.toString();
     }

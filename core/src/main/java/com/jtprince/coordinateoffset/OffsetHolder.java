@@ -1,6 +1,8 @@
 package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 
@@ -11,7 +13,7 @@ import java.util.UUID;
 
 @NullMarked
 public class OffsetHolder {
-    private final CoordinateOffsetCoreImpl core;
+    private final CoordinateOffsetCore core;
     private final Map<UUID /* player */, Map<String /* world */, Offset>> playerOffsets = new HashMap<>();
 
     /* There are two worlds cached because of world-change timing issues - see docs/OffsetChangeHandling.md */
@@ -20,7 +22,7 @@ public class OffsetHolder {
     /** World the player has initiated a world change to and will be in soon (updated by Bukkit events) */
     private final Map<UUID /* player */, String /* world */> playerLookaheadWorld = new HashMap<>();
 
-    OffsetHolder(CoordinateOffsetCoreImpl core) {
+    OffsetHolder(CoordinateOffsetCore core) {
         this.core = core;
     }
 
