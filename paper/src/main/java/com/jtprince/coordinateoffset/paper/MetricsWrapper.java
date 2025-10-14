@@ -1,9 +1,13 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.paper.provider.ConstantOffsetProvider;
-import com.jtprince.coordinateoffset.paper.provider.RandomOffsetProvider;
-import com.jtprince.coordinateoffset.paper.provider.ZeroAtLocationOffsetProvider;
-import com.jtprince.coordinateoffset.paper.provider.util.ResetConfig;
+import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
+import com.jtprince.coordinateoffset.OffsetProvider;
+import com.jtprince.coordinateoffset.OffsetProviderContext;
+import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
+import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
+import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
+import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
@@ -18,9 +22,11 @@ public class MetricsWrapper {
     public static void reportMetrics(CoordinateOffsetPaperPlugin plugin) {
         Metrics metrics = new Metrics(plugin, BSTATS_PLUGIN_METRICS_ID);
 
+        CoordinateOffsetCoreImpl core = (CoordinateOffsetCoreImpl) CoordinateOffset.get();
+
         metrics.addCustomChart(new DrilldownPie("default_offset_provider", () -> {
             Map<String, Map<String, Integer>> result = new HashMap<>();
-            OffsetProvider defaultProvider = plugin.getOffsetProviderManager().getDefaultProvider();
+            OffsetProvider defaultProvider = core.getConfig().getDefaultOffsetProviderConfig();
             if (defaultProvider instanceof ConstantOffsetProvider) {
                 result.put("ConstantOffsetProvider", Map.of("ConstantOffsetProvider", 1));
             } else if (defaultProvider instanceof RandomOffsetProvider randomOffsetProvider) {
@@ -29,18 +35,18 @@ public class MetricsWrapper {
 
                 sb.append(" | Reset ");
                 ResetConfig rc = randomOffsetProvider.getResetConfig();
-                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
-                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
-                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
+                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
+                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
+                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
 
                 result.put("RandomOffsetProvider", Map.of(sb.toString(), 1));
             } else if (defaultProvider instanceof ZeroAtLocationOffsetProvider zeroAtLocationOffsetProvider) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Reset ");
                 ResetConfig rc = zeroAtLocationOffsetProvider.getResetConfig();
-                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
-                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
-                sb.append(rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
+                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
+                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
+                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
 
                 result.put("ZeroAtLocationOffsetProvider", Map.of(sb.toString(), 1));
             } else {
@@ -54,18 +60,18 @@ public class MetricsWrapper {
             enabledDisabledStr(plugin.getWorldBorderObfuscator().enableObfuscation())));
 
         metrics.addCustomChart(new SimplePie("unsafe_reset_on_teleport", () ->
-            enabledDisabledStr(plugin.isUnsafeResetOnTeleportEnabled())));
+            enabledDisabledStr(core.getConfig().getUnsafeResetOnDistantTeleport())));
 
         metrics.addCustomChart(new SimplePie("fix_collision", () -> {
             boolean enabled = false;
             StringBuilder sb = new StringBuilder();
-            if (plugin.getConfig().getBoolean("fixCollision.bamboo", true)) {
+            if (core.getConfig().getFixCollisionBamboo()) {
                 enabled = true;
                 sb.append("B");
             } else {
                 sb.append("x");
             }
-            if (plugin.getConfig().getBoolean("fixCollision.dripstone", true)) {
+            if (core.getConfig().getFixCollisionDripstone()) {
                 enabled = true;
                 sb.append("D");
             } else {
@@ -79,10 +85,10 @@ public class MetricsWrapper {
         }));
 
         metrics.addCustomChart(new SimplePie("verbose", () ->
-            enabledDisabledStr(plugin.isVerboseLoggingEnabled())));
+            enabledDisabledStr(core.getConfig().getVerbose())));
 
         metrics.addCustomChart(new SimplePie("offset_provider_override_count", () ->
-            String.valueOf(plugin.getOffsetProviderManager().getLoadedOverrideCount())));
+            String.valueOf(core.getConfig().getOffsetProviderOverrides().size())));
     }
 
     private static String enabledDisabledStr(boolean enabled) {

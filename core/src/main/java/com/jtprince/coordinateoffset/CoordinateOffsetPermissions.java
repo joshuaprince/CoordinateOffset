@@ -1,4 +1,4 @@
-package com.jtprince.coordinateoffset.paper;
+package com.jtprince.coordinateoffset;
 
 public class CoordinateOffsetPermissions {
     // Make sure to update plugin.yml with any new permissions!

@@ -6,6 +6,7 @@ import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
 import de.exlll.configlib.SerializeWith;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.SequencedMap;
@@ -134,5 +135,11 @@ public class CoordinateOffsetConfigImpl implements CoordinateOffsetConfig {
     @Override
     public int getDebugPacketHistorySize() {
         return Math.max(1, debug.packetHistorySize);
+    }
+
+    @Nullable Boolean unsafeResetOnDistantTeleport = null;
+    @Override
+    public boolean getUnsafeResetOnDistantTeleport() {
+        return unsafeResetOnDistantTeleport != null && unsafeResetOnDistantTeleport;
     }
 }

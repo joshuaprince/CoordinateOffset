@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.paper.provider;
 
-import com.jtprince.coordinateoffset.paper.provider.util.WorldAlignmentConfig;
+import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -9,26 +9,26 @@ import java.util.List;
 public class TestWorldAlignmentConfig {
     @Test
     void testFromConfigThrowsBadlyFormattedString() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.fromConfig(List.of("no_colons")));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.fromConfig(List.of("one:too:many:colons")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.deserialize(List.of("no_colons")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.deserialize(List.of("one:too:many:colons")));
     }
 
     @Test
     void testFromConfigThrowsBadScaleFactor() {
-        Assertions.assertThrows(NumberFormatException.class, () -> WorldAlignmentConfig.fromConfig(List.of("abc:def:notnumber")));
+        Assertions.assertThrows(NumberFormatException.class, () -> WorldAlignmentConfig.deserialize(List.of("abc:def:notnumber")));
     }
 
     @Test
     void testFromConfigThrowsNotPowerOfTwoScaling() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.fromConfig(List.of("abc:def:0")));
-        Assertions.assertDoesNotThrow(() -> WorldAlignmentConfig.fromConfig(List.of("abc:def:1")));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.fromConfig(List.of("abc:def:24")));
-        Assertions.assertDoesNotThrow(() -> WorldAlignmentConfig.fromConfig(List.of("abc:def:64")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.deserialize(List.of("abc:def:0")));
+        Assertions.assertDoesNotThrow(() -> WorldAlignmentConfig.deserialize(List.of("abc:def:1")));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> WorldAlignmentConfig.deserialize(List.of("abc:def:24")));
+        Assertions.assertDoesNotThrow(() -> WorldAlignmentConfig.deserialize(List.of("abc:def:64")));
     }
 
     @Test
     void testFindAlignments() {
-        WorldAlignmentConfig container = WorldAlignmentConfig.fromConfig(List.of("world:world_nether:8"));
+        WorldAlignmentConfig container = WorldAlignmentConfig.deserialize(List.of("world:world_nether:8"));
 
         WorldAlignmentConfig.QueryResult result1 = container.findAlignment("world");
         Assertions.assertNotNull(result1);
@@ -43,7 +43,7 @@ public class TestWorldAlignmentConfig {
 
     @Test
     void testFindAlignmentsNoMatch() {
-        WorldAlignmentConfig container = WorldAlignmentConfig.fromConfig(List.of("w0:w1:8", "w2:w3:16"));
+        WorldAlignmentConfig container = WorldAlignmentConfig.deserialize(List.of("w0:w1:8", "w2:w3:16"));
 
         WorldAlignmentConfig.QueryResult result = container.findAlignment("world");
         Assertions.assertNull(result);
@@ -51,7 +51,7 @@ public class TestWorldAlignmentConfig {
 
     @Test
     void testFindAlignmentsFirstMatchFirst() {
-        WorldAlignmentConfig config = WorldAlignmentConfig.fromConfig(List.of("w0:w1:8", "w2:w0:16"));
+        WorldAlignmentConfig config = WorldAlignmentConfig.deserialize(List.of("w0:w1:8", "w2:w0:16"));
 
         WorldAlignmentConfig.QueryResult result = config.findAlignment("w0");
         Assertions.assertNotNull(result);
@@ -61,7 +61,7 @@ public class TestWorldAlignmentConfig {
 
     @Test
     void testGreatestRightShift() {
-        WorldAlignmentConfig container = WorldAlignmentConfig.fromConfig(List.of("w0:w1:8", "w2:w0:16"));
+        WorldAlignmentConfig container = WorldAlignmentConfig.deserialize(List.of("w0:w1:8", "w2:w0:16"));
 
         Assertions.assertEquals(3, container.greatestPossibleRightShiftForWorld("w0"));
         Assertions.assertEquals(0, container.greatestPossibleRightShiftForWorld("w1"));

@@ -79,6 +79,10 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
         }
     }
 
+    public @Nullable ResetConfig getResetConfig() {
+        return resetConfig;
+    }
+
     @Override
     public SequencedMap<String, ?> serialize() {
         SequencedMap<String, Object> map = new LinkedHashMap<>();

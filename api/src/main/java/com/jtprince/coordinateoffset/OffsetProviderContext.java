@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset;
 
-import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.jspecify.annotations.NullMarked;
@@ -15,15 +14,13 @@ import org.jspecify.annotations.NullMarked;
  *                       Note that this may be different from <code>player.getLocation()</code> because the Provider is
  *                       called <i>before</i> a teleport completes.
  * @param reason The reason that a new Offset is being requested.
- * @param instance Instance of the loaded CoordinateOffset platform.
  */
 @NullMarked
 public record OffsetProviderContext(
     OffsetPlayer player,
     String worldName,
     OffsetLocation playerLocation,
-    ProvideReason reason,
-    CoordinateOffsetAdapter instance
+    ProvideReason reason
 ) {
     public enum ProvideReason {
         /**

@@ -1,8 +1,9 @@
-package com.jtprince.coordinateoffset.paper;
+package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
 import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;

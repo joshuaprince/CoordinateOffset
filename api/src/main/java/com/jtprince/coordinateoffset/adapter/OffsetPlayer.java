@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface OffsetPlayer {
     UUID getUuid();
     String getName();
+    boolean hasPermission(String permission);
 }

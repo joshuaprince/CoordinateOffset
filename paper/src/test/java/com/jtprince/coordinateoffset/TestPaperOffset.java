@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset;
 
-import com.jtprince.coordinateoffset.paper.PaperOffset;
+import com.jtprince.coordinateoffset.paper.adapter.PaperOffset;
 import org.bukkit.Location;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

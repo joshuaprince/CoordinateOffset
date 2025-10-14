@@ -87,6 +87,18 @@ public class RandomOffsetProvider extends OffsetProvider {
         }
     }
 
+    public boolean isPersistent() {
+        return perWorldOffsetStore instanceof PerWorldOffsetStore.Persistent;
+    }
+
+    public @Nullable ResetConfig getResetConfig() {
+        return resetConfig;
+    }
+
+    public @Nullable WorldAlignmentConfig getWorldAlignmentConfig() {
+        return worldAlignmentConfig;
+    }
+
     @Override
     public SequencedMap<String, ?> serialize() {
         SequencedMap<String, Object> map = new LinkedHashMap<>();

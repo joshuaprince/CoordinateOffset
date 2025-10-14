@@ -1,5 +1,9 @@
 package com.jtprince.coordinateoffset.paper;
 
+import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
+import com.jtprince.coordinateoffset.OffsetProviderContext;
+import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
+import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -16,12 +20,12 @@ import java.util.Objects;
 
 class BukkitEventListener implements Listener {
     private final CoordinateOffsetPaperPlugin plugin;
-    private final PlayerOffsetsManager players;
+    private final CoordinateOffsetCoreImpl core;
     private final WorldBorderObfuscator worldBorderObfuscator;
 
-    BukkitEventListener(CoordinateOffsetPaperPlugin plugin, PlayerOffsetsManager playerOffsetsManager, WorldBorderObfuscator worldBorderObfuscator) {
+    BukkitEventListener(CoordinateOffsetPaperPlugin plugin, CoordinateOffsetCoreImpl core, WorldBorderObfuscator worldBorderObfuscator) {
         this.plugin = plugin;
-        this.players = playerOffsetsManager;
+        this.core = core;
         this.worldBorderObfuscator = worldBorderObfuscator;
     }
 
@@ -32,13 +36,16 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onSpawnLocation(PlayerSpawnLocationEvent event) {
-        plugin.getPlayerManager().setPositionedWorld(event.getPlayer(), event.getSpawnLocation().getWorld());
+        PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
 
-        OffsetProviderContext context = new OffsetProviderContext(
-                event.getPlayer(), event.getSpawnLocation().getWorld(), event.getSpawnLocation(),
-                OffsetProviderContext.ProvideReason.JOIN, plugin
-        );
-        plugin.getPlayerManager().regenerateOffset(context);
+        core.getOffsetHolder().setPositionedWorld(player, event.getSpawnLocation().getWorld().getName());
+
+        core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+            player,
+            event.getSpawnLocation().getWorld().getName(),
+            new PaperLocation(event.getSpawnLocation()),
+            OffsetProviderContext.ProvideReason.JOIN
+        ));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -62,20 +69,23 @@ class BukkitEventListener implements Listener {
             }
         }
 
-        var context = new OffsetProviderContext(
-                event.getPlayer(), Objects.requireNonNull(event.getRespawnLocation().getWorld()),
-                event.getRespawnLocation(), reason, plugin);
-        plugin.getPlayerManager().regenerateOffset(context);
+        core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+            new PaperOffsetPlayer(event.getPlayer()),
+            event.getRespawnLocation().getWorld().getName(),
+            new PaperLocation(event.getRespawnLocation()),
+            reason
+        ));
     }
 
     @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
+        PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
         OffsetProviderContext.ProvideReason reason = null;
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
-            if (plugin.isUnsafeResetOnTeleportEnabled()) {
+            if (core.getConfig().getUnsafeResetOnDistantTeleport()) {
                 /*
                  * DISTANT_TELEPORT activation requires opt-in
                  * https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport
@@ -99,10 +109,12 @@ class BukkitEventListener implements Listener {
 
         if (reason == null) return;
 
-        var context = new OffsetProviderContext(
-                event.getPlayer(), Objects.requireNonNull(event.getTo().getWorld()),
-                event.getTo(), reason, plugin);
-        plugin.getPlayerManager().regenerateOffset(context);
+        core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+            player,
+            event.getTo().getWorld().getName(),
+            new PaperLocation(event.getTo()),
+            reason
+        ));
 
         worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
     }
@@ -114,7 +126,7 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.getOffsetProviderManager().quitPlayer(event.getPlayer());
+        core.getOffsetHolder().quitPlayer(new PaperOffsetPlayer(event.getPlayer()));
     }
 
     private int getMinimumTeleportDistanceSquared(World world) {

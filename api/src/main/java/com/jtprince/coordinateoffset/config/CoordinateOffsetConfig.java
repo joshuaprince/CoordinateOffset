@@ -17,4 +17,6 @@ public interface CoordinateOffsetConfig {
     boolean getVerbose();
     boolean getDebugEnable();
     int getDebugPacketHistorySize();
+
+    boolean getUnsafeResetOnDistantTeleport();
 }

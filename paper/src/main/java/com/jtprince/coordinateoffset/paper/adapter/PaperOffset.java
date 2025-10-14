@@ -1,4 +1,4 @@
-package com.jtprince.coordinateoffset.paper;
+package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
 import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;

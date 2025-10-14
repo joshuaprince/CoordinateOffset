@@ -3,8 +3,11 @@ package com.jtprince.coordinateoffset.paper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.jtprince.coordinateoffset.CoordinateOffset;
+import com.jtprince.coordinateoffset.CoordinateOffsetCoreImpl;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
+import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.util.PartialStacktraceLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,6 +17,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 class PacketOffsetAdapter {
+    private final CoordinateOffsetCoreImpl core;
     private final CoordinateOffsetPaperPlugin coPlugin;
     private final Logger logger;
     private final PacketDebugger packetHistory;
@@ -22,6 +26,7 @@ class PacketOffsetAdapter {
     private final long stacktraceRateLimitMs = 2500; // 2.5 seconds
 
     PacketOffsetAdapter(CoordinateOffsetPaperPlugin plugin) {
+        this.core = (CoordinateOffsetCoreImpl) CoordinateOffset.get();
         this.coPlugin = plugin;
         this.logger = plugin.getLogger();
         this.packetHistory = new PacketDebugger(plugin);
@@ -65,16 +70,19 @@ class PacketOffsetAdapter {
              */
             if (!(event.getPacketType() instanceof PacketType.Play.Server)) return;
 
-            if (coPlugin.isDebugEnabled()) {
+            if (core.getConfig().getDebugEnable()) {
                 packetHistory.logPacket(event.getUser(), event.getPacketType());
             }
 
             try {
                 if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
                         || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
-                    Player player = event.getPlayer();
-                    if (player != null) {
-                        coPlugin.getPlayerManager().setPositionedWorld(player, player.getWorld());
+                    Player bukkitPlayer = event.getPlayer();
+                    if (bukkitPlayer != null) {
+                        core.getOffsetHolder().setPositionedWorld(
+                            new PaperOffsetPlayer(bukkitPlayer),
+                            bukkitPlayer.getWorld().getName()
+                        );
                     }
                 }
 
@@ -87,11 +95,11 @@ class PacketOffsetAdapter {
                      * new world.
                      * See `docs/OffsetChangeHandling.md`
                      */
-                    offset = coPlugin.getPlayerManager().getOffsetLookahead(event.getUser().getUUID());
+                    offset = core.getOffsetHolder().getOffsetLookahead(event.getUser().getUUID());
                 } else {
                     if (event.getPlayer() == null) return;
 
-                    offset = coPlugin.getPlayerManager().getOffset(event.getPlayer());
+                    offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer()));
                 }
 
                 // Short-circuit when no offset is applied
@@ -110,7 +118,7 @@ class PacketOffsetAdapter {
                     "Failed to apply offset for outgoing packet " +
                         event.getPacketType().getName() + " to " + event.getUser().getName(),
                     e, stacktraceRateLimitMs, event.getUser().getName());
-                if (logged && coPlugin.isDebugEnabled()) {
+                if (logged && core.getConfig().getDebugEnable()) {
                     logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
                 }
             }
@@ -124,15 +132,15 @@ class PacketOffsetAdapter {
              */
             if (!(event.getPacketType() instanceof PacketType.Play.Client)) return;
 
-            if (coPlugin.isDebugEnabled()) {
+            if (core.getConfig().getDebugEnable()) {
                 packetHistory.logPacket(event.getUser(), event.getPacketType());
             }
 
             try {
-                Player player = event.getPlayer();
-                if (player == null) return;
+                Player bukkitPlayer = event.getPlayer();
+                if (bukkitPlayer == null) return;
 
-                Offset offset = coPlugin.getPlayerManager().getOffset(player, player.getWorld());
+                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(bukkitPlayer), bukkitPlayer.getWorld().getName());
                 if (offset.equals(Offset.ZERO)) return;
 
                 OffsetterRegistry.attemptToUnOffset(event, offset);
@@ -141,7 +149,7 @@ class PacketOffsetAdapter {
                     "Failed to reverse offset for incoming packet " +
                         event.getPacketType().getName() + " from " + event.getUser().getName(),
                     e, stacktraceRateLimitMs, event.getUser().getName());
-                if (logged && coPlugin.isDebugEnabled()) {
+                if (logged && core.getConfig().getDebugEnable()) {
                     logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
                 }
             }
@@ -172,11 +180,11 @@ class PacketOffsetAdapter {
                 return;
             }
 
-            coPlugin.getPlayerManager().remove(playerUuid);
-            coPlugin.getOffsetProviderManager().disconnectPlayer(playerUuid);
+            core.getOffsetHolder().remove(playerUuid);
+            core.getOffsetHolder().disconnectPlayer(playerUuid);
             coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
 
-            if (coPlugin.isDebugEnabled()) {
+            if (core.getConfig().getDebugEnable()) {
                 packetHistory.forget(event.getUser());
             }
         }

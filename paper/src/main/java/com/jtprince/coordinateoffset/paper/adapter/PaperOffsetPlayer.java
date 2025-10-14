@@ -1,4 +1,4 @@
-package com.jtprince.coordinateoffset.paper;
+package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.bukkit.entity.Player;
@@ -25,5 +25,20 @@ public class PaperOffsetPlayer implements OffsetPlayer {
     @Override
     public String getName() {
         return player.getName();
+    }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        return player.hasPermission(permission);
+    }
+
+    @Override
+    public String toString() {
+        return player.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof PaperOffsetPlayer p) && player.equals(p.player);
     }
 }

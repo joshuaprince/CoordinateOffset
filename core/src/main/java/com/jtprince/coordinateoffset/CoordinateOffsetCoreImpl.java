@@ -9,11 +9,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CoordinateOffsetCoreImpl implements CoordinateOffsetCore {
     private final CoordinateOffsetAdapter adapter;
+
     private final OffsetProviderRegistry registry;
+    private final OffsetCreator offsetCreator;
+    private final OffsetHolder offsetHolder;
 
     private CoordinateOffsetCoreImpl(CoordinateOffsetAdapter adapter) {
         this.adapter = adapter;
         this.registry = new OffsetProviderRegistryImpl();
+        this.offsetCreator = new OffsetCreator(this);
+        this.offsetHolder = new OffsetHolder(this);
     }
 
     public static void bootstrap(CoordinateOffsetAdapter adapter) {
@@ -33,5 +38,13 @@ public class CoordinateOffsetCoreImpl implements CoordinateOffsetCore {
     @Override
     public OffsetProviderRegistry getProviderRegistry() {
         return registry;
+    }
+
+    OffsetCreator getOffsetCreator() {
+        return offsetCreator;
+    }
+
+    public OffsetHolder getOffsetHolder() {
+        return offsetHolder;
     }
 }
