@@ -8,6 +8,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 @Configuration
 public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
+    @Comment("Do not change this.")
+    @Nullable Integer configVersion = null;
+
     @Configuration
     public static class FixCollision {
         boolean bamboo = true;

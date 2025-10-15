@@ -5,7 +5,6 @@ import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPIImpl;
 import com.jtprince.coordinateoffset.config.ConfigHolder;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
-import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigFull;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
@@ -37,8 +36,13 @@ public class CoordinateOffsetCore {
     }
 
     public static CoordinateOffsetCore bootstrap(CoordinateOffsetAdapter adapter) {
+        if (singleton != null) {
+            throw new IllegalStateException("CoordinateOffset core is already initialized.");
+        }
         CoordinateOffsetCore core = new CoordinateOffsetCore(adapter);
-        CoordinateOffsetCore.set(core);
+        singleton = core;
+
+        core.configHolder.loadBaseConfig();
 
         CoordinateOffsetAPI api = new CoordinateOffsetAPIImpl(core);
         CoordinateOffsetAPIImpl.set(api);
@@ -66,10 +70,10 @@ public class CoordinateOffsetCore {
     public void signalCompletedLoading() {
         if (this.completedLoading) return;
         this.completedLoading = true;
-        this.configHolder.reload(false);
+        this.configHolder.loadFullConfig();
 
         // Validate configuration and shutdown if invalid
-        if (!((CoordinateOffsetConfigFull) this.getProviderConfig()).validateBaseAndFullConfig()) {
+        if (!configHolder.getProviderConfig().validateBaseAndFullConfig()) {
             adapter.shutdown();
         }
     }
@@ -107,12 +111,5 @@ public class CoordinateOffsetCore {
             throw new IllegalStateException("CoordinateOffset core is not yet initialized.");
         }
         return singleton;
-    }
-
-    static void set(CoordinateOffsetCore core) {
-        if (singleton != null) {
-            throw new IllegalStateException("CoordinateOffset core is already initialized.");
-        }
-        singleton = core;
     }
 }

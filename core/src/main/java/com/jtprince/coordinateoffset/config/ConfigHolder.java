@@ -14,16 +14,16 @@ public class ConfigHolder {
             .header("""
                     CoordinateOffset Configuration File
                     See https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide
-                    Do not leave comments in this file! They will be removed when the file is loaded.
+                    Comments left in this file will be deleted when configuration is loaded.
                     """)
             .build();
 
     private final CoordinateOffsetCore core;
     private @Nullable CoordinateOffsetConfigBase config;
+    private boolean safeToWriteToConfigFile = false;
 
     public ConfigHolder(CoordinateOffsetCore core) {
         this.core = core;
-        loadConfig();
     }
 
     public CoordinateOffsetConfigBase getConfig() {
@@ -40,18 +40,38 @@ public class ConfigHolder {
         return fullConfig;
     }
 
-    private void loadConfig() {
+    public void loadBaseConfig() {
         Path configPath = core.getAdapter().getConfigPath();
 
-        if (!core.areAllProvidersLoaded() && configPath.toFile().exists()) {
+        if (configPath.toFile().exists()) {
             config = YamlConfigurations.load(configPath, CoordinateOffsetConfigBase.class, properties);
+            if (ConfigVersion.onLoadBaseConfig(configPath, config)) {
+                safeToWriteToConfigFile = true;
+            }
         } else {
-            config = YamlConfigurations.update(configPath, CoordinateOffsetConfigFull.class, properties);
+            config = new CoordinateOffsetConfigBase();
+            safeToWriteToConfigFile = true;
+            loadFullConfig();
+        }
+    }
+
+    public void loadFullConfig() {
+        Path configPath = core.getAdapter().getConfigPath();
+
+        if (configPath.toFile().exists()) {
+            config = YamlConfigurations.load(configPath, CoordinateOffsetConfigFull.class, properties);
+        } else {
+            config = new CoordinateOffsetConfigFull();
+        }
+
+        if (safeToWriteToConfigFile) {
+            config.configVersion = ConfigVersion.CURRENT;
+            YamlConfigurations.save(configPath, CoordinateOffsetConfigFull.class, (CoordinateOffsetConfigFull) config, properties);
         }
     }
 
     public void reload(boolean logMessage) {
-        loadConfig();
+        loadFullConfig();
         if (logMessage) {
             CoordinateOffsetCore.get().getLogger().info("Config reloaded.");
         }
