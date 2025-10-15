@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset.api;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -54,11 +55,28 @@ public interface CoordinateOffsetAPI {
     OffsetPlayer adaptPlayer(Object platformPlayerObject);
 
     /**
-     * Get a copy of the running configuration of the CoordinateOffset plugin.
+     * Get running configuration of the CoordinateOffset plugin.
+     *
+     * <p>Configured Offset Providers are not accessible here because they load after the main CoordinateOffset config.
+     * See {@link CoordinateOffsetAPI#getProviderConfig()} for provider-specific configuration access.</p>
      *
      * @return The current configuration.
      */
     CoordinateOffsetConfig getConfig();
+
+    /**
+     * Get Offset Providers configured in the CoordinateOffset configuration.
+     *
+     * <p>Offset Providers load <b>after</b> external plugins have a chance to register new OffsetProvider classes,
+     * so this function must only be called after the server has finished starting up.</p>
+     *
+     * <p>See {@link CoordinateOffsetAPI#getConfig()} for general configuration access.</p>
+     *
+     * @return The current configuration.
+     *
+     * @throws IllegalStateException if Offset Provider configuration has not yet been loaded.
+     */
+    CoordinateOffsetProviderConfig getProviderConfig();
 
     /**
      * Register a new OffsetProvider class that can be used in the CoordinateOffset configuration.

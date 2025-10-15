@@ -37,7 +37,7 @@ class OffsetCreator {
         //noinspection ConstantValue
         if (provider == null) {
             Optional<OffsetProviderOverrideConfig> appliedOverride =
-                core.getConfig().getOffsetProviderOverrides().stream()
+                core.getProviderConfig().getOffsetProviderOverrides().stream()
                     .filter(o -> providerOverrideAppliesTo(context, o)).findFirst();
             if (appliedOverride.isPresent()) {
                 provider = appliedOverride.get().provider();
@@ -47,7 +47,7 @@ class OffsetCreator {
 
         // Priority 2: Default provider
         if (provider == null) {
-            provider = core.getConfig().getDefaultOffsetProviderConfig();
+            provider = core.getProviderConfig().getDefaultOffsetProviderConfig();
             providerSource = ProviderSource.DEFAULT;
         }
 

@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPIImpl;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
@@ -21,6 +22,8 @@ public class CoordinateOffsetCore {
     private final OffsetProviderRegistry registry;
     private final OffsetCreator offsetCreator;
     private final OffsetHolder offsetHolder;
+
+    private boolean completedLoading = false;
 
     private CoordinateOffsetCore(CoordinateOffsetAdapter adapter) {
         this.adapter = adapter;
@@ -42,6 +45,33 @@ public class CoordinateOffsetCore {
         core.getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
     }
 
+    /**
+     * Check if all any offset provider classes added by API consumers have had a chance to load.
+     *
+     * <p>The configuration module must not deserialize Offset Provider config until all provider classes have been
+     * registered, or else deserialization will throw an "unknown provider class" exception.</p>
+     *
+     * @return true if all provider classes are loaded, false if core has not yet received
+     */
+    public boolean areAllProvidersLoaded() {
+        return this.completedLoading;
+    }
+
+    public void signalCompletedLoading() {
+        if (this.completedLoading) return;
+        this.completedLoading = true;
+        this.adapter.reloadConfig(false);
+
+        try {
+            adapter.getProviderConfig().getDefaultOffsetProviderConfig();
+        } catch (NullPointerException e) {
+            Logger logger = adapter.getLogger();
+            logger.severe("Failed to load default offset provider from config.");
+            logger.severe("If you are using a custom offset provider, ensure that you have registered it with the API before the server finishes loading.");
+            throw e;
+        }
+    }
+
     public CoordinateOffsetAdapter getAdapter() {
         return adapter;
     }
@@ -52,6 +82,10 @@ public class CoordinateOffsetCore {
 
     public CoordinateOffsetConfig getConfig() {
         return adapter.getConfig();
+    }
+
+    public CoordinateOffsetProviderConfig getProviderConfig() {
+        return adapter.getProviderConfig();
     }
 
     public Logger getLogger() {

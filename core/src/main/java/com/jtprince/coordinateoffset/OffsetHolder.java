@@ -121,13 +121,13 @@ public class OffsetHolder {
     }
 
     public void quitPlayer(@NotNull OffsetPlayer player) {
-        for (OffsetProvider provider : core.getConfig().getAllOffsetProviderConfigs().values()) {
+        for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
             provider.onPlayerQuit(player);
         }
     }
 
     public void disconnectPlayer(@NotNull UUID playerUuid) {
-        for (OffsetProvider provider : core.getConfig().getAllOffsetProviderConfigs().values()) {
+        for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
             provider.onPlayerDisconnect(playerUuid);
         }
     }

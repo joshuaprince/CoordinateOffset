@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperPlayerOffsetPersistence;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
@@ -21,7 +22,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private static CoordinateOffsetPaperPlugin instance;
     private CoordinateOffsetPaperAdapter adapter;
 
-    private PaperConfigProvider configProvider;
+    private PaperConfigAdapter configProvider;
     private WorldBorderObfuscator worldBorderObfuscator;
     private PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
@@ -33,7 +34,20 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
         @Override
         public CoordinateOffsetConfig getConfig() {
-            return configProvider.get();
+            return configProvider.getConfig();
+        }
+
+        @Override
+        public CoordinateOffsetProviderConfig getProviderConfig() {
+            return configProvider.getProviderConfig();
+        }
+
+        @Override
+        public void reloadConfig(boolean logMessage) {
+            configProvider.reload();
+            if (logMessage) {
+                CoordinateOffsetPaperPlugin.this.getLogger().info("Config reloaded.");
+            }
         }
 
         @Override
@@ -72,7 +86,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         adapter = new CoordinateOffsetPaperAdapter();
         CoordinateOffsetCore.bootstrap(adapter);
 
-        configProvider = new PaperConfigProvider(this);
+        configProvider = new PaperConfigAdapter(this);
 
         worldBorderObfuscator = new WorldBorderObfuscator(this);
         Bukkit.getPluginManager().registerEvents(new BukkitEventListener(
@@ -86,12 +100,12 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         packetOffsetAdapter = new PacketOffsetAdapter(this);
         packetOffsetAdapter.registerAdapters();
 
-        if (configProvider.get().getFixCollisionBamboo() || configProvider.get().getFixCollisionDripstone()) {
+        if (configProvider.getConfig().getFixCollisionBamboo() || configProvider.getConfig().getFixCollisionDripstone()) {
             try {
-                collisionFix = new CollisionFix(this, configProvider.get().getFixCollisionBamboo(), configProvider.get().getFixCollisionDripstone());
+                collisionFix = new CollisionFix(this, configProvider.getConfig().getFixCollisionBamboo(), configProvider.getConfig().getFixCollisionDripstone());
             } catch (Exception e) {
                 getLogger().severe("Failed to enable bamboo/dripstone collision fix: " + e.getMessage());
-                if (configProvider.get().getVerbose()) {
+                if (configProvider.getConfig().getVerbose()) {
                     //noinspection CallToPrintStackTrace
                     e.printStackTrace();
                 }
@@ -100,9 +114,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     }
 
     void onAllPluginsEnabled() {
-        // Wait to load providers until all plugins are loaded in case other plugins register their own providers.
-        // TODO
-        // providerManager.loadProvidersFromConfig(getConfig());
+        CoordinateOffsetCore.get().signalCompletedLoading();
 
         // bStats Metrics
         MetricsWrapper.reportMetrics(this);
@@ -111,15 +123,6 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         packetOffsetAdapter.onDisable();
-    }
-
-    /**
-     * Reload the CoordinateOffset configuration defined in <code>config.yml</code>.
-     */
-    public void reload() {
-        // TODO
-//        providerManager.loadProvidersFromConfig(getConfig());
-        getLogger().info("Config reloaded.");
     }
 
     /**

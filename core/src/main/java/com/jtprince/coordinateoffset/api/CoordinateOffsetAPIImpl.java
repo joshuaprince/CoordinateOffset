@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -35,6 +36,11 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
     @Override
     public CoordinateOffsetConfig getConfig() {
         return core.getConfig();
+    }
+
+    @Override
+    public CoordinateOffsetProviderConfig getProviderConfig() {
+        return core.getProviderConfig();
     }
 
     @Override

@@ -24,6 +24,13 @@ public class OffsetProviderListSerializer implements Serializer<SequencedMap<Str
     @Override
     public SequencedMap<String, OffsetProvider> deserialize(SequencedMap<String, ?> element) {
         SequencedMap<String, OffsetProvider> providers = new LinkedHashMap<>();
+        if (!CoordinateOffsetCore.get().areAllProvidersLoaded()) {
+            /*
+             * Wait until all providers are registered. Until then, other config needs to load, so just return an
+             * empty list. The platform will call reload() after all providers are registered.
+             */
+            return providers;
+        }
         for (Map.Entry<String, ?> entry : element.entrySet()) {
             if (!(entry.getValue() instanceof Map<?, ?> providerMap)) {
                 throw new IllegalArgumentException("Invalid provider config for key " + entry.getKey());

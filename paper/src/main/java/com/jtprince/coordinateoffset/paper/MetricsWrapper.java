@@ -21,7 +21,7 @@ public class MetricsWrapper {
 
         metrics.addCustomChart(new DrilldownPie("default_offset_provider", () -> {
             Map<String, Map<String, Integer>> result = new HashMap<>();
-            OffsetProvider defaultProvider = core.getConfig().getDefaultOffsetProviderConfig();
+            OffsetProvider defaultProvider = core.getProviderConfig().getDefaultOffsetProviderConfig();
             if (defaultProvider instanceof ConstantOffsetProvider) {
                 result.put("ConstantOffsetProvider", Map.of("ConstantOffsetProvider", 1));
             } else if (defaultProvider instanceof RandomOffsetProvider randomOffsetProvider) {
@@ -83,7 +83,7 @@ public class MetricsWrapper {
             enabledDisabledStr(core.getConfig().getVerbose())));
 
         metrics.addCustomChart(new SimplePie("offset_provider_override_count", () ->
-            String.valueOf(core.getConfig().getOffsetProviderOverrides().size())));
+            String.valueOf(core.getProviderConfig().getOffsetProviderOverrides().size())));
     }
 
     private static String enabledDisabledStr(boolean enabled) {

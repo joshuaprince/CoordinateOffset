@@ -77,7 +77,7 @@ class CoordinateOffsetCommands {
                                  @NotNull String cmd, @NotNull String[] args) {
             // Base permission checked by command in plugin.yml
             try {
-                plugin.reload();
+//                plugin.reload(); // TODO!
                 replyOk(sender, "Reloaded CoordinateOffset config. Players may need to relog to see the changes.");
             } catch (Exception e) {
                 replyError(sender, "Failed to reload the config. Check the console for details.");
