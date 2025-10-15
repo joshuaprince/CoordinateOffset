@@ -36,14 +36,15 @@ public class OffsetProviderListSerializer implements Serializer<SequencedMap<Str
                 throw new IllegalArgumentException("Invalid provider config for key " + entry.getKey());
             }
             if (!providerMap.containsKey("class") || !(providerMap.get("class") instanceof String className)) {
-                throw new IllegalArgumentException("Missing or invalid field 'class' for provider " + entry.getKey());
+                throw new IllegalArgumentException("Missing or invalid field 'class' for provider \"" + entry.getKey() + "\"");
             }
             OffsetProvider.ConfigurationFactory<? extends OffsetProvider> factory =
                 CoordinateOffsetCore.get().getProviderRegistry().getProviderFactory(className);
             if (factory == null) {
-                // Unknown provider class - log and skip, best-effort loading for any known provider classes
-                CoordinateOffsetCore.get().getLogger().severe("Unknown Offset Provider class " + className + " for provider \"" + entry.getKey() + "\". Skipping.");
-                continue;
+                // Unknown provider class
+                // TODO: Replace full failure with best-effort loading for the remaining known provider classes
+                // Can't do this now because ConfigLib will just delete any unknown sections when doing update()
+                throw new IllegalArgumentException("Unknown provider class " + className + " for provider \"" + entry.getKey() + "\"");
             }
 
             OffsetProvider provider = factory.deserialize(entry.getKey(), (Map<String, ?>) providerMap);

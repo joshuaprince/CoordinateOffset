@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SequencedMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @NullMarked
 @Configuration
@@ -39,9 +40,11 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
         " - provider: zeroAtLocation",
         "   playerUuid: 00000000-0000-0000-0000-000000000000"
     })
-    List<OffsetProviderOverrideConfig> offsetProviderOverrides = List.of();
+    List<OffsetProviderOverrideConfigImpl> offsetProviderOverrides = List.of();
     public List<OffsetProviderOverrideConfig> getOffsetProviderOverrides() {
-        return offsetProviderOverrides;
+        return offsetProviderOverrides.stream()
+            .filter(o -> o.validate(false))
+            .collect(Collectors.toUnmodifiableList());
     }
 
     @Comment({
@@ -84,7 +87,10 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
         }
 
         // Override rules must be valid, but not fatal
-        // TODO
+        for (OffsetProviderOverrideConfigImpl override : offsetProviderOverrides) {
+            override.validate(true);
+            // No early return; they'll be excluded in calls to getOffsetProviderOverrides
+        }
 
         return true;
     }
