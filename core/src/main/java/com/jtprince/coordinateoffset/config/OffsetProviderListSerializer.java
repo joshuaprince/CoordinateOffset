@@ -41,7 +41,9 @@ public class OffsetProviderListSerializer implements Serializer<SequencedMap<Str
             OffsetProvider.ConfigurationFactory<? extends OffsetProvider> factory =
                 CoordinateOffsetCore.get().getProviderRegistry().getProviderFactory(className);
             if (factory == null) {
-                throw new IllegalArgumentException("Unknown provider class " + className + " for provider " + entry.getKey());
+                // Unknown provider class - log and skip, best-effort loading for any known provider classes
+                CoordinateOffsetCore.get().getLogger().severe("Unknown Offset Provider class " + className + " for provider \"" + entry.getKey() + "\". Skipping.");
+                continue;
             }
 
             OffsetProvider provider = factory.deserialize(entry.getKey(), (Map<String, ?>) providerMap);

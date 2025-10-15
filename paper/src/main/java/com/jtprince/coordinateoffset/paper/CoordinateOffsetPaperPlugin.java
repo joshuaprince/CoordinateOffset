@@ -77,6 +77,11 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         public PlayerOffsetPersistence getPlayerOffsetPersistence() {
             return offsetPersistence;
         }
+
+        @Override
+        public void shutdown() {
+            Bukkit.getPluginManager().disablePlugin(CoordinateOffsetPaperPlugin.this);
+        }
     }
 
     @Override
@@ -117,7 +122,9 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         CoordinateOffsetCore.get().signalCompletedLoading();
 
         // bStats Metrics
-        MetricsWrapper.reportMetrics(this);
+        if (this.isEnabled()) { // signalCompletedLoading may have disabled the plugin
+            MetricsWrapper.reportMetrics(this);
+        }
     }
 
     @Override

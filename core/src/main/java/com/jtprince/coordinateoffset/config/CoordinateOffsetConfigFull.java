@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.config;
 
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.provider.DefaultOffsetProviders;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import de.exlll.configlib.Comment;
@@ -10,6 +11,7 @@ import org.jspecify.annotations.NullMarked;
 import java.util.List;
 import java.util.Objects;
 import java.util.SequencedMap;
+import java.util.logging.Logger;
 
 @NullMarked
 @Configuration
@@ -56,5 +58,34 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
     SequencedMap<String, OffsetProvider> offsetProviders = DefaultOffsetProviders.PROVIDERS;
     public SequencedMap<String, OffsetProvider> getAllOffsetProviderConfigs() {
         return offsetProviders;
+    }
+
+    /**
+     * Validate that the fully-loaded configuration is valid.
+     *
+     * @return true if the configuration is acceptable to proceed, false if there is a problem that prevents
+     *         the plugin from functioning correctly.
+     */
+    public boolean validateBaseAndFullConfig() {
+        Logger logger = CoordinateOffsetCore.get().getLogger();
+
+        // Default provider must exist
+        try {
+            getDefaultOffsetProviderConfig();
+        } catch (NullPointerException e) {
+            logger.severe("Failed to load offset providers from config.");
+            logger.severe("An offset provider named \"" + defaultOffsetProvider + "\" was configured as the default provider, but no such provider exists.");
+            logger.severe("Check your configuration and make sure that:");
+            logger.severe("  1) The provider name is spelled correctly.");
+            logger.severe("  2) A provider whose name matches exactly is defined in the 'offsetProviders' section.");
+            logger.severe("  3) There are no other errors in the log that may indicate why the provider failed to load.");
+            logger.severe("If the problem persists, please contact the plugin author for assistance.");
+            return false;
+        }
+
+        // Override rules must be valid, but not fatal
+        // TODO
+
+        return true;
     }
 }

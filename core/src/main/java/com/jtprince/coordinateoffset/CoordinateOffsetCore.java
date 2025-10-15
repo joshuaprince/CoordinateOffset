@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPIImpl;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigFull;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
@@ -62,13 +63,9 @@ public class CoordinateOffsetCore {
         this.completedLoading = true;
         this.adapter.reloadConfig(false);
 
-        try {
-            adapter.getProviderConfig().getDefaultOffsetProviderConfig();
-        } catch (NullPointerException e) {
-            Logger logger = adapter.getLogger();
-            logger.severe("Failed to load default offset provider from config.");
-            logger.severe("If you are using a custom offset provider, ensure that you have registered it with the API before the server finishes loading.");
-            throw e;
+        // Validate configuration and shutdown if invalid
+        if (!((CoordinateOffsetConfigFull) this.adapter.getProviderConfig()).validateBaseAndFullConfig()) {
+            adapter.shutdown();
         }
     }
 
