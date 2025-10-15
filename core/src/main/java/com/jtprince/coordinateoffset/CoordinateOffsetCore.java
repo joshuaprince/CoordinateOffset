@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPIImpl;
+import com.jtprince.coordinateoffset.config.ConfigHolder;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigFull;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
@@ -20,6 +21,7 @@ public class CoordinateOffsetCore {
 
     private final CoordinateOffsetAdapter adapter;
 
+    private final ConfigHolder configHolder;
     private final OffsetProviderRegistry registry;
     private final OffsetCreator offsetCreator;
     private final OffsetHolder offsetHolder;
@@ -28,12 +30,13 @@ public class CoordinateOffsetCore {
 
     private CoordinateOffsetCore(CoordinateOffsetAdapter adapter) {
         this.adapter = adapter;
+        this.configHolder = new ConfigHolder(this);
         this.registry = new OffsetProviderRegistry();
         this.offsetCreator = new OffsetCreator(this);
         this.offsetHolder = new OffsetHolder(this);
     }
 
-    public static void bootstrap(CoordinateOffsetAdapter adapter) {
+    public static CoordinateOffsetCore bootstrap(CoordinateOffsetAdapter adapter) {
         CoordinateOffsetCore core = new CoordinateOffsetCore(adapter);
         CoordinateOffsetCore.set(core);
 
@@ -44,6 +47,8 @@ public class CoordinateOffsetCore {
         core.getProviderRegistry().registerProviderClass("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
         core.getProviderRegistry().registerProviderClass("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
         core.getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
+
+        return core;
     }
 
     /**
@@ -61,10 +66,10 @@ public class CoordinateOffsetCore {
     public void signalCompletedLoading() {
         if (this.completedLoading) return;
         this.completedLoading = true;
-        this.adapter.reloadConfig(false);
+        this.configHolder.reload(false);
 
         // Validate configuration and shutdown if invalid
-        if (!((CoordinateOffsetConfigFull) this.adapter.getProviderConfig()).validateBaseAndFullConfig()) {
+        if (!((CoordinateOffsetConfigFull) this.getProviderConfig()).validateBaseAndFullConfig()) {
             adapter.shutdown();
         }
     }
@@ -78,11 +83,11 @@ public class CoordinateOffsetCore {
     }
 
     public CoordinateOffsetConfig getConfig() {
-        return adapter.getConfig();
+        return configHolder.getConfig();
     }
 
     public CoordinateOffsetProviderConfig getProviderConfig() {
-        return adapter.getProviderConfig();
+        return configHolder.getProviderConfig();
     }
 
     public Logger getLogger() {

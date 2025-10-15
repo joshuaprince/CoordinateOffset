@@ -3,8 +3,6 @@ package com.jtprince.coordinateoffset.paper;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
-import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperPlayerOffsetPersistence;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
@@ -15,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -22,7 +21,6 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private static CoordinateOffsetPaperPlugin instance;
     private CoordinateOffsetPaperAdapter adapter;
 
-    private PaperConfigAdapter configProvider;
     private WorldBorderObfuscator worldBorderObfuscator;
     private PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
@@ -32,22 +30,10 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         private final PaperPlayerOffsetPersistence offsetPersistence =
             new PaperPlayerOffsetPersistence(CoordinateOffsetPaperPlugin.this);
 
-        @Override
-        public CoordinateOffsetConfig getConfig() {
-            return configProvider.getConfig();
-        }
 
         @Override
-        public CoordinateOffsetProviderConfig getProviderConfig() {
-            return configProvider.getProviderConfig();
-        }
-
-        @Override
-        public void reloadConfig(boolean logMessage) {
-            configProvider.reload();
-            if (logMessage) {
-                CoordinateOffsetPaperPlugin.this.getLogger().info("Config reloaded.");
-            }
+        public Path getConfigPath() {
+            return getDataFolder().toPath().resolve("config.yml");
         }
 
         @Override
@@ -89,13 +75,10 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         instance = this;
 
         adapter = new CoordinateOffsetPaperAdapter();
-        CoordinateOffsetCore.bootstrap(adapter);
-
-        configProvider = new PaperConfigAdapter(this);
+        CoordinateOffsetCore core = CoordinateOffsetCore.bootstrap(adapter);
 
         worldBorderObfuscator = new WorldBorderObfuscator(this);
-        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(
-            this, CoordinateOffsetCore.get(), worldBorderObfuscator), this);
+        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, core, worldBorderObfuscator), this);
 
         CoordinateOffsetCommands commands = new CoordinateOffsetCommands(this);
         //  TODO! FIXME: Re-enable commands when updated for Paper API
@@ -105,12 +88,12 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         packetOffsetAdapter = new PacketOffsetAdapter(this);
         packetOffsetAdapter.registerAdapters();
 
-        if (configProvider.getConfig().getFixCollisionBamboo() || configProvider.getConfig().getFixCollisionDripstone()) {
+        if (core.getConfig().getFixCollisionBamboo() || core.getConfig().getFixCollisionDripstone()) {
             try {
-                collisionFix = new CollisionFix(this, configProvider.getConfig().getFixCollisionBamboo(), configProvider.getConfig().getFixCollisionDripstone());
+                collisionFix = new CollisionFix(this, core.getConfig().getFixCollisionBamboo(), core.getConfig().getFixCollisionDripstone());
             } catch (Exception e) {
                 getLogger().severe("Failed to enable bamboo/dripstone collision fix: " + e.getMessage());
-                if (configProvider.getConfig().getVerbose()) {
+                if (core.getConfig().getVerbose()) {
                     //noinspection CallToPrintStackTrace
                     e.printStackTrace();
                 }

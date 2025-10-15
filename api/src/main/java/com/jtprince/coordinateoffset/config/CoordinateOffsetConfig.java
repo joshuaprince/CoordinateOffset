@@ -22,5 +22,6 @@ public interface CoordinateOffsetConfig {
     boolean getDebugEnable();
     int getDebugPacketHistorySize();
 
+    // Hidden configurations
     boolean getUnsafeResetOnDistantTeleport();
 }

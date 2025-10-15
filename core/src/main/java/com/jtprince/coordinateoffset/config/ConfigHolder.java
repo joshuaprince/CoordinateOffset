@@ -1,18 +1,14 @@
-package com.jtprince.coordinateoffset.paper;
+package com.jtprince.coordinateoffset.config;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigBase;
-import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigFull;
 import de.exlll.configlib.ConfigLib;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
-import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 
-@NullMarked
-public class PaperConfigAdapter {
+public class ConfigHolder {
     static YamlConfigurationProperties properties =
         ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
             .header("""
@@ -22,11 +18,11 @@ public class PaperConfigAdapter {
                     """)
             .build();
 
-    private final CoordinateOffsetPaperPlugin plugin;
+    private final CoordinateOffsetCore core;
     private @Nullable CoordinateOffsetConfigBase config;
 
-    public PaperConfigAdapter(CoordinateOffsetPaperPlugin plugin) {
-        this.plugin = plugin;
+    public ConfigHolder(CoordinateOffsetCore core) {
+        this.core = core;
         loadConfig();
     }
 
@@ -45,16 +41,19 @@ public class PaperConfigAdapter {
     }
 
     private void loadConfig() {
-        Path configPath = plugin.getDataFolder().toPath().resolve("config.yml");
+        Path configPath = core.getAdapter().getConfigPath();
 
-        if (!CoordinateOffsetCore.get().areAllProvidersLoaded() && configPath.toFile().exists()) {
+        if (!core.areAllProvidersLoaded() && configPath.toFile().exists()) {
             config = YamlConfigurations.load(configPath, CoordinateOffsetConfigBase.class, properties);
         } else {
             config = YamlConfigurations.update(configPath, CoordinateOffsetConfigFull.class, properties);
         }
     }
 
-    public void reload() {
+    public void reload(boolean logMessage) {
         loadConfig();
+        if (logMessage) {
+            CoordinateOffsetCore.get().getLogger().info("Config reloaded.");
+        }
     }
 }

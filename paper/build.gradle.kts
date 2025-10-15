@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":core"))
     implementation(libs.bstats.bukkit)
-    implementation(libs.configlib.paper)
+    implementation(libs.configlib.yaml)
     implementation(libs.morepdt)
 
     testImplementation(libs.paper.api)
@@ -41,6 +41,8 @@ tasks {
         archiveFileName.set("${rootProject.name}-Paper.jar")
         relocate("org.bstats", "${project.group}.lib.org.bstats")
         relocate("com.jeff_media", "${project.group}.lib.com.jeff_media")
+        relocate("de.exlll.configlib", "${project.group}.lib.de.exlll.configlib")
+        relocate("org.snakeyaml", "${project.group}.lib.org.snakeyaml")
         minimize()
     }
 
