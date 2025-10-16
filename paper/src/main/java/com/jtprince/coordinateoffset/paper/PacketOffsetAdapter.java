@@ -10,6 +10,7 @@ import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.util.PartialStacktraceLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 import java.util.UUID;
@@ -21,6 +22,7 @@ class PacketOffsetAdapter {
     private final Logger logger;
     private final PacketDebugger packetHistory;
     private final PartialStacktraceLogger partialStacktraceLogger;
+    @Nullable private Listener listener;
 
     private final long stacktraceRateLimitMs = 2500; // 2.5 seconds
 
@@ -37,12 +39,13 @@ class PacketOffsetAdapter {
     }
 
     void registerAdapters() {
-        PacketEvents.getAPI().getEventManager().registerListener(new Listener());
-        PacketEvents.getAPI().init();
+        listener = new Listener();
+        PacketEvents.getAPI().getEventManager().registerListener(listener);
     }
 
     void onDisable() {
-        PacketEvents.getAPI().terminate();
+        PacketEvents.getAPI().getEventManager().unregisterListener(listener);
+        listener = null;
         this.partialStacktraceLogger.flushRateLimits(0);
     }
 

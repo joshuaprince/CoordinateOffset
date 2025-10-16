@@ -26,7 +26,7 @@ class OffsetCreator {
 
         // Priority 0: Permission-based bypass
         if (core.getConfig().getBypassByPermission() &&
-                context.player().hasPermission(CoordinateOffsetPermissions.BYPASS)) {
+                context.player().hasPermission(CoordinateOffsetPermission.BYPASS.node)) {
             if (core.getConfig().getVerbose()) {
                 core.getLogger().info("Bypassing offset with permission for player " + context.player().getName() + ".");
             }

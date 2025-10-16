@@ -13,13 +13,13 @@ public class ConfigHolder {
         ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()
             .header("""
                     CoordinateOffset Configuration File
-                    See https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide
+                    https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide
                     Comments left in this file will be deleted when configuration is loaded.
                     """)
             .build();
 
     private final CoordinateOffsetCore core;
-    private @Nullable CoordinateOffsetConfigBase config;
+    private @Nullable CoordinateOffsetConfigBase runningConfig;
     private boolean safeToWriteToConfigFile = false;
 
     public ConfigHolder(CoordinateOffsetCore core) {
@@ -27,14 +27,14 @@ public class ConfigHolder {
     }
 
     public CoordinateOffsetConfigBase getConfig() {
-        if (config == null) {
+        if (runningConfig == null) {
             throw new IllegalStateException("CoordinateOffset config is not yet loaded.");
         }
-        return config;
+        return runningConfig;
     }
 
     public CoordinateOffsetConfigFull getProviderConfig() {
-        if (!(config instanceof CoordinateOffsetConfigFull fullConfig)) {
+        if (!(runningConfig instanceof CoordinateOffsetConfigFull fullConfig)) {
             throw new IllegalStateException("CoordinateOffset Offset Provider config is not yet loaded.");
         }
         return fullConfig;
@@ -44,43 +44,56 @@ public class ConfigHolder {
         Path configPath = core.getAdapter().getConfigPath();
 
         if (configPath.toFile().exists()) {
-            config = YamlConfigurations.load(configPath, CoordinateOffsetConfigBase.class, properties);
-            if (ConfigVersion.onLoadBaseConfig(configPath, config)) {
+            runningConfig = YamlConfigurations.load(configPath, CoordinateOffsetConfigBase.class, properties);
+            if (ConfigVersion.onLoadBaseConfig(configPath, runningConfig)) {
                 safeToWriteToConfigFile = true;
             }
         } else {
-            config = new CoordinateOffsetConfigBase();
+            runningConfig = new CoordinateOffsetConfigBase();
             safeToWriteToConfigFile = true;
             loadFullConfig();
         }
     }
 
-    /** @return true if the config was successfully loaded, false if errors occurred. */
+    /** @return true if the config was successfully loaded and validated, false if errors occurred. */
     public boolean loadFullConfig() {
         Path configPath = core.getAdapter().getConfigPath();
 
         if (configPath.toFile().exists()) {
             try {
-                config = YamlConfigurations.load(configPath, CoordinateOffsetConfigFull.class, properties);
+                CoordinateOffsetConfigFull c = YamlConfigurations.load(configPath, CoordinateOffsetConfigFull.class, properties);
+                if (!c.validateBaseAndFullConfig()) {
+                    return false;
+                }
+                runningConfig = c;
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
         } else {
-            config = new CoordinateOffsetConfigFull();
+            runningConfig = new CoordinateOffsetConfigFull();
         }
 
         if (safeToWriteToConfigFile) {
-            config.configVersion = ConfigVersion.CURRENT;
-            YamlConfigurations.save(configPath, CoordinateOffsetConfigFull.class, (CoordinateOffsetConfigFull) config, properties);
+            runningConfig.configVersion = ConfigVersion.CURRENT;
+            YamlConfigurations.save(configPath, CoordinateOffsetConfigFull.class, (CoordinateOffsetConfigFull) runningConfig, properties);
         }
 
         return true;
     }
 
-    public void reload(boolean logMessage) {
-        if (loadFullConfig() && logMessage) {
-            CoordinateOffsetCore.get().getLogger().info("Config reloaded.");
+    public boolean reload() {
+        boolean success = false;
+        try {
+            success = loadFullConfig();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        if (success) {
+            CoordinateOffsetCore.get().getLogger().info("Config reloaded.");
+        } else {
+            CoordinateOffsetCore.get().getLogger().warning("Failed to reload config. Running configuration has not been changed.");
+        }
+        return success;
     }
 }

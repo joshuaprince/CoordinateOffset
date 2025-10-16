@@ -79,12 +79,6 @@ public class CoordinateOffsetCore {
         this.completedLoading = true;
         if (!this.configHolder.loadFullConfig()) {
             adapter.shutdown();
-            return;
-        }
-
-        // Validate configuration and shutdown if invalid
-        if (!configHolder.getProviderConfig().validateBaseAndFullConfig()) {
-            adapter.shutdown();
         }
     }
 
@@ -102,6 +96,10 @@ public class CoordinateOffsetCore {
 
     public CoordinateOffsetProviderConfig getProviderConfig() {
         return configHolder.getProviderConfig();
+    }
+
+    public boolean reloadConfig() {
+        return configHolder.reload();
     }
 
     public Logger getLogger() {
