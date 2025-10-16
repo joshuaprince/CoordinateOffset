@@ -19,7 +19,11 @@ import java.util.stream.Collectors;
 public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase implements CoordinateOffsetProviderConfig {
     @Comment({
         "",
-        "Specify the method by which coordinate offsets will be calculated.",
+        "############################################################################ #", // keep this header at the top
+        "####################### Offset Provider Configuration ###################### #",
+        "############################################################################ #",
+        "",
+        "Specify the method used to apply coordinate offsets to players.",
         "Options are any key under `offsetProviders` below (e.g. constant, random...)"
     })
     String defaultOffsetProvider = "random";
@@ -30,7 +34,7 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
     @Comment({
         "",
         "List of overrides to the default offset provider. The first item has the",
-        "  highest priority. `provider` is a required key; optional keys are",
+        "  highest priority. `provider` is a required key. Optional keys are",
         "  `world`, `playerUuid`, and `permission` which, if present, must ALL match",
         "  for the override to apply. Example:",
         "offsetProviderOverrides:",

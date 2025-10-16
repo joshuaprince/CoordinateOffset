@@ -18,10 +18,13 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     }
     @Comment({
         "",
-        "Coordinates are used to determine how to shift these blocks slightly. That",
-        "  means that if the client and server disagree about coordinates, they also",
-        "  disagree about how to shift these blocks, so movement is glitchy near these",
-        "  blocks. These settings completely disable collisions for these blocks.",
+        "############################################################################ #", // keep this header at the top
+        "################### General CoordinateOffset Configuration ################# #",
+        "############################################################################ #",
+        "",
+        "Disable server-side collision checks for the listed blocks.",
+        "  If collision checks are left enabled, movement near these blocks will be",
+        "  extremely glitchy for all players with an offset applied.",
         "  More info: https://github.com/joshuaprince/CoordinateOffset/issues/8",
         "Note: Requires a server restart for changes to take effect."
     })
@@ -36,8 +39,8 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
 
     @Comment({
         "",
-        "If true, players with the `coordinateoffset.bypass` permission will bypass",
-        "  all providers and see their real coordinates."
+        "If true, players with the `coordinateoffset.bypass` permission will always",
+        "  see their real coordinates (no offsets). Disable this to test the plugin."
     })
     boolean bypassByPermission = false;
     public boolean getBypassByPermission() {
@@ -46,8 +49,8 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
 
     @Comment({
         "",
-        "Wait for players to be near the world border to send border packets.",
-        "  Disabling this fixes moving borders, but may leak coordinates - see",
+        "Don't send world border packets to players who are far from the world border.",
+        "  Disable if your world border moves, but beware that it may leak coordinates:",
         "  https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations#world-border"
     })
     boolean obfuscateWorldBorder = true;
@@ -57,8 +60,8 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
 
     @Comment({
         "",
-        "Hide all \"debug\" information from players with a nonzero offset.",
-        "  Debug information reveals real coordinates if obfuscation is disabled.",
+        "Don't send any \"debug\" packets to players with an applied offset.",
+        "  Debug information reveals real coordinates if this is disabled.",
         "  More info: https://minecraft.wiki/w/Debug_property"
     })
     boolean obfuscateDebugPropertySubscriptions = true;
