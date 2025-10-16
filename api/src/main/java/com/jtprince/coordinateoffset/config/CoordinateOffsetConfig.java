@@ -20,8 +20,6 @@ public interface CoordinateOffsetConfig {
     boolean getObfuscateWorldBorder();
     boolean getObfuscateDebugPropertySubscriptions();
     boolean getVerbose();
-    boolean getDebugEnable();
-    int getDebugPacketHistorySize();
 
     // Hidden configurations
     boolean getUnsafeResetOnDistantTeleport();

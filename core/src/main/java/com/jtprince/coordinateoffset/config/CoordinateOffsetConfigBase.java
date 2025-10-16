@@ -78,24 +78,6 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
         return verbose;
     }
 
-    @Configuration
-    public static class DebugOptions {
-        boolean enable = false;
-        int packetHistorySize = 8;
-    }
-    @Comment({
-        "",
-        "Enable additional logging when errors occur in the plugin.",
-        "  Do not enable in production!"
-    })
-    DebugOptions debug = new DebugOptions();
-    public boolean getDebugEnable() {
-        return debug.enable;
-    }
-    public int getDebugPacketHistorySize() {
-        return Math.max(1, debug.packetHistorySize);
-    }
-
     @Nullable Boolean unsafeResetOnDistantTeleport = null;
     public boolean getUnsafeResetOnDistantTeleport() {
         return unsafeResetOnDistantTeleport != null && unsafeResetOnDistantTeleport;

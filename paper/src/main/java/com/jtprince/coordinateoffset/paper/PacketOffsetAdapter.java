@@ -20,7 +20,6 @@ class PacketOffsetAdapter {
     private final CoordinateOffsetCore core;
     private final CoordinateOffsetPaperPlugin coPlugin;
     private final Logger logger;
-    private final PacketDebugger packetHistory;
     private final PartialStacktraceLogger partialStacktraceLogger;
     @Nullable private Listener listener;
 
@@ -30,7 +29,6 @@ class PacketOffsetAdapter {
         this.core = CoordinateOffsetCore.get();
         this.coPlugin = plugin;
         this.logger = plugin.getLogger();
-        this.packetHistory = new PacketDebugger();
 
         this.partialStacktraceLogger = new PartialStacktraceLogger(logger);
         Bukkit.getServer().getScheduler().runTaskTimer(coPlugin, () -> {
@@ -71,10 +69,6 @@ class PacketOffsetAdapter {
              * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
              */
             if (!(event.getPacketType() instanceof PacketType.Play.Server)) return;
-
-            if (core.getConfig().getDebugEnable()) {
-                packetHistory.logPacket(event.getUser(), event.getPacketType());
-            }
 
             try {
                 if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
@@ -128,9 +122,6 @@ class PacketOffsetAdapter {
                     "Failed to apply offset for outgoing packet " +
                         event.getPacketType().getName() + " to " + event.getUser().getName(),
                     e, stacktraceRateLimitMs, event.getUser().getName());
-                if (logged && core.getConfig().getDebugEnable()) {
-                    logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
-                }
             }
         }
 
@@ -141,10 +132,6 @@ class PacketOffsetAdapter {
              * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
              */
             if (!(event.getPacketType() instanceof PacketType.Play.Client)) return;
-
-            if (core.getConfig().getDebugEnable()) {
-                packetHistory.logPacket(event.getUser(), event.getPacketType());
-            }
 
             try {
                 Player bukkitPlayer = event.getPlayer();
@@ -159,9 +146,6 @@ class PacketOffsetAdapter {
                     "Failed to reverse offset for incoming packet " +
                         event.getPacketType().getName() + " from " + event.getUser().getName(),
                     e, stacktraceRateLimitMs, event.getUser().getName());
-                if (logged && core.getConfig().getDebugEnable()) {
-                    logger.warning("Packet history for above stacktrace: " + packetHistory.getHistory(event.getUser()));
-                }
             }
         }
 
@@ -193,10 +177,6 @@ class PacketOffsetAdapter {
             core.getOffsetHolder().remove(playerUuid);
             core.getOffsetHolder().disconnectPlayer(playerUuid);
             coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
-
-            if (core.getConfig().getDebugEnable()) {
-                packetHistory.forget(event.getUser());
-            }
         }
     }
 }
