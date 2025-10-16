@@ -52,7 +52,10 @@ public class MetricsWrapper {
         }));
 
         metrics.addCustomChart(new SimplePie("world_border_obfuscation", () ->
-            enabledDisabledStr(plugin.getWorldBorderObfuscator().enableObfuscation())));
+            enabledDisabledStr(core.getConfig().getObfuscateWorldBorder())));
+
+        metrics.addCustomChart(new SimplePie("debug_packet_obfuscation", () ->
+            enabledDisabledStr(core.getConfig().getObfuscateDebugPropertySubscriptions())));
 
         metrics.addCustomChart(new SimplePie("unsafe_reset_on_teleport", () ->
             enabledDisabledStr(core.getConfig().getUnsafeResetOnDistantTeleport())));

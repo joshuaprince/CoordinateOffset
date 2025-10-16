@@ -18,6 +18,7 @@ public interface CoordinateOffsetConfig {
     boolean getFixCollisionDripstone();
     boolean getBypassByPermission();
     boolean getObfuscateWorldBorder();
+    boolean getObfuscateDebugPropertySubscriptions();
     boolean getVerbose();
     boolean getDebugEnable();
     int getDebugPacketHistorySize();

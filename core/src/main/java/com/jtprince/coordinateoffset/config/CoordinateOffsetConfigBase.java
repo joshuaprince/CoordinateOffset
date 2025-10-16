@@ -57,6 +57,17 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
 
     @Comment({
         "",
+        "Hide all \"debug\" information from players with a nonzero offset.",
+        "  Debug information reveals real coordinates if obfuscation is disabled.",
+        "  More info: https://minecraft.wiki/w/Debug_property"
+    })
+    boolean obfuscateDebugPropertySubscriptions = true;
+    public boolean getObfuscateDebugPropertySubscriptions() {
+        return obfuscateDebugPropertySubscriptions;
+    }
+
+    @Comment({
+        "",
         "Enable a log message when a player's offset changes."
     })
     boolean verbose = false;

@@ -44,11 +44,13 @@ public class OffsetterRegistry {
             new OffsetterServerBlockChange(),
             new OffsetterServerBlockEntityData(),
             new OffsetterServerChunkData(),
+            // Start debug packets - completely disabled by default
             new OffsetterServerDebugBlockValue(),
             new OffsetterServerDebugChunkValue(),
             // new OffsetterServerDebugEntityValue(), // TODO: see class file
             // new OffsetterServerDebugEvent(),       // TODO: see class file
             // new OffsetterServerDebugSample(),      // TODO: see class file
+            // End debug packets
             new OffsetterServerEffect(),
             new OffsetterServerEntityEquipment(),
             new OffsetterServerEntityMetadata(),

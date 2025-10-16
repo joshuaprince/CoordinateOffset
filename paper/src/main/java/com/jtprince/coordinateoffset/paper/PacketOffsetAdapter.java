@@ -104,6 +104,14 @@ class PacketOffsetAdapter {
                 // Short-circuit when no offset is applied
                 if (offset.equals(Offset.ZERO)) return;
 
+                // Debug packets are hard to offset. Obfuscate them for anyone with a nonzero offset.
+                if (core.getConfig().getObfuscateDebugPropertySubscriptions()) {
+                    if (event.getPacketType().getName().startsWith("DEBUG")) {
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
                 // World border packets must only be manipulated by the World Border Obfuscator
                 //noinspection SuspiciousMethodCalls
                 if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
