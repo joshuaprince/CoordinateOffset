@@ -9,7 +9,10 @@ import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.SequencedMap;
+import java.util.UUID;
 
 @NullMarked
 public class ZeroAtLocationOffsetProvider extends OffsetProvider {
@@ -96,23 +99,23 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
         return map;
     }
 
-    public static class ConfigFactory implements ConfigurationFactory<ZeroAtLocationOffsetProvider> {
-        @Override
-        public ZeroAtLocationOffsetProvider deserialize(String name, Map<String, ?> element) throws IllegalArgumentException {
-            ResetConfig resetConfig = ResetConfig.deserialize(element); // nullable
+    public static ZeroAtLocationOffsetProvider deserialize(OffsetProviderConfig config) throws IllegalArgumentException {
+        SequencedMap<String, Object> s = config.getConfigSection();
 
-            WorldAlignmentConfig worldAlignment = null;
-            if (element.containsKey("worldAlignment")) {
-                if (!(element.get("worldAlignment") instanceof List<?> worldAlignmentList)) {
-                    throw new IllegalArgumentException("Provider \"" + name + ": Field `worldAlignment` for ZeroAtLocationOffsetProvider is not a list.");
-                }
-                worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
+        ResetConfig resetConfig = ResetConfig.deserialize(s); // nullable
+
+        WorldAlignmentConfig worldAlignment = null;
+        if (s.containsKey("worldAlignment")) {
+            if (!(s.get("worldAlignment") instanceof List<?> worldAlignmentList)) {
+                throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
+                    ": Field `worldAlignment` for ZeroAtLocationOffsetProvider is not a list.");
             }
-
-            ZeroAtLocationOffsetProvider provider = new ZeroAtLocationOffsetProvider(name);
-            provider.resetConfig = resetConfig;
-            provider.worldAlignmentConfig = worldAlignment;
-            return provider;
+            worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
         }
+
+        ZeroAtLocationOffsetProvider provider = new ZeroAtLocationOffsetProvider(config.getUserDefinedProviderName());
+        provider.resetConfig = resetConfig;
+        provider.worldAlignmentConfig = worldAlignment;
+        return provider;
     }
 }

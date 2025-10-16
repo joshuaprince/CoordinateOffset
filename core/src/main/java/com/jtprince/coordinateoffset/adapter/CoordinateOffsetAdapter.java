@@ -15,7 +15,8 @@ public interface CoordinateOffsetAdapter {
     Logger getLogger();
 
     @Nullable OffsetPlayer getPlayer(UUID playerUuid);
-    OffsetPlayer adaptPlayer(Object platformPlayerObject);
+    OffsetPlayer adaptPlayer(Object platformPlayerObject) throws ClassCastException;
+    OffsetLocation adaptLocation(Object platformLocationObject) throws ClassCastException;
 
     /**
      * Get a platform interface into storing persistent data on Players.

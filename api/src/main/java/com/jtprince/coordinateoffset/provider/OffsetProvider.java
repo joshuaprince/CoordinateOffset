@@ -7,7 +7,6 @@ import de.exlll.configlib.Configuration;
 import de.exlll.configlib.Polymorphic;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.Map;
 import java.util.SequencedMap;
 import java.util.UUID;
 
@@ -31,8 +30,8 @@ public abstract class OffsetProvider {
 
     public final String name;
 
-    public OffsetProvider(String name) {
-        this.name = name;
+    public OffsetProvider(String userDefinedProviderName) {
+        this.name = userDefinedProviderName;
     }
 
     /**
@@ -78,7 +77,4 @@ public abstract class OffsetProvider {
     public void onPlayerDisconnect(UUID playerUuid) {}
 
     public abstract SequencedMap<String, ?> serialize();
-    public interface ConfigurationFactory<T extends OffsetProvider> {
-        T deserialize(String name, Map<String, ?> element) throws IllegalArgumentException;
-    }
 }

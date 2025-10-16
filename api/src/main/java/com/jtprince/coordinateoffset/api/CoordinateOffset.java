@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Singleton holder for the CoordinateOffsetAPI instance.
  *
- * <p>To get the API instance as an API consumer, call {@link #get()}.</p>
+ * <p>To get the API instance as an API consumer, call {@link #api()}.</p>
  */
 @NullMarked
 public class CoordinateOffset {
@@ -17,7 +17,7 @@ public class CoordinateOffset {
      *
      * @throws IllegalStateException if the API has not been initialized yet.
      */
-    public static CoordinateOffsetAPI get() {
+    public static CoordinateOffsetAPI api() {
         if (apiSingleton == null) {
             throw new IllegalStateException("CoordinateOffset API is not yet initialized.");
         }

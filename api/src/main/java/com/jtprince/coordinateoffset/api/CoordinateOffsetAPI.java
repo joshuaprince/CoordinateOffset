@@ -1,19 +1,22 @@
 package com.jtprince.coordinateoffset.api;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
+import com.jtprince.coordinateoffset.provider.OffsetProviderConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 /**
  * API for the CoordinateOffset plugin.
  *
- * <p>External plugins may get a singleton instance of this API via {@link CoordinateOffset#get()}.</p>
+ * <p>External plugins may get a singleton instance of this API via {@link CoordinateOffset#api()}.</p>
  */
 @NullMarked
 public interface CoordinateOffsetAPI {
@@ -52,7 +55,19 @@ public interface CoordinateOffsetAPI {
      * @return An OffsetPlayer instance for the player.
      * @throws ClassCastException if the provided object is not of the expected type for the running platform.
      */
-    OffsetPlayer adaptPlayer(Object platformPlayerObject);
+    OffsetPlayer adaptPlayer(Object platformPlayerObject) throws ClassCastException;
+
+    /**
+     * Adapt a platform-specific location object (such as a Bukkit <code>Location</code>) into an
+     * {@link OffsetLocation}.
+     *
+     * @param platformLocationObject A platform-specific location object. The exact type depends on the platform adapter
+     *                               in use. For example, on a Paper server, this would be an instance of
+     *                               <code>org.bukkit.Location</code>.
+     * @return An OffsetLocation instance for the location.
+     * @throws ClassCastException if the provided object is not of the expected type for the running platform.
+     */
+    OffsetLocation adaptLocation(Object platformLocationObject) throws ClassCastException;
 
     /**
      * Get running configuration of the CoordinateOffset plugin.
@@ -85,11 +100,11 @@ public interface CoordinateOffsetAPI {
      *                  by creating a provider in the CoordinateOffset config.yml with a <code>class:</code> parameter
      *                  matching this name. This should be a simple string matching the class name of the provider,
      *                  for example <code>"MyOffsetProvider"</code>.
-     * @param factory A factory to create instances of the provider from configuration data. For examples, see
-     *                {@link OffsetProvider.ConfigurationFactory} and the built-in providers.
+     * @param deserializeFunction A function that can create instances of the provider from configuration data. For
+     *                            examples, see the built-in providers.
      */
     void registerOffsetProviderClass(
         String className,
-        OffsetProvider.ConfigurationFactory<? extends OffsetProvider> factory
+        Function<OffsetProviderConfig, OffsetProvider> deserializeFunction
     );
 }

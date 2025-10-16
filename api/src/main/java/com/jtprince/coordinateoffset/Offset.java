@@ -1,5 +1,7 @@
 package com.jtprince.coordinateoffset;
 
+import com.jtprince.coordinateoffset.adapter.OffsetLocation;
+import com.jtprince.coordinateoffset.api.CoordinateOffset;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jspecify.annotations.NullMarked;
 
@@ -120,5 +122,59 @@ public record Offset (int x, int z) {
     @Pure
     public Offset negate() {
         return new Offset(-x, -z);
+    }
+
+    /**
+     * Apply this offset to a location.
+     *
+     * @param location Location to apply the offset to. This may either be a {@link OffsetLocation} or a
+     *                 platform-specific location object, such as a Bukkit Location.
+     * @return A new Location object with the offset applied and all other data (including type) matching the original.
+     * @param <T> Either {@link OffsetLocation} or a platform-specific location object.
+     * @throws ClassCastException if the provided object is not of an acceptable type for the running platform.
+     */
+    @Pure
+    public <T> T apply(T location) throws ClassCastException {
+        OffsetLocation l;
+        if (location instanceof OffsetLocation) {
+            l = (OffsetLocation) location;
+        } else {
+            l = CoordinateOffset.api().adaptLocation(location);
+        }
+
+        OffsetLocation applied = l.apply(this);
+
+        if (location instanceof OffsetLocation) {
+            return (T) applied;
+        } else {
+            return (T) applied.getPlatformLocationObject();
+        }
+    }
+
+    /**
+     * Unapply this offset from a location.
+     *
+     * @param location Location to unapply the offset from. This may either be a {@link OffsetLocation} or a
+     *                 platform-specific location object, such as a Bukkit Location.
+     * @return A new Location object with the offset unapplied and all other data (including type) matching the original.
+     * @param <T> Either {@link OffsetLocation} or a platform-specific location object.
+     * @throws ClassCastException if the provided object is not of an acceptable type for the running platform.
+     */
+    @Pure
+    public <T> T unapply(T location) throws ClassCastException {
+        OffsetLocation l;
+        if (location instanceof OffsetLocation) {
+            l = (OffsetLocation) location;
+        } else {
+            l = CoordinateOffset.api().adaptLocation(location);
+        }
+
+        OffsetLocation unapplied = l.unapply(this);
+
+        if (location instanceof OffsetLocation) {
+            return (T) unapplied;
+        } else {
+            return (T) unapplied.getPlatformLocationObject();
+        }
     }
 }

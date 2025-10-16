@@ -9,7 +9,10 @@ import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.SequencedMap;
+import java.util.UUID;
 
 @NullMarked
 public class RandomOffsetProvider extends OffsetProvider {
@@ -121,49 +124,51 @@ public class RandomOffsetProvider extends OffsetProvider {
         return map;
     }
 
-    public static class ConfigFactory implements ConfigurationFactory<RandomOffsetProvider> {
-        @Override
-        public RandomOffsetProvider deserialize(String name, Map<String, ?> element) throws IllegalArgumentException {
-            if (!element.containsKey("randomBound") || !(element.get("randomBound") instanceof Number randomBoundNum)) {
-                throw new IllegalArgumentException("Provider \"" + name + ": Required key `randomBound` for RandomOffsetProvider is missing or invalid.");
-            }
-            int randomBound = randomBoundNum.intValue();
+    public static RandomOffsetProvider deserialize(OffsetProviderConfig config) throws IllegalArgumentException {
+        SequencedMap<String, Object> s = config.getConfigSection();
 
-            ResetConfig resetConfig = ResetConfig.deserialize(element); // nullable
-
-            Boolean persistent = null;
-            if (element.containsKey("persistent")) {
-                if (!(element.get("persistent") instanceof Boolean)) {
-                    throw new IllegalArgumentException("Provider \"" + name + ": Field `persistent` for RandomOffsetProvider is not a boolean.");
-                }
-                persistent = (Boolean) element.get("persistent");
-            }
-            String persistenceKeyConfig = null;
-            if (element.containsKey("persistenceKey")) {
-                persistenceKeyConfig = element.get("persistenceKey").toString();
-            }
-            PlayerOffsetPersistence.Key persistenceKey = null;
-            if (persistent != null && persistent) {
-                persistenceKey = new PlayerOffsetPersistence.Key(
-                    PERSISTENCE_KEY_CLASS_KEY,
-                    persistenceKeyConfig != null ? persistenceKeyConfig : DEFAULT_PERSISTENCE_KEY
-                );
-            }
-
-            WorldAlignmentConfig worldAlignment = null;
-            if (element.containsKey("worldAlignment")) {
-                if (!(element.get("worldAlignment") instanceof List<?> worldAlignmentList)) {
-                    throw new IllegalArgumentException("Provider \"" + name + ": Field `worldAlignment` for RandomOffsetProvider is not a list.");
-                }
-                worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
-            }
-
-            RandomOffsetProvider provider = new RandomOffsetProvider(name, randomBound, persistenceKey);
-            provider.resetConfig = resetConfig;
-            provider.isPersistentConfig = persistent;
-            provider.persistenceKeyConfig = persistenceKeyConfig;
-            provider.worldAlignmentConfig = worldAlignment;
-            return provider;
+        if (!s.containsKey("randomBound") || !(s.get("randomBound") instanceof Number randomBoundNum)) {
+            throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
+                ": Required key `randomBound` for RandomOffsetProvider is missing or invalid.");
         }
+        int randomBound = randomBoundNum.intValue();
+
+        ResetConfig resetConfig = ResetConfig.deserialize(s); // nullable
+
+        Boolean persistent = null;
+        if (s.containsKey("persistent")) {
+            if (!(s.get("persistent") instanceof Boolean)) {
+                throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
+                    ": Field `persistent` for RandomOffsetProvider is not a boolean.");
+            }
+            persistent = (Boolean) s.get("persistent");
+        }
+        String persistenceKeyConfig = null;
+        if (s.containsKey("persistenceKey")) {
+            persistenceKeyConfig = s.get("persistenceKey").toString();
+        }
+        PlayerOffsetPersistence.Key persistenceKey = null;
+        if (persistent != null && persistent) {
+            persistenceKey = new PlayerOffsetPersistence.Key(
+                PERSISTENCE_KEY_CLASS_KEY,
+                persistenceKeyConfig != null ? persistenceKeyConfig : DEFAULT_PERSISTENCE_KEY
+            );
+        }
+
+        WorldAlignmentConfig worldAlignment = null;
+        if (s.containsKey("worldAlignment")) {
+            if (!(s.get("worldAlignment") instanceof List<?> worldAlignmentList)) {
+                throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
+                    ": Field `worldAlignment` for RandomOffsetProvider is not a list.");
+            }
+            worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
+        }
+
+        RandomOffsetProvider provider = new RandomOffsetProvider(config.getUserDefinedProviderName(), randomBound, persistenceKey);
+        provider.resetConfig = resetConfig;
+        provider.isPersistentConfig = persistent;
+        provider.persistenceKeyConfig = persistenceKeyConfig;
+        provider.worldAlignmentConfig = worldAlignment;
+        return provider;
     }
 }

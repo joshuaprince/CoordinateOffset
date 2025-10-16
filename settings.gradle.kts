@@ -11,3 +11,5 @@ dependencyResolutionManagement {
 include("api")
 include("core")
 include("paper")
+
+include("example-api-plugin")

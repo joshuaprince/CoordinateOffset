@@ -1,8 +1,10 @@
 package com.jtprince.coordinateoffset.paper.adapter;
 
+import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PaperLocation implements OffsetLocation {
@@ -12,7 +14,8 @@ public class PaperLocation implements OffsetLocation {
     }
 
     @Override
-    public String getWorldName() {
+    @Nullable public String getWorldName() {
+        if (location.getWorld() == null) return null;
         return location.getWorld().getName();
     }
 
@@ -29,6 +32,16 @@ public class PaperLocation implements OffsetLocation {
     @Override
     public double getZ() {
         return location.getZ();
+    }
+
+    @Override
+    public OffsetLocation apply(Offset offset) {
+        return new PaperLocation(location.clone().subtract(offset.x(), 0, offset.z()));
+    }
+
+    @Override
+    public OffsetLocation unapply(Offset offset) {
+        return new PaperLocation(location.clone().add(offset.x(), 0, offset.z()));
     }
 
     @Override

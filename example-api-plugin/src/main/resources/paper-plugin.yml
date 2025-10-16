@@ -1,0 +1,15 @@
+# You may depend on CoordinateOffset as a Paper plugin. Add CoordinateOffset as a BEFORE dependency.
+name: ExampleCoordinateOffsetAPIPlugin
+version: 0.0.1
+main: com.jtprince.coordinateoffset.example.ExampleCoordinateOffsetAPIPlugin
+api-version: "1.21"
+authors: [ joshuaprince ]
+website: https://github.com/joshuaprince/CoordinateOffset
+description: Example Coordinate Offset API Plugin
+dependencies:
+  server:
+    CoordinateOffset:
+      load: BEFORE
+      # Set "required" to true to disable your plugin if CoordinateOffset is not present.
+      # If required is "false", be sure to handle the case where CoordinateOffset is not present.
+      required: false

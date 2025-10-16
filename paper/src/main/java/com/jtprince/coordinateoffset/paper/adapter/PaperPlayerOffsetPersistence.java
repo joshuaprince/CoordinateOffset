@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
+import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
@@ -20,8 +21,12 @@ import java.util.UUID;
 
 @NullMarked
 public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
-    private final PersistentDataType<PersistentDataContainer, Map<String, Offset>> PDT_TYPE =
-        DataType.asMap(DataType.STRING, PaperOffset.PDT_TYPE);
+    private static final PersistentDataType<int[], Offset> PDT_OFFSET =
+        new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class,
+            PaperPlayerOffsetPersistence::fromPdt, PaperPlayerOffsetPersistence::toPdt);
+
+    private static final PersistentDataType<PersistentDataContainer, Map<String, Offset>> PDT_WORLD_OFFSET_CONTAINER =
+        DataType.asMap(DataType.STRING, PDT_OFFSET);
 
     private final CoordinateOffsetPaperPlugin plugin;
     public PaperPlayerOffsetPersistence(CoordinateOffsetPaperPlugin plugin) {
@@ -34,12 +39,12 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
             throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
         }
 
-        Map<String, Offset> map = paperPlayer.getPlayer().getPersistentDataContainer().get(persistenceKeyToBukkitKey(persistenceKey), PDT_TYPE);
+        Map<String, Offset> map = paperPlayer.getPlayer().getPersistentDataContainer().get(persistenceKeyToBukkitKey(persistenceKey), PDT_WORLD_OFFSET_CONTAINER);
         if (map == null) {
             map = new HashMap<>();
         }
         map.put(worldName, offset);
-        paperPlayer.getPlayer().getPersistentDataContainer().set(persistenceKeyToBukkitKey(persistenceKey), PDT_TYPE, map);
+        paperPlayer.getPlayer().getPersistentDataContainer().set(persistenceKeyToBukkitKey(persistenceKey), PDT_WORLD_OFFSET_CONTAINER, map);
     }
 
     @Override
@@ -60,11 +65,19 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
             throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
         }
 
-        Map<String, Offset> map = paperPlayer.getPlayer().getPersistentDataContainer().get(persistenceKeyToBukkitKey(persistenceKey), PDT_TYPE);
+        Map<String, Offset> map = paperPlayer.getPlayer().getPersistentDataContainer().get(persistenceKeyToBukkitKey(persistenceKey), PDT_WORLD_OFFSET_CONTAINER);
         if (map == null) {
             return null;
         }
         return map.get(worldName);
+    }
+
+    private static Offset fromPdt(int[] arr) {
+        return new Offset(arr[0], arr[1]);
+    }
+
+    private static int[] toPdt(Offset offset) {
+        return new int[] { offset.x(), offset.z() };
     }
 
     private NamespacedKey persistenceKeyToBukkitKey(PlayerOffsetPersistence.Key persistenceKey) {

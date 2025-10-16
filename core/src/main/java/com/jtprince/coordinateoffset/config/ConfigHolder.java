@@ -55,11 +55,17 @@ public class ConfigHolder {
         }
     }
 
-    public void loadFullConfig() {
+    /** @return true if the config was successfully loaded, false if errors occurred. */
+    public boolean loadFullConfig() {
         Path configPath = core.getAdapter().getConfigPath();
 
         if (configPath.toFile().exists()) {
-            config = YamlConfigurations.load(configPath, CoordinateOffsetConfigFull.class, properties);
+            try {
+                config = YamlConfigurations.load(configPath, CoordinateOffsetConfigFull.class, properties);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
         } else {
             config = new CoordinateOffsetConfigFull();
         }
@@ -68,11 +74,12 @@ public class ConfigHolder {
             config.configVersion = ConfigVersion.CURRENT;
             YamlConfigurations.save(configPath, CoordinateOffsetConfigFull.class, (CoordinateOffsetConfigFull) config, properties);
         }
+
+        return true;
     }
 
     public void reload(boolean logMessage) {
-        loadFullConfig();
-        if (logMessage) {
+        if (loadFullConfig() && logMessage) {
             CoordinateOffsetCore.get().getLogger().info("Config reloaded.");
         }
     }

@@ -21,7 +21,7 @@ public class CoordinateOffsetCore {
     private final CoordinateOffsetAdapter adapter;
 
     private final ConfigHolder configHolder;
-    private final OffsetProviderRegistry registry;
+    private final OffsetProviderClassRegistry registry;
     private final OffsetCreator offsetCreator;
     private final OffsetHolder offsetHolder;
 
@@ -30,7 +30,7 @@ public class CoordinateOffsetCore {
     private CoordinateOffsetCore(CoordinateOffsetAdapter adapter) {
         this.adapter = adapter;
         this.configHolder = new ConfigHolder(this);
-        this.registry = new OffsetProviderRegistry();
+        this.registry = new OffsetProviderClassRegistry();
         this.offsetCreator = new OffsetCreator(this);
         this.offsetHolder = new OffsetHolder(this);
     }
@@ -48,10 +48,17 @@ public class CoordinateOffsetCore {
         CoordinateOffsetAPIImpl.set(api);
 
         // Register built-in providers
-        core.getProviderRegistry().registerProviderClass("ConstantOffsetProvider", new ConstantOffsetProvider.ConfigFactory());
-        core.getProviderRegistry().registerProviderClass("RandomOffsetProvider", new RandomOffsetProvider.ConfigFactory());
-        core.getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", new ZeroAtLocationOffsetProvider.ConfigFactory());
+        core.getProviderRegistry().registerProviderClass("ConstantOffsetProvider", true, ConstantOffsetProvider::deserialize);
+        core.getProviderRegistry().registerProviderClass("RandomOffsetProvider", true, RandomOffsetProvider::deserialize);
+        core.getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", true, ZeroAtLocationOffsetProvider::deserialize);
 
+        return core;
+    }
+
+    public static CoordinateOffsetCore bootstrapForTests(CoordinateOffsetAdapter adapter) {
+        // TODO: This is a hack to allow tests to run without a server environment
+        CoordinateOffsetCore core = new CoordinateOffsetCore(adapter);
+        CoordinateOffsetAPIImpl.set(new CoordinateOffsetAPIImpl(core));
         return core;
     }
 
@@ -70,7 +77,10 @@ public class CoordinateOffsetCore {
     public void signalCompletedLoading() {
         if (this.completedLoading) return;
         this.completedLoading = true;
-        this.configHolder.loadFullConfig();
+        if (!this.configHolder.loadFullConfig()) {
+            adapter.shutdown();
+            return;
+        }
 
         // Validate configuration and shutdown if invalid
         if (!configHolder.getProviderConfig().validateBaseAndFullConfig()) {
@@ -82,7 +92,7 @@ public class CoordinateOffsetCore {
         return adapter;
     }
 
-    public OffsetProviderRegistry getProviderRegistry() {
+    public OffsetProviderClassRegistry getProviderRegistry() {
         return registry;
     }
 

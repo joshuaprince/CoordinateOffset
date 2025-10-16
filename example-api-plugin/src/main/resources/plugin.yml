@@ -1,0 +1,12 @@
+# You may depend on CoordinateOffset as a Bukkit plugin. Add CoordinateOffset in the "depend" list.
+name: ExampleCoordinateOffsetAPIPlugin
+version: 0.0.1
+main: com.jtprince.coordinateoffset.example.ExampleCoordinateOffsetAPIPlugin
+description: Example Coordinate Offset API Plugin
+author: joshuaprince
+website: https://github.com/joshuaprince/CoordinateOffset
+api-version: 1.21
+softdepend:
+  - CoordinateOffset
+# Add to the "depend" list to disable your plugin if CoordinateOffset is not present.
+# If including as a soft dependency, be sure to handle the case where CoordinateOffset is not present.
