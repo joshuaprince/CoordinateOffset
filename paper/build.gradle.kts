@@ -2,8 +2,6 @@ plugins {
     id("com.gradleup.shadow")
 }
 
-project.group = "com.jtprince.coordinateoffset"
-
 dependencies {
     shadow(libs.paper.api)
     shadow(libs.packetevents.api)
