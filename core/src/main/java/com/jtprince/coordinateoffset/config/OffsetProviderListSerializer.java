@@ -4,11 +4,13 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.OffsetProviderClassRegistry;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import de.exlll.configlib.Serializer;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SequencedMap;
 
+@NullMarked
 public class OffsetProviderListSerializer implements Serializer<SequencedMap<String, OffsetProvider>, SequencedMap<String, ?>> {
     @Override
     public SequencedMap<String, ?> serialize(SequencedMap<String, OffsetProvider> map) {

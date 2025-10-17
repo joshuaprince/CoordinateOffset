@@ -4,9 +4,10 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Server;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jspecify.annotations.NonNull;
 
 @SuppressWarnings("unused") // Constructors are called reflectively
-public class WrapperPlayServerEffect extends PacketWrapper<WrapperPlayServerEffect> {
+public class WrapperPlayServerEffect extends PacketWrapper<@NonNull WrapperPlayServerEffect> {
     private int eventId;
     private Vector3i position;
     private byte[] remainingData; // Lazily ignoring everything after position, since only position matters for this plugin

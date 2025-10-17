@@ -6,7 +6,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterClientCreativeInventoryAction extends PacketOffsetter<WrapperPlayClientCreativeInventoryAction> {
     public OffsetterClientCreativeInventoryAction() {
         super(WrapperPlayClientCreativeInventoryAction.class, PacketType.Play.Client.CREATIVE_INVENTORY_ACTION);

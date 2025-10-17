@@ -1,11 +1,13 @@
 package com.jtprince.coordinateoffset.provider.util;
 
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.SequencedMap;
 
+@NullMarked
 public record ResetConfig(
     @Nullable Boolean resetOnDeath,
     @Nullable Boolean resetOnWorldChange,

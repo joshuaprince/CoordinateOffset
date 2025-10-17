@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import com.jtprince.coordinateoffset.offsetter.wrapper.WrapperPlayServerNamedSoundEffect;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerNamedSoundEffect extends PacketOffsetter<WrapperPlayServerNamedSoundEffect> {
     public OffsetterServerNamedSoundEffect() {
         // Removed around 1.19.2ish

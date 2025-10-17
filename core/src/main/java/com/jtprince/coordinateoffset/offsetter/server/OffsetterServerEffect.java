@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import com.jtprince.coordinateoffset.offsetter.wrapper.WrapperPlayServerEffect;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerEffect extends PacketOffsetter<WrapperPlayServerEffect> {
     public OffsetterServerEffect() {
         super(WrapperPlayServerEffect.class, PacketType.Play.Server.EFFECT);

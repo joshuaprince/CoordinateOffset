@@ -8,7 +8,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockEntityData;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerBlockEntityData extends PacketOffsetter<WrapperPlayServerBlockEntityData> {
     public OffsetterServerBlockEntityData() {
         super(WrapperPlayServerBlockEntityData.class, PacketType.Play.Server.BLOCK_ENTITY_DATA);

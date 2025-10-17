@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterClientPlayerBlockPlacement extends PacketOffsetter<WrapperPlayClientPlayerBlockPlacement> {
     public OffsetterClientPlayerBlockPlacement() {
         super(WrapperPlayClientPlayerBlockPlacement.class, PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT);

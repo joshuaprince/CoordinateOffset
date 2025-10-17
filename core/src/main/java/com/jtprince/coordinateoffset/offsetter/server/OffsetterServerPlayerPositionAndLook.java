@@ -6,7 +6,9 @@ import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerPlayerPositionAndLook extends PacketOffsetter<WrapperPlayServerPlayerPositionAndLook> {
     public OffsetterServerPlayerPositionAndLook() {
         super(WrapperPlayServerPlayerPositionAndLook.class, PacketType.Play.Server.PLAYER_POSITION_AND_LOOK);

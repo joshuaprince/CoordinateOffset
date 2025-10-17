@@ -4,10 +4,12 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import de.exlll.configlib.ConfigLib;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 
+@NullMarked
 public class ConfigHolder {
     static YamlConfigurationProperties properties =
         ConfigLib.BUKKIT_DEFAULT_PROPERTIES.toBuilder()

@@ -6,10 +6,12 @@ import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@NullMarked
 public class MetricsWrapper {
     // https://bstats.org/plugin/bukkit/CoordinateOffset/19988
     private static final int BSTATS_PLUGIN_METRICS_ID = 19988;

@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientTestInstanceBlockAction;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterClientTestInstanceBlockAction extends PacketOffsetter<WrapperPlayClientTestInstanceBlockAction> {
     public OffsetterClientTestInstanceBlockAction() {
         super(WrapperPlayClientTestInstanceBlockAction.class, PacketType.Play.Client.TEST_INSTANCE_BLOCK_ACTION);

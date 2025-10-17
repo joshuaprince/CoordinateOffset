@@ -6,11 +6,13 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@NullMarked
 public class OffsetterClientClickWindow extends PacketOffsetter<WrapperPlayClientClickWindow> {
     public OffsetterClientClickWindow() {
         super(WrapperPlayClientClickWindow.class, PacketType.Play.Client.CLICK_WINDOW);

@@ -13,7 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.*;
 
@@ -25,6 +25,7 @@ import java.util.*;
  * </ul>
  * <a href="https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations#world-border">Wiki</a>
  */
+@NullMarked
 class WorldBorderObfuscator {
     private static final double BASELINE_SIZE = 60_000_000;
 
@@ -87,7 +88,7 @@ class WorldBorderObfuscator {
         return seen;
     }
 
-    void translate(@NonNull PacketSendEvent packet, @NonNull Player player) {
+    void translate(PacketSendEvent packet, Player player) {
         Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player));
 
         /*

@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateJigsawBlock;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterClientUpdateJigsawBlock extends PacketOffsetter<WrapperPlayClientUpdateJigsawBlock> {
     public OffsetterClientUpdateJigsawBlock() {
         super(WrapperPlayClientUpdateJigsawBlock.class, PacketType.Play.Client.UPDATE_JIGSAW_BLOCK);

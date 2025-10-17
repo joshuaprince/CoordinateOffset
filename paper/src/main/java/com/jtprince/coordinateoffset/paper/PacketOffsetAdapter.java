@@ -111,7 +111,7 @@ class PacketOffsetAdapter {
 
                 // World border packets must only be manipulated by the World Border Obfuscator
                 //noinspection SuspiciousMethodCalls
-                if (PACKETS_WORLD_BORDER.contains(event.getPacketType())) {
+                if (PACKETS_WORLD_BORDER.contains(event.getPacketType()) && coPlugin.getWorldBorderObfuscator() != null) {
                     coPlugin.getWorldBorderObfuscator().translate(event, event.getPlayer());
                     return;
                 }
@@ -176,7 +176,9 @@ class PacketOffsetAdapter {
 
             core.getOffsetHolder().remove(playerUuid);
             core.getOffsetHolder().disconnectPlayer(playerUuid);
-            coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
+            if (coPlugin.getWorldBorderObfuscator() != null) {
+                coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
+            }
         }
     }
 }

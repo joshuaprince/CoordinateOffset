@@ -3,11 +3,12 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.config.OffsetProviderOverrideConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@NullMarked
 class OffsetCreator {
     private final CoordinateOffsetCore core;
 
@@ -15,7 +16,7 @@ class OffsetCreator {
         this.core = core;
     }
 
-    @NonNull Offset createOffset(@NonNull OffsetProviderContext context) {
+    Offset createOffset(OffsetProviderContext context) {
         OffsetProvider provider = null;
         ProviderSource providerSource = null;
 

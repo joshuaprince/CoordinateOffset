@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.provider.util;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.SequencedMap;
  * <br><br>
  * Then, any offsets provided in {@code world} would be scaled down by a factor of 8 and reused in {@code world_nether}.
  */
+@NullMarked
 public class WorldAlignmentConfig {
     private record Alignment(String greaterWorldName, String lesserWorldName, int scaleShift) {}
     public record QueryResult(String targetWorldName, int rightShiftAmount) {}

@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.client.*;
 import com.jtprince.coordinateoffset.offsetter.server.*;
+import org.jspecify.annotations.NullMarked;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
+@NullMarked
 public class OffsetterRegistry {
     private static final Map<PacketTypeCommon, PacketOffsetter> byPacketType;
 

@@ -3,11 +3,13 @@ package com.jtprince.coordinateoffset.provider;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.provider.util.ResetConfig;
 import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SequencedMap;
 
+@NullMarked
 public class DefaultOffsetProviders {
     static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
         "constant",

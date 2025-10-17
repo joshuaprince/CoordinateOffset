@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateLight;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerUpdateLight extends PacketOffsetter<WrapperPlayServerUpdateLight> {
     public OffsetterServerUpdateLight() {
         super(WrapperPlayServerUpdateLight.class, PacketType.Play.Server.UPDATE_LIGHT);

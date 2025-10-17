@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSetTestBlock;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterClientSetTestBlock extends PacketOffsetter<WrapperPlayClientSetTestBlock> {
     public OffsetterClientSetTestBlock() {
         super(WrapperPlayClientSetTestBlock.class, PacketType.Play.Client.SET_TEST_BLOCK);

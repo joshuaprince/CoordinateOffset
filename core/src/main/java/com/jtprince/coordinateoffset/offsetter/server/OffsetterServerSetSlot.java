@@ -6,7 +6,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerSetSlot extends PacketOffsetter<WrapperPlayServerSetSlot> {
     public OffsetterServerSetSlot() {
         super(WrapperPlayServerSetSlot.class, PacketType.Play.Server.SET_SLOT);

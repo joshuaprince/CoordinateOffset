@@ -14,10 +14,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.server.ServerLoadEvent;
+import org.jspecify.annotations.NullMarked;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.Objects;
 
+@NullMarked
 class BukkitEventListener implements Listener {
     private final CoordinateOffsetPaperPlugin plugin;
     private final CoordinateOffsetCore core;

@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkData;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerChunkData extends PacketOffsetter<WrapperPlayServerChunkData> {
     public OffsetterServerChunkData() {
         super(WrapperPlayServerChunkData.class, PacketType.Play.Server.CHUNK_DATA);

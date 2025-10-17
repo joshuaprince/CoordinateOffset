@@ -6,9 +6,11 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Set;
 
+@NullMarked
 public class OffsetterClientPlayerDigging extends PacketOffsetter<WrapperPlayClientPlayerDigging> {
     /**
      * Despite containing a block position, these actions do not actually refer to a block in the world. Minecraft

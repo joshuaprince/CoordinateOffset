@@ -7,7 +7,9 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWa
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerWaypoint extends PacketOffsetter<WrapperPlayServerWaypoint> {
     public OffsetterServerWaypoint() {
         super(WrapperPlayServerWaypoint.class, PacketType.Play.Server.WAYPOINT);

@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.protocol.world.chunk.HeightmapType;
 import com.github.retrooper.packetevents.protocol.world.chunk.TileEntity;
 import com.jtprince.coordinateoffset.Offset;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 
@@ -16,6 +16,7 @@ import java.util.Map;
  * Wrapper for a PacketEvents Column (vertical slice of chunk sections) that returns offsetted
  * coordinates. (This was the cleanest way to wrap Column since it is not an interface)
  */
+@NullMarked
 public class OffsettedColumn extends Column {
     private final Column inner;
     private final Offset offset;
@@ -75,7 +76,7 @@ public class OffsettedColumn extends Column {
      */
     @SuppressWarnings("deprecation")
     @Override
-    public @NonNull NBTCompound getHeightMaps() {
+    public NBTCompound getHeightMaps() {
         return inner.getHeightMaps();
     }
 
@@ -83,7 +84,7 @@ public class OffsettedColumn extends Column {
      * Only used in 1.21.5+.
      */
     @Override
-    public @NonNull Map<HeightmapType, long[]> getHeightmaps() {
+    public Map<HeightmapType, long[]> getHeightmaps() {
         return inner.getHeightmaps();
     }
 

@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityPositionSync;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerEntityPositionSync extends PacketOffsetter<WrapperPlayServerEntityPositionSync> {
     public OffsetterServerEntityPositionSync() {
         super(WrapperPlayServerEntityPositionSync.class, PacketType.Play.Server.ENTITY_POSITION_SYNC);

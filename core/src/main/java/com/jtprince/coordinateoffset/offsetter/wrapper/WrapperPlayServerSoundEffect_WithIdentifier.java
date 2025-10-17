@@ -25,6 +25,7 @@ import com.github.retrooper.packetevents.protocol.sound.SoundCategory;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /*
@@ -41,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  * be necessary for /playsound commands.
  */
 @SuppressWarnings("unused") // Constructors are called reflectively
-public class WrapperPlayServerSoundEffect_WithIdentifier extends PacketWrapper<WrapperPlayServerSoundEffect_WithIdentifier> {
+public class WrapperPlayServerSoundEffect_WithIdentifier extends PacketWrapper<@NonNull WrapperPlayServerSoundEffect_WithIdentifier> {
     private int soundID;
     // CO Start
     private @Nullable ResourceLocation soundName;

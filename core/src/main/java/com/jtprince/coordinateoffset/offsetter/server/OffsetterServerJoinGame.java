@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerJoinGame;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerJoinGame extends PacketOffsetter<WrapperPlayServerJoinGame> {
     public OffsetterServerJoinGame() {
         super(WrapperPlayServerJoinGame.class, PacketType.Play.Server.JOIN_GAME);

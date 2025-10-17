@@ -6,7 +6,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCursorItem;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerSetCursorItem extends PacketOffsetter<WrapperPlayServerSetCursorItem> {
     public OffsetterServerSetCursorItem() {
         super(WrapperPlayServerSetCursorItem.class, PacketType.Play.Server.SET_CURSOR_ITEM);

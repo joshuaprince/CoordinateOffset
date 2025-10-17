@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerVehicleMove;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerVehicleMove extends PacketOffsetter<WrapperPlayServerVehicleMove> {
     public OffsetterServerVehicleMove() {
         super(WrapperPlayServerVehicleMove.class, PacketType.Play.Server.VEHICLE_MOVE);

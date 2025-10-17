@@ -8,17 +8,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@NullMarked
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
-    private static CoordinateOffsetPaperPlugin instance;
-    private PaperAdapter adapter;
+    private static @Nullable CoordinateOffsetPaperPlugin instance;
+    private @Nullable PaperAdapter adapter;
 
-    private WorldBorderObfuscator worldBorderObfuscator;
-    private PacketOffsetAdapter packetOffsetAdapter;
+    private @Nullable WorldBorderObfuscator worldBorderObfuscator;
+    private @Nullable PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
 
     @Override
@@ -68,7 +70,10 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        packetOffsetAdapter.onDisable();
+        if (packetOffsetAdapter != null) {
+            packetOffsetAdapter.onDisable();
+            packetOffsetAdapter = null;
+        }
     }
 
     /**
@@ -80,7 +85,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         return instance;
     }
 
-    WorldBorderObfuscator getWorldBorderObfuscator() {
+    @Nullable WorldBorderObfuscator getWorldBorderObfuscator() {
         return worldBorderObfuscator;
     }
 }

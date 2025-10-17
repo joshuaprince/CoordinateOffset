@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockBreakAnimation;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerBlockBreakAnimation extends PacketOffsetter<WrapperPlayServerBlockBreakAnimation> {
     public OffsetterServerBlockBreakAnimation() {
         super(WrapperPlayServerBlockBreakAnimation.class, PacketType.Play.Server.BLOCK_BREAK_ANIMATION);

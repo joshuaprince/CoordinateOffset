@@ -1,5 +1,8 @@
 package com.jtprince.coordinateoffset;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public enum CoordinateOffsetPermission {
     BYPASS("coordinateoffset.bypass",
         "Players with this permission will never have their coordinates offsetted."),

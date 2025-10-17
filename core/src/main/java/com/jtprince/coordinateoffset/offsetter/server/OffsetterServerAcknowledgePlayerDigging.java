@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerAcknowledgePlayerDigging;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerAcknowledgePlayerDigging extends PacketOffsetter<WrapperPlayServerAcknowledgePlayerDigging> {
     public OffsetterServerAcknowledgePlayerDigging() {
         // Removed in 1.19 and replaced with ACKNOWLEDGE_BLOCK_CHANGES (which has no position)

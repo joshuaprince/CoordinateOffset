@@ -1,5 +1,8 @@
 package com.jtprince.coordinateoffset.util;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +14,7 @@ import java.util.stream.Collectors;
  * Utility to print condensed stacktraces for when the lower frames of the stack are irrelevant. Also contains utilities
  * for rate limiting repeated exceptions.
  */
+@NullMarked
 public class PartialStacktraceLogger {
     private final Logger logger;
     public PartialStacktraceLogger(Logger logger) {
@@ -54,8 +58,8 @@ public class PartialStacktraceLogger {
     private static class RateLimitEntry {
         long lastLoggedTime;
         int numUnloggedOccurrences = 0;
-        String lastUnloggedStacktrace;
-        Exception lastUnloggedException;
+        @Nullable String lastUnloggedStacktrace;
+        @Nullable Exception lastUnloggedException;
     }
     private record RateLimitEntryKey(Class<? extends Exception> clazz, String aggregateKey) {}
     private final HashMap<RateLimitEntryKey, RateLimitEntry> activeRateLimits = new HashMap<>();

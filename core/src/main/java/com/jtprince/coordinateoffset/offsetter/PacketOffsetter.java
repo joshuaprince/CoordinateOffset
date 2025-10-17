@@ -18,10 +18,12 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
+@NullMarked
 public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
     public final PacketTypeCommon[] packetTypes;
     public final Class<T> wrapperClass;

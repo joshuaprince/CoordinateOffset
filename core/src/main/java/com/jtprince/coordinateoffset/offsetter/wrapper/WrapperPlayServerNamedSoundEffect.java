@@ -6,9 +6,10 @@ import com.github.retrooper.packetevents.protocol.sound.SoundCategory;
 import com.github.retrooper.packetevents.resources.ResourceLocation;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import org.jspecify.annotations.NonNull;
 
 @SuppressWarnings("unused") // Constructors are called reflectively
-public class WrapperPlayServerNamedSoundEffect extends PacketWrapper<WrapperPlayServerNamedSoundEffect> {
+public class WrapperPlayServerNamedSoundEffect extends PacketWrapper<@NonNull WrapperPlayServerNamedSoundEffect> {
     private ResourceLocation soundName;
     private SoundCategory soundCategory;
     private Vector3i effectPosition;

@@ -8,9 +8,11 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Optional;
 
+@NullMarked
 public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlayServerEntityMetadata> {
     public OffsetterServerEntityMetadata() {
         super(WrapperPlayServerEntityMetadata.class, PacketType.Play.Server.ENTITY_METADATA);

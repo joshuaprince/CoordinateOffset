@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerMoveMinecart;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class OffsetterServerMoveMinecart extends PacketOffsetter<WrapperPlayServerMoveMinecart> {
     public OffsetterServerMoveMinecart() {
         super(WrapperPlayServerMoveMinecart.class, PacketType.Play.Server.MOVE_MINECART);
