@@ -126,17 +126,7 @@ class WorldBorderObfuscator {
             return;
         }
 
-        WorldBorder border;
-        try {
-            border = player.getWorldBorder();
-        } catch (NoSuchMethodError e) {
-            /*
-             * Spigot API added per-player world border interface in 1.18. Previous versions will not support proper
-             * obfuscation, and instead we obfuscate by blocking all world border packets for players on those versions.
-             */
-            packet.setCancelled(true);
-            return;
-        }
+        WorldBorder border = player.getWorldBorder();
 
         // Player may not have a world border override, fall back on global world border
         if (border == null) border = player.getWorld().getWorldBorder();

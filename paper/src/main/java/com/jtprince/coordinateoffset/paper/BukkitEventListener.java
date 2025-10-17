@@ -4,7 +4,6 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
-import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -79,7 +78,6 @@ class BukkitEventListener implements Listener {
         ));
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
@@ -87,25 +85,12 @@ class BukkitEventListener implements Listener {
         if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
+            /*
+             * DISTANT_TELEPORT activation requires opt-in
+             * https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport
+             */
             if (core.getConfig().getUnsafeResetOnDistantTeleport()) {
-                /*
-                 * DISTANT_TELEPORT activation requires opt-in
-                 * https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport
-                 */
-                boolean isTeleportDefinitelyRelative = false;
-                try {
-                    // Extra Paper-only check - ensure that we're not attempting to offset a relative teleportation packet.
-                    var flags = event.getRelativeTeleportationFlags();
-                    if (flags.contains(TeleportFlag.Relative.X) || flags.contains(TeleportFlag.Relative.Z)) {
-                        isTeleportDefinitelyRelative = true;
-                    }
-                } catch (NoClassDefFoundError | NoSuchMethodError err) {
-                    // Spigot does not support relative teleport flags. This is a Paper-only API.
-                }
-
-                if (!isTeleportDefinitelyRelative) {
-                    reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
-                }
+                reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
             }
         }
 
