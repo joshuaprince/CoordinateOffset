@@ -7,6 +7,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.SequencedMap;
 import java.util.UUID;
 
 @NullMarked
@@ -45,7 +46,7 @@ public class OffsetProviderOverrideConfigImpl implements OffsetProviderOverrideC
      * @return true if the configuration is acceptable to use, false if the configuration is invalid and should be
      *         ignored.
      */
-    public boolean validate(boolean logWarning) {
+    public boolean validate(SequencedMap<String, OffsetProvider> providers, boolean logWarning) {
         StringBuilder b = new StringBuilder();
         if (provider != null) b.append(" provider=").append(provider);
         if (world != null) b.append(" world=").append(world);
@@ -59,7 +60,7 @@ public class OffsetProviderOverrideConfigImpl implements OffsetProviderOverrideC
             return false;
         }
 
-        if (!CoordinateOffsetCore.get().getProviderConfig().getAllOffsetProviderConfigs().containsKey(provider)) {
+        if (!providers.containsKey(provider)) {
             if (logWarning) {
                 CoordinateOffsetCore.get().getLogger().warning("Ignoring an offset provider override with unknown provider:" + b);
             }

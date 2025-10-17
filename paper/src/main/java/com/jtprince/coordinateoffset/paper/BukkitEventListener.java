@@ -4,30 +4,51 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.jspecify.annotations.NullMarked;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @NullMarked
 class BukkitEventListener implements Listener {
     private final CoordinateOffsetPaperPlugin plugin;
     private final CoordinateOffsetCore core;
     private final WorldBorderObfuscator worldBorderObfuscator;
+    private boolean isJoinEventFiredBeforeFirstPlayPacket;
 
     BukkitEventListener(CoordinateOffsetPaperPlugin plugin, CoordinateOffsetCore core, WorldBorderObfuscator worldBorderObfuscator) {
         this.plugin = plugin;
         this.core = core;
         this.worldBorderObfuscator = worldBorderObfuscator;
+    }
+
+    public void registerListeners() {
+        /*
+         * 1.21.9 Paper and/or PacketEvents made the following changes to the player join sequence:
+         *  - Deprecated PlayerSpawnLocationEvent in favor of AsyncPlayerSpawnLocationEvent
+         *  - Made PlayerJoinEvent fire *before* the first PLAY packet is received (prior to 1.21.9, a JOIN_GAME packet
+         *    was sent before PlayerJoinEvent)
+         * Offsets must be generated before the first PLAY packet. The strategy for generating offsets on join is:
+         *  - 1.21.8 and below: use PlayerSpawnLocationEvent (which fires before the first PLAY packet)
+         *  - 1.21.9 or above: use PlayerJoinEvent (which fires after the first PLAY packet)
+         *  - Unparseable versions: warn and behave as though Minecraft version is 1.21.9 or above
+         */
+        isJoinEventFiredBeforeFirstPlayPacket = is1_21_9OrGreater();
+
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+        if (!isJoinEventFiredBeforeFirstPlayPacket) {
+            // Use a separate listener class so 1.21.9+ doesn't listen for PlayerSpawnLocationEvent and show a warning
+            Bukkit.getPluginManager().registerEvents(new OldSpawnLocationListener(), plugin);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -36,17 +57,34 @@ class BukkitEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onSpawnLocation(PlayerSpawnLocationEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!isJoinEventFiredBeforeFirstPlayPacket) return; // Use PlayerSpawnLocationEvent instead in 1.21.8 and below
+
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-
-        core.getOffsetHolder().setPositionedWorld(player, event.getSpawnLocation().getWorld().getName());
-
+        core.getOffsetHolder().setPositionedWorld(player, event.getPlayer().getWorld().getName());
         core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
             player,
-            event.getSpawnLocation().getWorld().getName(),
-            new PaperLocation(event.getSpawnLocation()),
+            event.getPlayer().getWorld().getName(),
+            new PaperLocation(event.getPlayer().getLocation()),
             OffsetProviderContext.ProvideReason.JOIN
         ));
+    }
+
+    private class OldSpawnLocationListener implements Listener {
+        // Only registered in 1.21.8 and below
+        @EventHandler(priority = EventPriority.MONITOR)
+        public void onSpawnLocation(PlayerSpawnLocationEvent event) {
+            PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
+
+            core.getOffsetHolder().setPositionedWorld(player, event.getSpawnLocation().getWorld().getName());
+
+            core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+                player,
+                event.getSpawnLocation().getWorld().getName(),
+                new PaperLocation(event.getSpawnLocation()),
+                OffsetProviderContext.ProvideReason.JOIN
+            ));
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -137,5 +175,29 @@ class BukkitEventListener implements Listener {
 //        }
 
         return minimumBlocks * minimumBlocks;
+    }
+
+    private boolean is1_21_9OrGreater() {
+        String mcVersion = Bukkit.getMinecraftVersion(); // e.g. "1.21.9", could be "1.21.9 Pre-Release 4
+        String warningMessage = "Could not parse Minecraft version \"" + mcVersion +
+            "\". Behaving as though Minecraft version is 1.21.9 or above. If you see bugs, please mention this" +
+            " message to the plugin author.";
+
+        Pattern pattern = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+).*");
+        Matcher m = pattern.matcher(mcVersion);
+        if (!m.matches()) {
+            core.getLogger().warning(warningMessage);
+            return true;
+        }
+        try {
+            int major = Integer.parseInt(m.group(1));
+            int minor = Integer.parseInt(m.group(2));
+            int patch = Integer.parseInt(m.group(3));
+            // true for 1.21.9+, false for 1.21.8 or below
+            return major > 1 || (major == 1 && minor > 21) || (major == 1 && minor == 21 && patch >= 9);
+        } catch (NumberFormatException e) {
+            core.getLogger().warning(warningMessage);
+            return true;
+        }
     }
 }

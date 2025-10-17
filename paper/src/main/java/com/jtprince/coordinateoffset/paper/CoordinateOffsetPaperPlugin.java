@@ -31,7 +31,8 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         CoordinateOffsetCore core = CoordinateOffsetCore.bootstrap(adapter);
 
         worldBorderObfuscator = new WorldBorderObfuscator(this);
-        Bukkit.getPluginManager().registerEvents(new BukkitEventListener(this, core, worldBorderObfuscator), this);
+
+        new BukkitEventListener(this, core, worldBorderObfuscator).registerListeners();
 
         new OffsetCommand().registerCommands(this);
 

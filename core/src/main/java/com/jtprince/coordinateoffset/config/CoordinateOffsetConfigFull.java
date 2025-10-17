@@ -47,7 +47,7 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
     List<OffsetProviderOverrideConfigImpl> offsetProviderOverrides = List.of();
     public List<OffsetProviderOverrideConfig> getOffsetProviderOverrides() {
         return offsetProviderOverrides.stream()
-            .filter(o -> o.validate(false))
+            .filter(o -> o.validate(offsetProviders, false))
             .collect(Collectors.toUnmodifiableList());
     }
 
@@ -92,7 +92,7 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
 
         // Override rules must be valid, but not fatal
         for (OffsetProviderOverrideConfigImpl override : offsetProviderOverrides) {
-            override.validate(true);
+            override.validate(offsetProviders, true);
             // No early return; they'll be excluded in calls to getOffsetProviderOverrides
         }
 
