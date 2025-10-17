@@ -1,6 +1,5 @@
 plugins {
-    java
-    id("com.gradleup.shadow") version "9.2.2"
+    id("com.gradleup.shadow")
 }
 
 project.group = "com.jtprince.coordinateoffset"
@@ -12,7 +11,7 @@ dependencies {
     implementation(project(":api"))
     implementation(project(":core"))
     implementation(libs.bstats.bukkit)
-    implementation(libs.configlib.yaml)
+    implementation(libs.configlib.paper)
     implementation(libs.morepdt)
 
     testImplementation(libs.paper.api)
@@ -24,7 +23,7 @@ tasks {
     processResources {
         inputs.property("apiVersion", libs.versions.paper.apiversion)
         val placeholders = mapOf(
-            "version" to version.toString().trimStart('v'),
+            "version" to version.toString(),
             "apiVersion" to libs.versions.paper.apiversion.get(),
         )
         placeholders.forEach { (k, v) -> inputs.property(k, v) } // ensure cache is invalidated after version bumps

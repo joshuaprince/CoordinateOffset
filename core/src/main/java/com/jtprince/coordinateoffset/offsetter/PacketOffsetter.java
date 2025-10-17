@@ -18,8 +18,7 @@ import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -107,7 +106,6 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
      * Apply an offset to all locational data components on an ItemStack.
      * @return The modified ItemStack, or null if no locational data components exist on the ItemStack.
      */
-    @Contract("null, _ -> null")
     protected static @Nullable ItemStack applyItemStack(ItemStack item, Offset offset) {
         if (item == null) return null;
 
@@ -149,7 +147,6 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
      * Unapply an offset to all locational data components on an ItemStack.
      * @return The modified ItemStack, or null if no locational data components exist on the ItemStack.
      */
-    @Contract("null, _ -> null")
     protected static @Nullable ItemStack unapplyItemStack(ItemStack item, Offset offset) {
         return applyItemStack(item, offset.negate());
     }

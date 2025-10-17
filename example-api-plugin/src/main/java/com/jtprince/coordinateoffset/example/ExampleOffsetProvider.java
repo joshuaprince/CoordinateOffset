@@ -6,7 +6,7 @@ import com.jtprince.coordinateoffset.provider.OffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
@@ -24,7 +24,7 @@ public class ExampleOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public @NotNull Offset provideOffset(@NotNull OffsetProviderContext context) {
+    public @NonNull Offset provideOffset(@NonNull OffsetProviderContext context) {
         /*
          * Implement your own logic to determine what Offset players should have. Some examples are provided below.
          *
@@ -56,7 +56,7 @@ public class ExampleOffsetProvider extends OffsetProvider {
         return Offset.align(16001 * myScaleSetting, -15999 * myScaleSetting);
     }
 
-    public static ExampleOffsetProvider deserialize(@NotNull OffsetProviderConfig config) throws IllegalArgumentException {
+    public static ExampleOffsetProvider deserialize(@NonNull OffsetProviderConfig config) throws IllegalArgumentException {
         // Write custom logic to get settings from the CoordinateOffset config.yml when a user configures this provider.
         // This example shows how to get an integer and String value from the provider config. The integer is required.
         // More complex examples are available in CoordinateOffset's core providers, such as RandomOffsetProvider.
@@ -82,7 +82,7 @@ public class ExampleOffsetProvider extends OffsetProvider {
     }
 
     @Override
-    public @NotNull SequencedMap<String, ?> serialize() {
+    public @NonNull SequencedMap<String, ?> serialize() {
         // You must provide logic to write configuration back to the CoordinateOffset config.yml.
         // Serialization logic must exactly match the logic in deserialize(), otherwise users' configurations will
         //   be unexpectedly changed when the plugin loads.

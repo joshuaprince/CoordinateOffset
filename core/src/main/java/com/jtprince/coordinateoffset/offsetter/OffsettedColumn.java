@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.protocol.world.chunk.HeightmapType;
 import com.github.retrooper.packetevents.protocol.world.chunk.TileEntity;
 import com.jtprince.coordinateoffset.Offset;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
@@ -75,7 +75,7 @@ public class OffsettedColumn extends Column {
      */
     @SuppressWarnings("deprecation")
     @Override
-    public @NotNull NBTCompound getHeightMaps() {
+    public @NonNull NBTCompound getHeightMaps() {
         return inner.getHeightMaps();
     }
 
@@ -83,7 +83,7 @@ public class OffsettedColumn extends Column {
      * Only used in 1.21.5+.
      */
     @Override
-    public @NotNull Map<HeightmapType, long[]> getHeightmaps() {
+    public @NonNull Map<HeightmapType, long[]> getHeightmaps() {
         return inner.getHeightmaps();
     }
 

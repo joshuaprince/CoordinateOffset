@@ -1,18 +1,9 @@
-plugins {
-    java
-    id("com.gradleup.shadow") version "9.2.2"
-}
-
-project.group = "com.jtprince.coordinateoffset"
-
 dependencies {
     compileOnly(libs.jspecify)
-    compileOnly(libs.jetbrains.annotations)
-
-    shadow(libs.packetevents.api)
+    compileOnly(libs.packetevents.api)
 
     implementation(project(":api"))
-    implementation(libs.configlib.yaml)
+    implementation(libs.configlib.paper) // TODO: Minor leak of Paper platform into core
 
     testImplementation(libs.test.junit.jupiter)
     testRuntimeOnly(libs.test.junit.platform)

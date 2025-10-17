@@ -10,7 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
-import org.jetbrains.annotations.Contract;
 
 import java.lang.reflect.*;
 
@@ -143,7 +142,6 @@ public final class CollisionFix implements Listener {
     /**
      * Emulates NMS Block#box
      */
-    @Contract("_, _, _, _, _, _-> new")
     private BoundingBox box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         return new BoundingBox(minX / 16D, minY / 16D, minZ / 16D, maxX / 16D, maxY / 16D, maxZ / 16D);
     }

@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.provider.util;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;

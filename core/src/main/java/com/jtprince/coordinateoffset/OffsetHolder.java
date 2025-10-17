@@ -3,7 +3,6 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.HashMap;
@@ -120,13 +119,13 @@ public class OffsetHolder {
         playerPositionedWorld.remove(uuid);
     }
 
-    public void quitPlayer(@NotNull OffsetPlayer player) {
+    public void quitPlayer(OffsetPlayer player) {
         for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
             provider.onPlayerQuit(player);
         }
     }
 
-    public void disconnectPlayer(@NotNull UUID playerUuid) {
+    public void disconnectPlayer(UUID playerUuid) {
         for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
             provider.onPlayerDisconnect(playerUuid);
         }

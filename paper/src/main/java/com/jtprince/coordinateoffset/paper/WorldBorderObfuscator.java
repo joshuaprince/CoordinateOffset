@@ -13,7 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -87,7 +87,7 @@ class WorldBorderObfuscator {
         return seen;
     }
 
-    void translate(@NotNull PacketSendEvent packet, @NotNull Player player) {
+    void translate(@NonNull PacketSendEvent packet, @NonNull Player player) {
         Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player));
 
         /*

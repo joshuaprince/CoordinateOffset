@@ -3,8 +3,8 @@ package com.jtprince.coordinateoffset.provider.util;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
