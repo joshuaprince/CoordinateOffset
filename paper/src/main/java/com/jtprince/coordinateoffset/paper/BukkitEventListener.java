@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset.paper;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -33,13 +34,13 @@ class BukkitEventListener implements Listener {
 
     public void registerListeners() {
         /*
-         * 1.21.9 Paper and/or PacketEvents made the following changes to the player join sequence:
+         * In 1.21.9 Paper and/or PacketEvents made the following changes to the player join sequence:
          *  - Deprecated PlayerSpawnLocationEvent in favor of AsyncPlayerSpawnLocationEvent
-         *  - Made PlayerJoinEvent fire *before* the first PLAY packet is received (prior to 1.21.9, a JOIN_GAME packet
-         *    was sent before PlayerJoinEvent)
+         *  - Made PlayerJoinEvent fire *concurrently* with sending the first PLAY packet (prior to 1.21.9, a
+         *    JOIN_GAME packet was always sent strictly *before* PlayerJoinEvent)
          * Offsets must be generated before the first PLAY packet. The strategy for generating offsets on join is:
          *  - 1.21.8 and below: use PlayerSpawnLocationEvent (which fires before the first PLAY packet)
-         *  - 1.21.9 or above: use PlayerJoinEvent (which fires after the first PLAY packet)
+         *  - 1.21.9 or above: use PlayerJoinEvent; block Netty thread in OffsetHolder until an offset is generated
          *  - Unparseable versions: warn and behave as though Minecraft version is 1.21.9 or above
          */
         isJoinEventFiredBeforeFirstPlayPacket = is1_21_9OrGreater();
@@ -56,18 +57,19 @@ class BukkitEventListener implements Listener {
         plugin.onAllPluginsEnabled();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (!isJoinEventFiredBeforeFirstPlayPacket) return; // Use PlayerSpawnLocationEvent instead in 1.21.8 and below
+        // 1.21.9+ only; use PlayerSpawnLocationEvent instead in 1.21.8 and below
+        if (!isJoinEventFiredBeforeFirstPlayPacket) return;
 
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-        core.getOffsetHolder().setPositionedWorld(player, event.getPlayer().getWorld().getName());
         core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
             player,
             event.getPlayer().getWorld().getName(),
             new PaperLocation(event.getPlayer().getLocation()),
             OffsetProviderContext.ProvideReason.JOIN
         ));
+        core.getOffsetHolder().setPositionedWorld(player, event.getPlayer().getWorld().getName());
     }
 
     private class OldSpawnLocationListener implements Listener {
@@ -75,15 +77,13 @@ class BukkitEventListener implements Listener {
         @EventHandler(priority = EventPriority.MONITOR)
         public void onSpawnLocation(PlayerSpawnLocationEvent event) {
             PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-
-            core.getOffsetHolder().setPositionedWorld(player, event.getSpawnLocation().getWorld().getName());
-
             core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
                 player,
                 event.getSpawnLocation().getWorld().getName(),
                 new PaperLocation(event.getSpawnLocation()),
                 OffsetProviderContext.ProvideReason.JOIN
             ));
+            core.getOffsetHolder().setPositionedWorld(player, event.getSpawnLocation().getWorld().getName());
         }
     }
 
@@ -151,7 +151,9 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
-        core.getOffsetHolder().quitPlayer(new PaperOffsetPlayer(event.getPlayer()));
+        for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
+            provider.onPlayerQuit(new PaperOffsetPlayer(event.getPlayer()));
+        }
     }
 
     private int getMinimumTeleportDistanceSquared(World world) {

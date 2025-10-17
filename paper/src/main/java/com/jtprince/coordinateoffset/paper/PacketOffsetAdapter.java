@@ -7,6 +7,7 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.util.PartialStacktraceLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 class PacketOffsetAdapter {
@@ -86,12 +88,19 @@ class PacketOffsetAdapter {
                 if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
                         || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
                     /*
-                     * Join packets happen before the Player object exists.
+                     * Join packets happen before the Player object exists in 1.21.8 and below.
                      * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that
                      * new world.
-                     * See `docs/OffsetChangeHandling.md`
                      */
-                    offset = core.getOffsetHolder().getOffsetLookahead(event.getUser().getUUID());
+                    try {
+                        offset = core.getOffsetHolder().waitForOffsetLookahead(event.getUser().getUUID(), 5000);
+                    } catch (TimeoutException e) {
+                        logger.severe("Timed out waiting for an offset to generate for " + event.getUser().getName() + ".");
+                        logger.severe("This is a bug in CoordinateOffset. Please report it.");
+                        e.printStackTrace();
+                        event.setCancelled(true);
+                        return;
+                    }
                 } else {
                     if (event.getPlayer() == null) return;
 
@@ -137,7 +146,7 @@ class PacketOffsetAdapter {
                 Player bukkitPlayer = event.getPlayer();
                 if (bukkitPlayer == null) return;
 
-                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(bukkitPlayer), bukkitPlayer.getWorld().getName());
+                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(bukkitPlayer));
                 if (offset.equals(Offset.ZERO)) return;
 
                 OffsetterRegistry.attemptToUnOffset(event, offset);
@@ -175,7 +184,9 @@ class PacketOffsetAdapter {
             }
 
             core.getOffsetHolder().remove(playerUuid);
-            core.getOffsetHolder().disconnectPlayer(playerUuid);
+            for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
+                provider.onPlayerDisconnect(playerUuid);
+            }
             if (coPlugin.getWorldBorderObfuscator() != null) {
                 coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
             }
