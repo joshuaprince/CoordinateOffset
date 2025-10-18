@@ -39,6 +39,10 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         packetOffsetAdapter = new PacketOffsetAdapter(this);
         packetOffsetAdapter.registerAdapters();
 
+        if (core.isDebugEnabled()) {
+            new PacketEventSequencer(this).install();
+        }
+
         for (CoordinateOffsetPermission p : CoordinateOffsetPermission.values()) {
             Map<String, Boolean> children = new HashMap<>();
             if (p == CoordinateOffsetPermission.QUERY_OTHERS) {

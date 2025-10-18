@@ -22,16 +22,20 @@ public class OffsetHolder {
     /**
      * Immutable container for player offset data.
      *
-     * @param offsetPerWorld Map of offsets for each world the player is in.
-     * @param packetWorld World the player is currently in from packets' perspective. Offsets are applied to packets
-     *                    based on this world only. This is updated only when we see a POSITION packet.
-     * @param lookaheadWorld World the player has initiated a world change to and will be in soon. Updated whenever
-     *                       a server event indicates that a world change is about to happen.
+     * @param savedWorldOffsets The most recent offset the player has had in each world.
+     * @param previousOffset Offset the player had before the most recent offset was applied. This may be the same as
+     *                       the current offset.
+     * @param currentOffset Offset the player has now and most packets will use.
+     * @param nextOffset Offset that the player will have as soon as the server sends the next "position" packet.
+     *                   Offset creation logic on the main thread writes to this field, then the Netty thread swaps it
+     *                   into current.
      */
     private record PlayerOffsetData(
-        Map<String, Offset> offsetPerWorld,
-        @Nullable String packetWorld,
-        String lookaheadWorld
+        Map<String, Offset> savedWorldOffsets,
+
+        Offset previousOffset,
+        Offset currentOffset,
+        @Nullable Offset nextOffset
     ) {}
     private final ConcurrentHashMap<UUID, PlayerOffsetData> playerOffsetData = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Object> pendingDataLocks = new ConcurrentHashMap<>();
@@ -39,8 +43,10 @@ public class OffsetHolder {
     /**
      * Get the current offset applied to a Player.
      *
-     * <p>This returns the offset in the world the player is receiving packets for. If the player is currently
-     * changing worlds, this will reflect the *previous* world until the server sends a POSITION packet.</p>
+     * <p>If the player's offset is about to change or changing, this will reflect the *previous* offset until the
+     * server sends a "position" packet.</p>
+     *
+     * This method is safe to call on any thread.
      *
      * @param player Player to query.
      * @return The player's current offset in the world they are in.
@@ -51,44 +57,64 @@ public class OffsetHolder {
         if (data == null) {
             throw new NoSuchElementException("Player " + player.getName() + " has no offset data!");
         }
-        if (data.packetWorld == null) {
-            throw new NoSuchElementException("Player " + player.getName() + " has not been positioned in a world!");
-        }
-        return data.offsetPerWorld.get(data.packetWorld);
+        return data.currentOffset;
     }
 
     /**
-     * Get the current offset for a Player in a specific world.
+     * Look ahead at the next generated offset, which a Player will have after a "position" packet is sent.
+     *
+     * <p>This is useful for packets like RESPAWN, which refer to coordinates in the world a player is going to before
+     * sending a "position" packet to move the player to that world.</p>
+     *
+     * <p>This should only be called on a Netty thread, but is safe to call on any thread.</p>
+     *
+     * @param player Player to query.
+     * @return The player's next offset in the world they will soon be in, or the current offset if the player has no
+     *         next offset.
+     */
+    public Offset getNextOffset(OffsetPlayer player) {
+        PlayerOffsetData data = playerOffsetData.get(player.getUuid());
+        if (data == null) {
+            throw new NoSuchElementException("Player " + player.getName() + " has no offset data!");
+        }
+        return (data.nextOffset == null) ? data.currentOffset : data.nextOffset;
+    }
+
+    /**
+     * Get the most recent offset a Player had in a specific world.
+     *
+     * <p>This method is safe to call on any thread.</p>
      *
      * @param player Player to query.
      * @param worldName World to query for the offset.
-     * @return The player's current offset in the specified world, or null if the player has no offset data for that
-     *         world.
+     * @return The player's current offset in the specified world, or null if the player has no known offset data for
+     *         that world.
      */
-    public @Nullable Offset getOffset(OffsetPlayer player, String worldName) {
+    public @Nullable Offset getSavedWorldOffset(OffsetPlayer player, String worldName) {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         if (data == null) return null;
-        return data.offsetPerWorld.get(worldName);
+        return data.savedWorldOffsets.get(worldName);
     }
 
     /**
-     * Get an offset for a player in the "lookahead world" of that player. The lookahead world is set as soon as a
-     * player has a fixed spawn point on join or initiates a world change, but before the player is actually in that
-     * world.
+     * Block the current thread until the player's offset has been generated, then get that offset.
      *
-     * <p>This is useful for JOIN and RESPAWN packets, which contain coordinates in the world the player is about to
-     * enter.</p>
+     * <p>This is useful for JOIN_GAME packets. These packets contain coordinates which must be offset, but the packets
+     * are sent concurrently with offset generation occurring on the main thread. See OffsetChangeSequencePaper.md
+     * in the project's <code>docs</code> directory for more information.</p>
+     *
+     * <p>This must only be called on a Netty thread. Blocking the main thread is not acceptable.</p>
      *
      * @param playerUuid Player to query.
      * @param timeoutMillis Maximum time to block the thread if the player's offset has not yet been generated.
      * @return The player's offset in the world they will soon be in.
      * @throws TimeoutException If the player's offset has not yet been generated and the timeout has been reached.
      */
-    public Offset waitForOffsetLookahead(UUID playerUuid, int timeoutMillis) throws TimeoutException {
+    public Offset waitForJoiningOffset(UUID playerUuid, int timeoutMillis) throws TimeoutException {
         PlayerOffsetData data = playerOffsetData.get(playerUuid);
         if (data == null && timeoutMillis > 0) {
             /*
-             * Hack below...
+             * Concurrency hack:
              * In 1.21.9+, Paper *concurrently* (a) calls PlayerJoinEvent and (b) sends a JOIN_GAME packet.
              * The JOIN_GAME packet needs to be offsetted. But the offset isn't generated until PlayerJoinEvent.
              * This hack is to block the Netty thread until the joining player gets an offset.
@@ -110,37 +136,51 @@ public class OffsetHolder {
         if (data == null) {
             throw new TimeoutException("Player " + playerUuid + " has no offset data!");
         }
-        return data.offsetPerWorld.get(data.lookaheadWorld);
+        return data.currentOffset;
     }
 
     /**
-     * Generate or regenerate the offset for one player in one world and store that offset in this holder.
+     * Generate or regenerate the offset a player will have next based on the context the player will be in.
+     * Store that offset in this holder.
      *
-     * <p>Note that this does not change which world the player is considered to be in for calls to
-     * {@link #getOffset(OffsetPlayer)} - it only updates their "lookahead" world until a call to
-     * {@link #setPositionedWorld} is made.</p>
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * <p>Note that this does not immediately change the player's offset. Offset changes themselves happen in response
+     * to certain "position" packets. However, generating a <code>nextOffset</code> will set up an offset change for
+     * when the "position" packet occurs.</p>
      *
      * <p>If is very important that this only be called at specific times, namely when the player is <b>about to</b>
      * join, respawn, or teleport.</p>
+     *
      * @param context Offset generation context, containing the player and world that should have an offset regenerated.
      */
-    public void regenerateOffset(OffsetProviderContext context) {
+    public void generateNextOffset(OffsetProviderContext context) {
         Offset newOffset = core.getOffsetCreator().createOffset(context);
 
         playerOffsetData.compute(context.player().getUuid(), (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
-                return new PlayerOffsetData(Map.of(
-                    context.worldName(), newOffset),
-                    null, // New player, no positioned world yet
-                    context.worldName() // Set lookahead world to the world we're generating offsets for
+                debugLog("Generate first: " +
+                    newOffset + ", " +
+                    newOffset + ", " +
+                    null);
+                return new PlayerOffsetData(
+                    Map.of(context.worldName(), newOffset),
+                    newOffset,
+                    newOffset,
+                    null
                 );
             }
-            Map<String, Offset> offsetPerWorld = new HashMap<>(existingOffsetData.offsetPerWorld());
+            Map<String, Offset> offsetPerWorld = new HashMap<>(existingOffsetData.savedWorldOffsets());
             offsetPerWorld.put(context.worldName(), newOffset);
+            debugLog("Generate next: " +
+                existingOffsetData.previousOffset + ", " +
+                existingOffsetData.currentOffset + ", " +
+                newOffset);
             return new PlayerOffsetData(
                 Map.copyOf(offsetPerWorld),
-                existingOffsetData.packetWorld(), // Keep positioned world the same
-                context.worldName() // Set lookahead world to the world we're generating offsets for
+                existingOffsetData.previousOffset, // Keep previous the same
+                existingOffsetData.currentOffset,  // Keep current the same
+                newOffset // Set next
             );
         });
 
@@ -151,21 +191,28 @@ public class OffsetHolder {
     }
 
     /**
-     * Update which world a player is receiving packets for. Later calls to {@link #getOffset(OffsetPlayer)}
-     * will use this world.
+     * Shift the player's <code>nextOffset</code> into <code>currentOffset</code>, and <code>currentOffset</code> into
+     * <code>previousOffset</code>. Following calls to {@link #getOffset(OffsetPlayer)} will return the new current
+     * offset.
+     *
+     * <p>This should only be called on a Netty thread, but is safe to call on any thread.</p>
      *
      * @param player Player to update.
-     * @param worldName World that the player is now in.
      */
-    public void setPositionedWorld(OffsetPlayer player, String worldName) {
-        playerOffsetData.compute(player.getUuid(), (uuid, existingOffsetData) -> {
-            if (existingOffsetData == null) {
-                throw new IllegalStateException("Player " + player.getUuid() + " has no offset data!");
+    public void swapInNextOffset(OffsetPlayer player) {
+        playerOffsetData.computeIfPresent(player.getUuid(), (uuid, existingOffsetData) -> {
+            if (existingOffsetData.nextOffset == null) {
+                // No next offset, so don't swap in anything.
+                return existingOffsetData;
             }
+            debugLog("Swap in next: " +
+                existingOffsetData.currentOffset + ", " +
+                existingOffsetData.nextOffset + ", null");
             return new PlayerOffsetData(
-                existingOffsetData.offsetPerWorld(),
-                worldName,
-                existingOffsetData.lookaheadWorld()
+                existingOffsetData.savedWorldOffsets,
+                existingOffsetData.currentOffset, // Swap current into previous
+                existingOffsetData.nextOffset, // Swap next into current
+                null // Clear next
             );
         });
     }
@@ -173,10 +220,18 @@ public class OffsetHolder {
     /**
      * Drop all data about a player from this holder. This should be called when a player disconnects from the server.
      *
+     * <p>This method is safe to call on any thread.</p>
+     *
      * @param uuid The UUID of the player to drop, presumably who is disconnecting from the server.
      */
     public void remove(UUID uuid) {
         playerOffsetData.remove(uuid);
         pendingDataLocks.remove(uuid);
+    }
+
+    private void debugLog(String message) {
+        if (core.isDebugEnabled()) {
+            core.getLogger().info("[Debug] " + message);
+        }
     }
 }

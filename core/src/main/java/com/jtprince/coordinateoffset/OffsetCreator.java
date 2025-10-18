@@ -5,7 +5,6 @@ import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @NullMarked
@@ -20,10 +19,7 @@ class OffsetCreator {
         OffsetProvider provider = null;
         ProviderSource providerSource = null;
 
-        Offset previousOffset = null;
-        try {
-            previousOffset = core.getOffsetHolder().getOffset(context.player(), context.worldName());
-        } catch (NoSuchElementException ignored) {}
+        Offset savedOffsetInWorld = core.getOffsetHolder().getSavedWorldOffset(context.player(), context.worldName());
 
         // Priority 0: Permission-based bypass
         if (core.getConfig().getBypassByPermission() &&
@@ -56,7 +52,7 @@ class OffsetCreator {
         Offset offset = provider.provideOffset(context);
         if (core.getConfig().getVerbose()) {
             String usingOrReusing;
-            if (offset.equals(previousOffset)) {
+            if (offset.equals(savedOffsetInWorld)) {
                 usingOrReusing = "Reusing";
             } else {
                 usingOrReusing = "Using";

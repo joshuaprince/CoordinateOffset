@@ -63,13 +63,12 @@ class BukkitEventListener implements Listener {
         if (!isJoinEventFiredBeforeFirstPlayPacket) return;
 
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-        core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             player,
             event.getPlayer().getWorld().getName(),
             new PaperLocation(event.getPlayer().getLocation()),
             OffsetProviderContext.ProvideReason.JOIN
         ));
-        core.getOffsetHolder().setPositionedWorld(player, event.getPlayer().getWorld().getName());
     }
 
     private class OldSpawnLocationListener implements Listener {
@@ -77,13 +76,12 @@ class BukkitEventListener implements Listener {
         @EventHandler(priority = EventPriority.MONITOR)
         public void onSpawnLocation(PlayerSpawnLocationEvent event) {
             PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-            core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+            core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
                 player,
                 event.getSpawnLocation().getWorld().getName(),
                 new PaperLocation(event.getSpawnLocation()),
                 OffsetProviderContext.ProvideReason.JOIN
             ));
-            core.getOffsetHolder().setPositionedWorld(player, event.getSpawnLocation().getWorld().getName());
         }
     }
 
@@ -108,7 +106,7 @@ class BukkitEventListener implements Listener {
             }
         }
 
-        core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             new PaperOffsetPlayer(event.getPlayer()),
             event.getRespawnLocation().getWorld().getName(),
             new PaperLocation(event.getRespawnLocation()),
@@ -134,7 +132,7 @@ class BukkitEventListener implements Listener {
 
         if (reason == null) return;
 
-        core.getOffsetHolder().regenerateOffset(new OffsetProviderContext(
+        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             player,
             event.getTo().getWorld().getName(),
             new PaperLocation(event.getTo()),

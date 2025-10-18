@@ -70,40 +70,31 @@ class PacketOffsetAdapter {
              * Ignore LOGIN and CONFIGURATION packets; these are sent before the players spawn (and therefore before
              * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
              */
-            if (!(event.getPacketType() instanceof PacketType.Play.Server)) return;
+            if (event.getPlayer() == null || !(event.getPacketType() instanceof PacketType.Play.Server)) return;
 
             try {
-                if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
-                        || event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
-                    Player bukkitPlayer = event.getPlayer();
-                    if (bukkitPlayer != null) {
-                        core.getOffsetHolder().setPositionedWorld(
-                            new PaperOffsetPlayer(bukkitPlayer),
-                            bukkitPlayer.getWorld().getName()
-                        );
-                    }
+                if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
+                    core.getOffsetHolder().swapInNextOffset(new PaperOffsetPlayer(event.getPlayer()));
                 }
 
                 Offset offset;
-                if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME
-                        || event.getPacketType() == PacketType.Play.Server.RESPAWN) {
+                if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
                     /*
-                     * Join packets happen before the Player object exists in 1.21.8 and below.
-                     * Respawn packets need to apply a new world's offsets ahead of actually moving the player to that
-                     * new world.
+                     * Join packets contain coordinates, but happen concurrently with offset generation.
+                     * Block the Netty thread until the first offset is generated.
                      */
                     try {
-                        offset = core.getOffsetHolder().waitForOffsetLookahead(event.getUser().getUUID(), 5000);
+                        offset = core.getOffsetHolder().waitForJoiningOffset(event.getUser().getUUID(), 5000);
                     } catch (TimeoutException e) {
                         logger.severe("Timed out waiting for an offset to generate for " + event.getUser().getName() + ".");
                         logger.severe("This is a bug in CoordinateOffset. Please report it.");
                         e.printStackTrace();
-                        event.setCancelled(true);
+                        event.setCancelled(true); // Causes the player to disconnect with a network error
                         return;
                     }
+                } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
+                    offset = core.getOffsetHolder().getNextOffset(new PaperOffsetPlayer(event.getPlayer()));
                 } else {
-                    if (event.getPlayer() == null) return;
-
                     offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer()));
                 }
 
@@ -140,13 +131,10 @@ class PacketOffsetAdapter {
              * Ignore LOGIN and CONFIGURATION packets; these are sent before the players spawn (and therefore before
              * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
              */
-            if (!(event.getPacketType() instanceof PacketType.Play.Client)) return;
+            if (event.getPlayer() == null || !(event.getPacketType() instanceof PacketType.Play.Client)) return;
 
             try {
-                Player bukkitPlayer = event.getPlayer();
-                if (bukkitPlayer == null) return;
-
-                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(bukkitPlayer));
+                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer()));
                 if (offset.equals(Offset.ZERO)) return;
 
                 OffsetterRegistry.attemptToUnOffset(event, offset);

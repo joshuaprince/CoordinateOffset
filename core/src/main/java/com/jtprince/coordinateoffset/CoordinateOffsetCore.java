@@ -25,9 +25,11 @@ public class CoordinateOffsetCore {
     private final OffsetCreator offsetCreator;
     private final OffsetHolder offsetHolder;
 
+    private final boolean isDebugEnabled;
     private boolean completedLoading = false;
 
     private CoordinateOffsetCore(CoordinateOffsetAdapter adapter) {
+        isDebugEnabled = System.getProperty("coordinateoffset.debug", "false").equalsIgnoreCase("true");
         this.adapter = adapter;
         this.configHolder = new ConfigHolder(this);
         this.registry = new OffsetProviderClassRegistry();
@@ -112,6 +114,10 @@ public class CoordinateOffsetCore {
 
     public OffsetHolder getOffsetHolder() {
         return offsetHolder;
+    }
+
+    public boolean isDebugEnabled() {
+        return isDebugEnabled;
     }
 
     public static CoordinateOffsetCore get() {
