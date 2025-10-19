@@ -39,7 +39,9 @@ class WorldBorderObfuscator {
     void tryUpdatePlayerBorders(Player player, Location movingTo) {
         EnumSet<Wall> currentlyVisible = visibleBorders(movingTo);
         if (!currentlyVisible.equals(knownSeenWalls.get(player.getUniqueId()))) {
-            plugin.getLogger().fine("Seen walls update for " + player.getName() + ": " + currentlyVisible);
+            if (CoordinateOffsetCore.get().isDebugEnabled()) {
+                CoordinateOffsetCore.get().getLogger().info("Seen walls update for " + player.getName() + ": " + currentlyVisible);
+            }
             knownSeenWalls.put(player.getUniqueId(), currentlyVisible);
 
             // Force-send the player border packets that we will then translate.

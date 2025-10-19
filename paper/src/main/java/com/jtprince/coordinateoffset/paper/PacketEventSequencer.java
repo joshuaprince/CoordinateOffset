@@ -39,12 +39,19 @@ public class PacketEventSequencer implements Listener {
         PacketType.Play.Server.JOIN_GAME,
         PacketType.Play.Server.RESPAWN,
         PacketType.Play.Server.SPAWN_POSITION,
-        PacketType.Play.Server.INITIALIZE_WORLD_BORDER,
         PacketType.Play.Server.PLAYER_POSITION_AND_LOOK,
         PacketType.Play.Server.UPDATE_VIEW_POSITION,
         PacketType.Play.Server.MAP_DATA,
         PacketType.Play.Server.MAP_CHUNK_BULK,
-        PacketType.Play.Server.UNLOAD_CHUNK
+        PacketType.Play.Server.UNLOAD_CHUNK,
+        // World border
+        PacketType.Play.Server.INITIALIZE_WORLD_BORDER,
+        PacketType.Play.Server.WORLD_BORDER_CENTER,
+        PacketType.Play.Server.WORLD_BORDER,
+        PacketType.Play.Server.WORLD_BORDER_LERP_SIZE,
+        PacketType.Play.Server.WORLD_BORDER_SIZE,
+        PacketType.Play.Server.WORLD_BORDER_WARNING_REACH,
+        PacketType.Play.Server.WORLD_BORDER_WARNING_DELAY
     );
 
     private final JavaPlugin plugin;
