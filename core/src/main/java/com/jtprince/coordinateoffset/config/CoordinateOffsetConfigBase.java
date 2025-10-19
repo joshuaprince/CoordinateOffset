@@ -78,8 +78,8 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
         return verbose;
     }
 
-    @Nullable Boolean unsafeResetOnDistantTeleport = null;
+    @Nullable Boolean allowUnsafeResetOnDistantTeleport = null;
     public boolean getUnsafeResetOnDistantTeleport() {
-        return unsafeResetOnDistantTeleport != null && unsafeResetOnDistantTeleport;
+        return allowUnsafeResetOnDistantTeleport != null && allowUnsafeResetOnDistantTeleport;
     }
 }
