@@ -41,6 +41,7 @@ tasks {
         relocate("com.jeff_media", "${project.group}.lib.com.jeff_media")
         relocate("de.exlll.configlib", "${project.group}.lib.de.exlll.configlib")
         relocate("org.snakeyaml", "${project.group}.lib.org.snakeyaml")
+        exclude("plugin.yml") // ConfigLib's is included when shading, don't take
         minimize()
     }
 

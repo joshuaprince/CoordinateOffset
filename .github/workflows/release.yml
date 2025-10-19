@@ -1,4 +1,4 @@
-name: Release
+name: Create Release
 
 on:
   push:
@@ -51,19 +51,13 @@ jobs:
           echo "Minecraft versions extracted: $SUPPORTED_MC_VERSIONS"
       - name: Build and test
         run: ./gradlew build
-      - name: Publish release to Maven Central
-        run: ./gradlew publishApiPublicationToCentralReleaseRepository
-        env:
-          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
-          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       - name: Create GitHub release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }} (${{ env.SUPPORTED_MC_VERSIONS }})
+          name: ${{ env.RELEASE_VERSION }} (${{ env.SUPPORTED_MC_VERSIONS }})
           body: ${{ env.RELEASE_CHANGELOG }}
           draft: false
           prerelease: false
+          make_latest: true
+          files: paper/build/libs/*.jar
