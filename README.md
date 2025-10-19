@@ -1,6 +1,6 @@
 CoordinateOffset
 ================
-**A Minecraft Spigot/Paper plugin that configurably obfuscates players' coordinates.**
+**A Minecraft Paper plugin that configurably obfuscates players' coordinates.**
 
 ![Icon](.github/img/icon128.png)
 
@@ -26,7 +26,7 @@ shows them.
 <img src=".github/img/end.png" alt="Image demonstrating coordinate offsetting">
 </p>
 
-**CoordinateOffset** is a plugin for Spigot and Paper servers that modifies every coordinate in packets between the
+**CoordinateOffset** is a plugin for Paper-based Minecraft servers that modifies every coordinate in packets between the
 server and client. The player still sees the exact same world they would normally see. But no matter which mods they
 install, they cannot see their real coordinates.
 
@@ -49,14 +49,15 @@ Features
 * Persist the same offset every time a player joins so that they don't notice coordinates changing
 * Configure different offsets per-player, per-world, and with permissions
 * Extensible API to flexibly get and set offsets
-* Compatible with ViaVersion, ViaBackwards, BungeeCord, Waterfall, and Velocity
+* Compatible with ViaVersion, ViaBackwards, and Velocity *(must be installed on Paper, not Velocity itself)*
 
 Requirements and Installation
 -----------------------------
-* Spigot, [Paper (recommended)](https://papermc.io/), or a fork for Minecraft
-  1.17.x, 1.18.x, 1.19.x, 1.20.x, 1.21-1.21.8
-* An understanding of the [implications of installing this
-plugin](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
+* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.10
+* [PacketEvents](https://github.com/retrooper/packetevents/releases) (latest release or [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) for Spigot)
+* An understanding of the [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
+
+Some known **incompatible** plugins are: Most anticheats, Geyser, Distant Horizons.
 
 After ensuring that you meet the requirements, just grab the latest
 [release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
@@ -84,32 +85,17 @@ You can customize these providers further, use different providers for different
 own providers. See the complete
 [**Configuration Guide**](https://github.com/joshuaprince/CoordinateOffset/wiki/Configuration-Guide).
 
-Commands
---------
-```
-/offset [player]
-```
-Gets your or someone else's current offset and real coordinates.
+Commands and Permissions
+------------------------
 
-```
-/offsetreload
-```
-Reload the configuration from `config.yml`.
+All permissions default to operators only.
 
-Permissions
------------
-* `coordinateoffset.bypass`
-Players with this permission will never have their coordinates offsetted.
-It's a good idea to give this permission to anyone who needs to use coordinates for commands or administration.
-
-* `coordinateoffset.query`
-Allows you to use the `/offset` command, which tells you your current offset.
-
-* `coordinateoffset.query.others`
-Allows you to query other players' offsets with `/offset <name>`.
-
-* `coordinateoffset.reload`
-Allows you to reload the plugin config with `/offsetreload`.
+| Command                  | Permission                      | Description                                                                     |
+|--------------------------|---------------------------------|---------------------------------------------------------------------------------|
+| `/offset`                | `coordinateoffset.query`        | Show your current offset and real coordinates.                                  |
+| `/offset query [player]` | `coordinateoffset.query.others` | Show someone else's offset and real coordinates.                                |
+| `/offset reload`         | `coordinateoffset.reload`       | Reload plugin configuration from `config.yml`.                                  |
+|                          | `coordinateoffset.bypass`       | Players with this permission will always see the true coordinates of the world. |
 
 API
 ---
@@ -128,6 +114,7 @@ Special thanks to [Cavallium](https://github.com/cavallium) for developing
 CoordinateOffset's packet translation logic was heavily modeled after the work done by CoordinatesObfuscator.
 
 Libraries used:
-* [bStats](https://bstats.org/) ([Statistics for this plugin](https://bstats.org/plugin/bukkit/CoordinateOffset/19988))
 * [PacketEvents](https://github.com/retrooper/packetevents)
+* [ConfigLib](https://github.com/Exlll/ConfigLib)
+* [bStats](https://bstats.org/) ([Statistics for this plugin](https://bstats.org/plugin/bukkit/CoordinateOffset/19988))
 * [MorePersistentDataTypes](https://github.com/JEFF-Media-GbR/MorePersistentDataTypes)

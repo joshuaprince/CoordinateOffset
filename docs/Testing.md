@@ -17,7 +17,7 @@ Basic Tests
 -----------
 * Verify the plugin loads and prints an informational message with no errors or warnings.
 * Join the server with a default plugin config and verify that offsets are working, chunks load, and commands
-  (`/offset`, `/offsetreload`) function.
+  (`/offset`, `/offset reload`) function.
 * Verify that there are no errors in the console after connecting and waiting a few seconds for chunks to load.
 * Verify that placing and breaking blocks behave as expected.
 * Throw an item on the ground and pick it up, verifying that it behaves the same as Vanilla.
@@ -33,7 +33,7 @@ Multi-world Tests
 -----------------
 * Build a Nether portal and enter it. Verify that "(player changed worlds)" is printed in the console debug message.
 * Verify that on a default plugin configuration, the offset in the Nether is 1/8th of that in the Overworld.
-* Go to The End (`/execute in minecraft:the_end run tp @p 0 100 0`).
+* Go to The End (`/execute in minecraft:the_end run tp @p 0 64 0`).
   * Verify that there is an offset present in the End.
   * Verify that the Dragon appears to move naturally and connect to End Crystals.
   * Kill the Dragon (`/damage @e[type=minecraft:ender_dragon,limit=1] 10000 minecraft:player_attack by @s`) and verify 
@@ -134,7 +134,6 @@ World Border Tests
 ------------------
 See https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations#world-border - World border
 obfuscation is complex.
-NOTE: On Minecraft versions before 1.18, CoordinateOffset hides the border instead of obfuscating it.
 * Run the following commands:
   * `/worldborder center 1000 1000`
   * `/worldborder set 3000`

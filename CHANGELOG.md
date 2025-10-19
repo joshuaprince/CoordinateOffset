@@ -1,3 +1,66 @@
+# v5.0.0
+*Supported Minecraft servers: Paper 1.21.4-1.21.10*
+
+I'm proud to announce CoordinateOffset's latest major release, **5.0.0**. This release overhauls lots of internal code
+and restructures the entire project. This will facilitate some new features and platform support that I've been wanting
+to add for a while. **Please report bugs on the [issue tracker](https://github.com/joshuaprince/CoordinateOffset/issues)
+or in [Discord](https://discord.gg/V3xYtqU9JU).**
+
+## Upgrading from CoordinateOffset 4.0
+
+If you just want to upgrade, be aware of the following:
+
+ - **Regular backups are mandatory.**
+ - Minecraft versions **1.21.3 and below** and **all Spigot servers** are no longer supported. (Read below for more
+   info)
+ - **[PacketEvents](https://ci.codemc.io/job/retrooper/job/packetevents/) is now required** as a dependent plugin.
+   Please install the latest development build (for now, PE's latest release does not support MC 1.21.10).
+ - Your CoordinateOffset `config.yml` will be stripped of all comments and reorganized on upgrade. Your existing
+   configuration will be backed up to `config.v4.old.yml` in the plugin's data folder before it is migrated. All
+   saved configuration should work the same as it did before the upgrade.
+ - `/offsetreload` is now `/offset reload`. `/offset <player>` is now `/offset query <player>`.
+
+## Dropping support for <1.21.4 and Spigot
+
+Minecraft versions below **1.21.4** and **all Spigot servers** are no longer supported. Paper
+[hard-forked from Spigot](https://forums.papermc.io/threads/the-future-of-paper-hard-fork.1451/) almost a year ago,
+and 1.21.9 was the first version where Paper's decisions split away from Spigot in a way that affects CoordinateOffset.
+Dropping support let me delete a lot of legacy code, rewrite the command system in Brigadier, and spend less time
+testing new releases.
+
+Based on [bStats data](https://bstats.org/plugin/bukkit/CoordinateOffset/19988), at the time of writing, only 2 of 41
+servers running CoordinateOffset are using Spigot. 4 of 41 servers are running a Minecraft version below 1.21.4. It
+doesn't make sense to accommodate these servers with new plugin development. My apologies if you are affected, but
+please stay on [v4.0.16](https://github.com/joshuaprince/CoordinateOffset/releases/tag/v4.0.16) if you need it.
+
+## Full Changelog
+
+- Support 1.21.9 and 1.21.10
+- Convert plugin to a Paper plugin and increase API version to 1.21.4
+- Stop shading PacketEvents; require PacketEvents as a dependency
+- Replace configuration system with ConfigLib
+  - Configuration is now automatically formatted and new options are added during plugin load
+  - Comments and unexpected configuration will be deleted when the plugin loads
+- Add new `obfuscateDebugPropertySubscriptions` config.yml setting
+  - Minecraft 1.21.9+ has ["debug" properties](https://minecraft.wiki/w/Debug_property) that clients can enable. These
+    properties show real coordinates inside entity brain data (such as bees and villagers).
+  - The new setting disables debug properties for all clients with an offset applied.
+  - This setting is enabled by default. Disabling it makes these debug flags work but reveals offsets to players.
+- Rewrite `/offset` command
+  - The output of all subcommands is now formatted more nicely
+  - The command gives proper suggestions based on permissions
+  - `/offsetreload` is now `/offset reload`
+  - `/offset <player>` is now `/offset query <player>`
+  - All permissions are unchanged
+- Add a proper API published on Maven Central
+  - See [API wiki page](https://github.com/joshuaprince/CoordinateOffset/wiki/API) for details
+- Remove `debug` config.yml setting
+  - This setting was not intended for production use and caused plugin errors when enabled.
+- Various internal changes
+  - Restructure code to be in `api`, `core`, and `paper` subprojects for increased modularization
+  - Redesign offset change logic during join/respawn/world change to more accurately map to the game's protocol
+  - Redesign offset storage logic to be more efficient with concurrency
+
 # v4.0.16
 - Fix console errors on player login for versions up to 1.21.4
 - Rate-limit console spam during packet error conditions
