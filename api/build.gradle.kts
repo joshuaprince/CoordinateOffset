@@ -1,5 +1,6 @@
 plugins {
     `maven-publish`
+    signing
     idea
 }
 
@@ -26,7 +27,7 @@ java {
 
 publishing {
     publications {
-        register<MavenPublication>("maven") {
+        register<MavenPublication>("api") {
             from(components["java"])
             groupId = project.group.toString()
             artifactId = "coordinateoffset-api"
@@ -50,9 +51,38 @@ publishing {
                         url = "https://www.gnu.org/licenses/agpl-3.0.en.html"
                     }
                 }
+                scm {
+                    connection = "scm:git:git://github.com/joshuaprince/CoordinateOffset.git"
+                    developerConnection = "scm:git:ssh://github.com:joshuaprince/CoordinateOffset.git"
+                    url = "https://github.com/joshuaprince/CoordinateOffset"
+                }
             }
         }
     }
+
+    repositories {
+        maven {
+            name = "CentralRelease"
+            url = uri("https://central.sonatype.com/publish/release")
+            credentials {
+                username = System.getenv("CENTRAL_TOKEN_USERNAME")
+                password = System.getenv("CENTRAL_TOKEN_PASSWORD")
+            }
+        }
+        maven {
+            name = "CentralSnapshot"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots")
+            credentials {
+                username = System.getenv("CENTRAL_TOKEN_USERNAME")
+                password = System.getenv("CENTRAL_TOKEN_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), "")
+    sign(publishing.publications["api"])
 }
 
 idea {

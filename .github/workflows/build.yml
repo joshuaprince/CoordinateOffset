@@ -1,0 +1,25 @@
+name: Build and Test
+
+on:
+  push:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build and test
+        run: ./gradlew build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoordinateOffset-Package
+          path: paper/build/libs/*.jar

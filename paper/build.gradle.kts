@@ -25,17 +25,18 @@ tasks {
             "apiVersion" to libs.versions.paper.apiversion.get(),
         )
         placeholders.forEach { (k, v) -> inputs.property(k, v) } // ensure cache is invalidated after version bumps
-        files(listOf("paper-plugin.yml", "config.yml")) {
+        files(listOf("paper-plugin.yml")) {
             expand(placeholders)
         }
     }
 
     jar {
-        archiveClassifier.set("thin")
+        enabled = false
     }
 
     shadowJar {
-        archiveFileName.set("${rootProject.name}-Paper.jar")
+        archiveBaseName.set("CoordinateOffset-Paper")
+        archiveClassifier.set("")
         relocate("org.bstats", "${project.group}.lib.org.bstats")
         relocate("com.jeff_media", "${project.group}.lib.com.jeff_media")
         relocate("de.exlll.configlib", "${project.group}.lib.de.exlll.configlib")

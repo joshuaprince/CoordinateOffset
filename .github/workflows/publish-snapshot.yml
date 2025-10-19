@@ -1,0 +1,27 @@
+name: Publish Snapshot to Maven Central
+
+on:
+  push:
+    branches:
+      - ver/*
+  workflow_dispatch:
+
+jobs:
+  publish-snapshot-to-maven-central:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Publish snapshot
+        run: ./gradlew publishApiPublicationToCentralSnapshotRepository
+        env:
+          CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
