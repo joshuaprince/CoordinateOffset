@@ -34,12 +34,9 @@ class BukkitEventListener implements Listener {
 
     public void registerListeners() {
         /*
-         * In 1.21.9 Paper and/or PacketEvents made the following changes to the player join sequence:
-         *  - Deprecated PlayerSpawnLocationEvent in favor of AsyncPlayerSpawnLocationEvent
-         *  - Made PlayerJoinEvent fire *concurrently* with sending the first PLAY packet (prior to 1.21.9, a
-         *    JOIN_GAME packet was always sent strictly *before* PlayerJoinEvent)
+         * In 1.21.9 Paper deprecated PlayerSpawnLocationEvent in favor of AsyncPlayerSpawnLocationEvent.
          * Offsets must be generated before the first PLAY packet. The strategy for generating offsets on join is:
-         *  - 1.21.8 and below: use PlayerSpawnLocationEvent (which fires before the first PLAY packet)
+         *  - 1.21.8 and below: use PlayerSpawnLocationEvent (which always fires before the first PLAY packet)
          *  - 1.21.9 or above: use PlayerJoinEvent; block Netty thread in OffsetHolder until an offset is generated
          *  - Unparseable versions: warn and behave as though Minecraft version is 1.21.9 or above
          */
@@ -72,7 +69,7 @@ class BukkitEventListener implements Listener {
     }
 
     private class OldSpawnLocationListener implements Listener {
-        // Only registered in 1.21.8 and below
+        // Only registered in 1.21.8 and below; 1.21.9+ uses PlayerJoinEvent instead
         @EventHandler(priority = EventPriority.MONITOR)
         public void onSpawnLocation(PlayerSpawnLocationEvent event) {
             PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());

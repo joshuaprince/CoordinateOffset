@@ -80,7 +80,7 @@ class PacketOffsetAdapter {
                 Offset offset;
                 if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
                     /*
-                     * Join packets contain coordinates, but happen concurrently with offset generation.
+                     * Join packets contain coordinates, but happen concurrently with offset generation (1.21.9+ only).
                      * Block the Netty thread until the first offset is generated.
                      */
                     try {
