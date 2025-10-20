@@ -13,12 +13,19 @@ If you just want to upgrade, be aware of the following:
  - **Regular backups are mandatory.**
  - Minecraft versions **1.21.3 and below** and **all Spigot servers** are no longer supported. (Read below for more
    info)
- - **[PacketEvents](https://ci.codemc.io/job/retrooper/job/packetevents/) is now required** as a dependent plugin.
-   Please install the latest development build (for now, PE's latest release does not support MC 1.21.10).
+ - **[PacketEvents](https://github.com/retrooper/packetevents/releases) is now required** as a dependent plugin.
  - Your CoordinateOffset `config.yml` will be stripped of all comments and reorganized on upgrade. Your existing
-   configuration will be backed up to `config.v4.old.yml` in the plugin's data folder before it is migrated. All
-   saved configuration should work the same as it did before the upgrade.
+   configuration will automatically migrate to the new format (but also be backed up to `config.v4.old.yml`).
  - `/offsetreload` is now `/offset reload`. `/offset <player>` is now `/offset query <player>`.
+
+## Known issues
+
+- Certain particles (like ender dragon breath) cause a network protocol error. This is a PacketEvents bug:
+  [packetevents#1373](https://github.com/retrooper/packetevents/issues/1373). Use a dev build of PacketEvents after
+  they fix it (no CoordinateOffset update should be needed).
+- `allowUnsafeResetOnDistantTeleport` is not working in 5.0.0. Set `unsafeResetOnDistantTeleport` in config.yml or use
+  the latest
+  [GitHub actions build](https://github.com/joshuaprince/CoordinateOffset/actions/runs/18637737025/artifacts/4312757481).
 
 ## Dropping support for <1.21.4 and Spigot
 
@@ -52,7 +59,9 @@ please stay on [v4.0.16](https://github.com/joshuaprince/CoordinateOffset/releas
   - `/offsetreload` is now `/offset reload`
   - `/offset <player>` is now `/offset query <player>`
   - All permissions are unchanged
-- Add a proper API published on Maven Central
+- Redesign API
+  - Add a proper API published on Maven Central
+  - The old API is no longer supported and will cause errors if any plugins still attempt to use it
   - See [API wiki page](https://github.com/joshuaprince/CoordinateOffset/wiki/API) for details
 - Remove `debug` config.yml setting
   - This setting was not intended for production use and caused plugin errors when enabled.
