@@ -42,7 +42,7 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
         "If true, players with the `coordinateoffset.bypass` permission will always",
         "  see their real coordinates (no offsets). Disable this to test the plugin."
     })
-    boolean bypassByPermission = false;
+    boolean bypassByPermission = true;
     public boolean getBypassByPermission() {
         return bypassByPermission;
     }
