@@ -88,11 +88,16 @@ public class OffsetterRegistry {
     );
 
     static  {
-        byPacketType = new HashMap<>();
-        for (PacketOffsetter offsetter : offsetters) {
-            for (PacketTypeCommon type : offsetter.packetTypes) {
-                byPacketType.put(type, offsetter);
+        try {
+            byPacketType = new HashMap<>();
+            for (PacketOffsetter offsetter : offsetters) {
+                for (PacketTypeCommon type : offsetter.packetTypes) {
+                    byPacketType.put(type, offsetter);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace(); // Stacktraces thrown in static blocks are not logged
+            throw new RuntimeException(e);
         }
     }
 
