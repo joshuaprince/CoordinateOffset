@@ -1,24 +1,35 @@
 package com.jtprince.coordinateoffset.paper;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
 import com.jtprince.coordinateoffset.paper.adapter.PaperAdapter;
+import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
+import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @NullMarked
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private static @Nullable CoordinateOffsetPaperPlugin instance;
     private @Nullable PaperAdapter adapter;
 
+    private @Nullable CoordinateOffsetCore core;
     private @Nullable WorldBorderObfuscator worldBorderObfuscator;
     private @Nullable PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
@@ -28,7 +39,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         instance = this;
 
         adapter = new PaperAdapter(this);
-        CoordinateOffsetCore core = CoordinateOffsetCore.bootstrap(adapter);
+        core = CoordinateOffsetCore.bootstrap(adapter);
 
         worldBorderObfuscator = new WorldBorderObfuscator(this);
 
@@ -92,5 +103,52 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
     @Nullable WorldBorderObfuscator getWorldBorderObfuscator() {
         return worldBorderObfuscator;
+    }
+
+    public void regenerateOffsetImmediately(Player player) {
+        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+            new PaperOffsetPlayer(player),
+            player.getWorld().getName(),
+            new PaperLocation(player.getLocation()),
+            OffsetProviderContext.ProvideReason.DEATH_RESPAWN
+        ));
+
+        int cx = player.getChunk().getX();
+        int cz = player.getChunk().getZ();
+        List<Chunk> chunksClosestFirst = player.getSentChunks().stream()
+            .sorted(Comparator.comparing(c -> ((c.getX() - cx) * (c.getX() - cx) + (c.getZ() - cz) * (c.getZ() - cz))))
+            .toList();
+
+        for (Chunk chunk : chunksClosestFirst.reversed()) {
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+                new WrapperPlayServerUnloadChunk(chunk.getX(), chunk.getZ()));
+        }
+
+        var l = player.getLocation();
+        var pkt = new WrapperPlayServerPlayerPositionAndLook(0,
+            new Vector3d(l.x(), l.y(), l.z()),
+            new Vector3d(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()),
+            l.getYaw(), l.getPitch(), (byte) 0);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, pkt);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+            new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
+
+        Set<Entity> alreadyReloadedEntities = new HashSet<>();
+        for (Chunk chunk : chunksClosestFirst) {
+            player.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+            for (Entity entity : chunk.getEntities()) {
+                if (entity.getTrackedBy().contains(player)) {
+                    player.hideEntity(this, entity);
+                    player.showEntity(this, entity);
+                    alreadyReloadedEntities.add(entity);
+                }
+            }
+        }
+        for (Entity entity : player.getWorld().getEntities()) {
+            if (entity.getTrackedBy().contains(player) && !alreadyReloadedEntities.contains(entity)) {
+                player.hideEntity(this, entity);
+                player.showEntity(this, entity);
+            }
+        }
     }
 }
