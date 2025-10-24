@@ -45,7 +45,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
         new BukkitEventListener(this, core, worldBorderObfuscator).registerListeners();
 
-        new OffsetCommand().registerCommands(this);
+        new OffsetCommand(this).registerCommands();
 
         packetOffsetAdapter = new PacketOffsetAdapter(this);
         packetOffsetAdapter.registerAdapters();
@@ -105,12 +105,12 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         return worldBorderObfuscator;
     }
 
-    public void regenerateOffsetImmediately(Player player) {
+    public void regenerateOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason) {
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             new PaperOffsetPlayer(player),
             player.getWorld().getName(),
             new PaperLocation(player.getLocation()),
-            OffsetProviderContext.ProvideReason.DEATH_RESPAWN
+            reason
         ));
 
         int cx = player.getChunk().getX();

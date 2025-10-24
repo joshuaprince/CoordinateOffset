@@ -46,5 +46,16 @@ public record OffsetProviderContext(
          * be far enough such that there are no chunks visible both before and after the teleport.
          */
         DISTANT_TELEPORT,
+
+        /**
+         * A player's offset is being generated immediately because someone executed a command (such as
+         * /offset regenerate).
+         */
+        COMMAND,
+
+        /**
+         * A player's offset is being generated immediately because a third-party plugin requested it.
+         */
+        PLUGIN,
     }
 }

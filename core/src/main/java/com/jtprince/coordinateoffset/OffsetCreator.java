@@ -64,6 +64,8 @@ class OffsetCreator {
                 case DEATH_RESPAWN -> reasonStr = "player respawned";
                 case WORLD_CHANGE -> reasonStr = "player changed worlds";
                 case DISTANT_TELEPORT -> reasonStr = "player teleported";
+                case COMMAND -> reasonStr = "forced by command";
+                case PLUGIN -> reasonStr = "forced by plugin";
             }
 
             String sourceStr = null;

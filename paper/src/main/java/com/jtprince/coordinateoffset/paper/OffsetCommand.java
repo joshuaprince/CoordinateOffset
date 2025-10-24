@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -19,7 +20,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 
@@ -32,11 +32,13 @@ public class OffsetCommand {
         CoordinateOffsetPermission.RELOAD
     );
 
-    private @Nullable CoordinateOffsetPaperPlugin plugin;
+    private final CoordinateOffsetPaperPlugin plugin;
 
-    public void registerCommands(CoordinateOffsetPaperPlugin plugin) {
+    public OffsetCommand(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
+    }
 
+    public void registerCommands() {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("offset");
 
         // /offset - shortcut for /offset query
@@ -78,7 +80,7 @@ public class OffsetCommand {
     private int regenerate(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
         Player player = targetResolver.resolve(context.getSource()).getFirst();
-        plugin.regenerateOffsetImmediately(player);
+        plugin.regenerateOffsetImmediately(player, OffsetProviderContext.ProvideReason.COMMAND);
 
         return Command.SINGLE_SUCCESS;
     }
