@@ -1,9 +1,15 @@
 package com.jtprince.coordinateoffset.paper;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -16,11 +22,16 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -66,6 +77,64 @@ public class OffsetCommand {
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register(root.build());
         });
+
+        // /offset set
+        root.then(Commands.literal("regenerate")
+            .requires(sender -> pluginEnabled() &&
+                sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_SELF.node)) // TODO
+            .then(Commands.argument("player", ArgumentTypes.player())
+                .executes(this::regenerate)));
+    }
+
+    private int regenerate(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CommandSender sender = context.getSource().getSender();
+        PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
+        Player player = targetResolver.resolve(context.getSource()).getFirst();
+
+        CoordinateOffsetCore.get().getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+            new PaperOffsetPlayer(player),
+            player.getWorld().getName(),
+            new PaperLocation(player.getLocation()),
+            OffsetProviderContext.ProvideReason.DEATH_RESPAWN
+        ));
+
+        int cx = player.getChunk().getX();
+        int cz = player.getChunk().getZ();
+        List<Chunk> chunks = player.getSentChunks().stream()
+            .sorted(Comparator.comparing(c -> ((c.getX() - cx) * (c.getX() - cx) + (c.getZ() - cz) * (c.getZ() - cz))))
+            .toList();
+
+        for (Chunk chunk : chunks.reversed()) {
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+                new WrapperPlayServerUnloadChunk(chunk.getX(), chunk.getZ()));
+        }
+
+        var l = player.getLocation();
+        var pkt = new WrapperPlayServerPlayerPositionAndLook(
+            l.x(), l.y(), l.z(), l.getYaw(), l.getPitch(), (byte) 0, 999, false);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, pkt);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+            new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
+
+        Set<Entity> alreadyReloadedEntities = new HashSet<>();
+        for (Chunk chunk : chunks) {
+            player.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+            for (Entity entity : chunk.getEntities()) {
+                if (entity.getTrackedBy().contains(player)) {
+                    player.hideEntity(CoordinateOffsetPaperPlugin.getInstance(), entity);
+                    player.showEntity(CoordinateOffsetPaperPlugin.getInstance(), entity);
+                    alreadyReloadedEntities.add(entity);
+                }
+            }
+        }
+        for (Entity entity : player.getWorld().getEntities()) {
+            if (entity.getTrackedBy().contains(player) && !alreadyReloadedEntities.contains(entity)) {
+                player.hideEntity(CoordinateOffsetPaperPlugin.getInstance(), entity);
+                player.showEntity(CoordinateOffsetPaperPlugin.getInstance(), entity);
+            }
+        }
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private int reload(CommandContext<CommandSourceStack> context) {
