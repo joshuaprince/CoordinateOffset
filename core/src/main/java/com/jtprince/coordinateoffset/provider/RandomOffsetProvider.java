@@ -4,7 +4,7 @@ import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.provider.util.PerWorldOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
-import com.jtprince.coordinateoffset.provider.util.ResetConfig;
+import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +17,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
     public static final String DEFAULT_PERSISTENCE_KEY = "default";
 
     private final int randomBound;
-    private final ResetConfig resetConfig;
+    private final RegenerateConfig regenerateConfig;
     private final @Nullable Boolean isPersistentConfig;
     private final @Nullable String persistenceKeyConfig;
     private final @Nullable WorldAlignmentConfig worldAlignmentConfig;
@@ -27,14 +27,14 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
     RandomOffsetProvider(
         String name,
         int randomBound,
-        ResetConfig resetConfig,
+        RegenerateConfig regenerateConfig,
         @Nullable Boolean isPersistentConfig,
         @Nullable String persistenceKeyConfig,
         @Nullable WorldAlignmentConfig worldAlignmentConfig
     ) {
         super(name);
         this.randomBound = randomBound;
-        this.resetConfig = resetConfig;
+        this.regenerateConfig = regenerateConfig;
         this.isPersistentConfig = isPersistentConfig;
         this.persistenceKeyConfig = persistenceKeyConfig;
         this.worldAlignmentConfig = worldAlignmentConfig;
@@ -57,14 +57,14 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         boolean willRegenerate = false;
         switch (context.reason()) {
             case JOIN -> {}
-            case DEATH_RESPAWN -> { if (resetConfig.isResetOnDeath()) willRegenerate = true; }
-            case WORLD_CHANGE -> { if (resetConfig.isResetOnWorldChange()) willRegenerate = true; }
-            case COMMAND, PLUGIN -> willRegenerate = true; /* Always regenerate when explicitly reset */
+            case DEATH_RESPAWN -> { if (regenerateConfig.isRegenOnDeath()) willRegenerate = true; }
+            case WORLD_CHANGE -> { if (regenerateConfig.isRegenOnWorldChange()) willRegenerate = true; }
+            case COMMAND, PLUGIN -> willRegenerate = true; /* Always regenerate when explicitly called */
             case TELEPORT -> {
                 Objects.requireNonNull(context.previousLocation());
                 Double distanceTeleported = context.playerLocation().getDistance(context.previousLocation());
                 Objects.requireNonNull(distanceTeleported);
-                if (resetConfig.isResetOnDistantTeleport(distanceTeleported)) {
+                if (regenerateConfig.isRegenOnDistantTeleport(distanceTeleported)) {
                     willRegenerate = true;
                 } else {
                     // Special case to avoid log spam: Returning null means "no offset change" with no log message
@@ -123,10 +123,6 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         return perWorldOffsetStore instanceof PerWorldOffsetStore.Persistent;
     }
 
-    public @Nullable ResetConfig getResetConfig() {
-        return resetConfig;
-    }
-
     public @Nullable WorldAlignmentConfig getWorldAlignmentConfig() {
         return worldAlignmentConfig;
     }
@@ -137,7 +133,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
 
         map.put("randomBound", (long) randomBound);
 
-        resetConfig.serializeTo(map);
+        regenerateConfig.serializeTo(map);
 
         if (isPersistentConfig != null) {
             map.put("persistent", isPersistentConfig);
@@ -162,7 +158,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         }
         int randomBound = randomBoundNum.intValue();
 
-        ResetConfig resetConfig = ResetConfig.deserialize(s);
+        RegenerateConfig regenerateConfig = RegenerateConfig.deserialize(s);
 
         Boolean isPersistentConfig = null;
         if (s.containsKey("persistent")) {
@@ -192,7 +188,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         return new RandomOffsetProvider(
             config.getUserDefinedProviderName(),
             randomBound,
-            resetConfig,
+            regenerateConfig,
             isPersistentConfig,
             persistenceKeyConfig,
             worldAlignment
@@ -207,6 +203,6 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
     @Override
     public String getMetricsDetails() {
         return ((isPersistentConfig != null && isPersistentConfig) ? "Persistent" : "Not Persistent")
-            + " | Reset " + resetConfig.getMetricsCharacterString();
+            + " | Reset " + regenerateConfig.getMetricsCharacterString();
     }
 }

@@ -77,9 +77,4 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     public boolean getVerbose() {
         return verbose;
     }
-
-    @Nullable Boolean allowUnsafeResetOnDistantTeleport = null;
-    public boolean getUnsafeResetOnDistantTeleport() {
-        return allowUnsafeResetOnDistantTeleport != null && allowUnsafeResetOnDistantTeleport;
-    }
 }

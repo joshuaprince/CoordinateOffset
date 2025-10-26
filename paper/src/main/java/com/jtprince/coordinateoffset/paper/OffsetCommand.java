@@ -34,8 +34,8 @@ public class OffsetCommand {
         CoordinateOffsetPermission.QUERY_SELF,
         CoordinateOffsetPermission.QUERY_OTHERS,
         CoordinateOffsetPermission.RELOAD,
-        CoordinateOffsetPermission.RESET_SELF,
-        CoordinateOffsetPermission.RESET_OTHERS,
+        CoordinateOffsetPermission.REGENERATE_SELF,
+        CoordinateOffsetPermission.REGENERATE_OTHERS,
         CoordinateOffsetPermission.SET_SELF,
         CoordinateOffsetPermission.SET_OTHERS
     );
@@ -73,16 +73,16 @@ public class OffsetCommand {
                 sender.getSender().hasPermission(CoordinateOffsetPermission.RELOAD.node))
             .executes(this::reload));
 
-        // /offset reset [<player>]
-        root.then(Commands.literal("reset")
+        // /offset regenerate [<player>]
+        root.then(Commands.literal("regenerate")
             .requires(sender -> pluginEnabled() &&
-                (sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_SELF.node) ||
-                sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node)))
-            .executes(this::reset)
+                (sender.getSender().hasPermission(CoordinateOffsetPermission.REGENERATE_SELF.node) ||
+                sender.getSender().hasPermission(CoordinateOffsetPermission.REGENERATE_OTHERS.node)))
+            .executes(this::regenerate)
                 .then(Commands.argument("players", ArgumentTypes.players())
                     .requires(sender -> pluginEnabled() &&
-                        sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node))
-                    .executes(this::reset)));
+                        sender.getSender().hasPermission(CoordinateOffsetPermission.REGENERATE_OTHERS.node))
+                    .executes(this::regenerate)));
 
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register(root.build());
@@ -172,20 +172,20 @@ public class OffsetCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int reset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private int regenerate(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         List<Player> targets;
         try {
             PlayerSelectorArgumentResolver targetResolver = context.getArgument("players", PlayerSelectorArgumentResolver.class);
             targets = targetResolver.resolve(context.getSource());
         } catch (IllegalArgumentException e) {
             if (!(context.getSource().getSender() instanceof Player player)) {
-                context.getSource().getSender().sendMessage(Component.text("You must be a player to reset your own offset."));
+                context.getSource().getSender().sendMessage(Component.text("You must be a player to regenerate your own offset."));
                 return 0;
             }
             targets = List.of(player);
         }
         if (targets.stream().anyMatch(target -> !target.equals(context.getSource().getSender()) &&
-            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node))) {
+            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.REGENERATE_OTHERS.node))) {
             context.getSource().getSender().sendMessage(Bukkit.permissionMessage());
             return 0;
         }

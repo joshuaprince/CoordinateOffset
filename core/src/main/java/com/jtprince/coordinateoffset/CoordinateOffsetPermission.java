@@ -18,10 +18,10 @@ public enum CoordinateOffsetPermission {
         "Allows use of command /offset query <player>, which prints another player's offset and coordinates."),
     RELOAD("coordinateoffset.reload",
         "Players with this permission can use the /offset reload command to reload the plugin."),
-    RESET_SELF("coordinateoffset.reset",
-        "Allows use of the command /offset reset, which regenerates the player's offset using configured offset providers."),
-    RESET_OTHERS("coordinateoffset.reset.others",
-        "Allows use of the command /offset reset <player>, which regenerates another player's offset using configured offset providers."),
+    REGENERATE_SELF("coordinateoffset.regenerate",
+        "Allows use of the command /offset regenerate, which regenerates the player's offset using configured offset providers."),
+    REGENERATE_OTHERS("coordinateoffset.regenerate.others",
+        "Allows use of the command /offset regenerate <player>, which regenerates another player's offset using configured offset providers."),
     SET_SELF("coordinateoffset.set",
         "Allows use of the command /offset set, which sets the player's offset to a specific value."),
     SET_OTHERS("coordinateoffset.set.others",
@@ -40,7 +40,7 @@ public enum CoordinateOffsetPermission {
         return switch (this) {
             case ALL -> Arrays.stream(values()).filter(p -> p != ALL).collect(Collectors.toSet());
             case QUERY_OTHERS -> Set.of(QUERY_SELF);
-            case RESET_OTHERS -> Set.of(RESET_SELF);
+            case REGENERATE_OTHERS -> Set.of(REGENERATE_SELF);
             case SET_OTHERS -> Set.of(SET_SELF);
             default -> Set.of();
         };

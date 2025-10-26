@@ -1,7 +1,7 @@
 package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.provider.util.ResetConfig;
+import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 
@@ -25,7 +25,7 @@ public class DefaultOffsetProviders {
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
         "random",
         100_000,
-        new ResetConfig(false, false, false, ResetConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
+        new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
         false,
         RandomOffsetProvider.DEFAULT_PERSISTENCE_KEY,
         WorldAlignmentConfig.DEFAULT
@@ -33,7 +33,7 @@ public class DefaultOffsetProviders {
 
     static final ZeroAtLocationOffsetProvider ZERO_LOC = new ZeroAtLocationOffsetProvider(
         "zeroAtLocation",
-        new ResetConfig(false, false, false, ResetConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
+        new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
         WorldAlignmentConfig.DEFAULT
     );
 
