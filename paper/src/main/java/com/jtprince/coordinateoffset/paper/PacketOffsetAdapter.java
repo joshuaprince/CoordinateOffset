@@ -93,9 +93,9 @@ class PacketOffsetAdapter {
                         return;
                     }
                 } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
-                    offset = core.getOffsetHolder().getNextOffset(new PaperOffsetPlayer(event.getPlayer()));
+                    offset = core.getOffsetHolder().getNextOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
                 } else {
-                    offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer()));
+                    offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
                 }
 
                 // Short-circuit when no offset is applied
@@ -134,7 +134,7 @@ class PacketOffsetAdapter {
             if (event.getPlayer() == null || !(event.getPacketType() instanceof PacketType.Play.Client)) return;
 
             try {
-                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer()));
+                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
                 if (offset.equals(Offset.ZERO)) return;
 
                 OffsetterRegistry.attemptToUnOffset(event, offset);

@@ -91,7 +91,7 @@ class WorldBorderObfuscator {
     }
 
     void translate(PacketSendEvent packet, Player player) {
-        Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player));
+        Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player)).offset();
 
         /*
          * For reasons I cannot fathom, the Minecraft protocol applies the world's coordinate scaling to the world

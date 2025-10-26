@@ -16,6 +16,8 @@ public enum CoordinateOffsetPermission {
         "Allows use of commands /offset and /offset query, which prints a player's own offset and coordinates."),
     QUERY_OTHERS("coordinateoffset.query.others",
         "Allows use of command /offset query <player>, which prints another player's offset and coordinates."),
+    QUERY_VERBOSE("coordinateoffset.query.verbose",
+        "Players with this permission see the name of the offset provider which generated an offset in /offset query."),
     RELOAD("coordinateoffset.reload",
         "Players with this permission can use the /offset reload command to reload the plugin."),
     REGENERATE_SELF("coordinateoffset.regenerate",

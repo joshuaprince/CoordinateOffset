@@ -52,14 +52,14 @@ public record OffsetProviderContext(
         TELEPORT,
 
         /**
-         * A player's offset is being generated immediately because someone executed a command (such as
+         * A player's offset is being regenerated immediately because someone executed a command (such as
          * <code>/offset regenerate</code>).
          */
-        COMMAND,
+        COMMAND_REGENERATE,
 
         /**
          * A player's offset is being generated immediately because a third-party plugin requested it.
          */
-        PLUGIN,
+        PLUGIN_REGENERATE,
     }
 }

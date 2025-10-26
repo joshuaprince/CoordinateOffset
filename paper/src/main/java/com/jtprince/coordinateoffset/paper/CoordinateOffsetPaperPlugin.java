@@ -2,21 +2,15 @@ package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
-import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperAdapter;
-import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
-import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
-import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @NullMarked
@@ -95,35 +89,5 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
     @Nullable WorldBorderObfuscator getWorldBorderObfuscator() {
         return worldBorderObfuscator;
-    }
-
-    public void regenerateOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason) {
-        PaperLocation location = new PaperLocation(player.getLocation());
-        boolean changed = Objects.requireNonNull(core).getOffsetHolder().generateNextOffset(new OffsetProviderContext(
-            new PaperOffsetPlayer(player),
-            player.getWorld().getName(),
-            location,
-            location,
-            reason
-        ));
-
-        if (changed) {
-            OffsetSwapHelpers.forceOffsetSwap(player);
-        }
-    }
-
-    public void setOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason, Offset offset) {
-        PaperLocation location = new PaperLocation(player.getLocation());
-        boolean changed = Objects.requireNonNull(core).getOffsetHolder().setNextOffset(new OffsetProviderContext(
-            new PaperOffsetPlayer(player),
-            player.getWorld().getName(),
-            location,
-            location,
-            reason
-        ), offset);
-
-        if (changed) {
-            OffsetSwapHelpers.forceOffsetSwap(player);
-        }
     }
 }

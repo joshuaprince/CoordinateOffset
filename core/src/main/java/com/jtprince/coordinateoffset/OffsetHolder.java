@@ -5,8 +5,6 @@ import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +20,6 @@ public class OffsetHolder {
     /**
      * Immutable container for player offset data.
      *
-     * @param savedWorldOffsets The most recent offset the player has had in each world.
      * @param previousOffset Offset the player had before the most recent offset was applied. This may be the same as
      *                       the current offset.
      * @param currentOffset Offset the player has now and most packets will use.
@@ -31,11 +28,9 @@ public class OffsetHolder {
      *                   into current.
      */
     private record PlayerOffsetData(
-        Map<String, Offset> savedWorldOffsets,
-
-        Offset previousOffset,
-        Offset currentOffset,
-        @Nullable Offset nextOffset
+        CreatedOffset previousOffset,
+        CreatedOffset currentOffset,
+        @Nullable CreatedOffset nextOffset
     ) {}
     private final ConcurrentHashMap<UUID, PlayerOffsetData> playerOffsetData = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Object> pendingDataLocks = new ConcurrentHashMap<>();
@@ -52,7 +47,7 @@ public class OffsetHolder {
      * @return The player's current offset in the world they are in.
      * @throws NoSuchElementException If the player has no offset data or has not yet received a POSITION packet.
      */
-    public Offset getOffset(OffsetPlayer player) {
+    public CreatedOffset getOffset(OffsetPlayer player) {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         if (data == null) {
             throw new NoSuchElementException("Player " + player.getName() + " has no offset data!");
@@ -72,28 +67,12 @@ public class OffsetHolder {
      * @return The player's next offset in the world they will soon be in, or the current offset if the player has no
      *         next offset.
      */
-    public Offset getNextOffset(OffsetPlayer player) {
+    public CreatedOffset getNextOffset(OffsetPlayer player) {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         if (data == null) {
             throw new NoSuchElementException("Player " + player.getName() + " has no offset data!");
         }
         return (data.nextOffset == null) ? data.currentOffset : data.nextOffset;
-    }
-
-    /**
-     * Get the most recent offset a Player had in a specific world.
-     *
-     * <p>This method is safe to call on any thread.</p>
-     *
-     * @param player Player to query.
-     * @param worldName World to query for the offset.
-     * @return The player's current offset in the specified world, or null if the player has no known offset data for
-     *         that world.
-     */
-    public @Nullable Offset getSavedWorldOffset(OffsetPlayer player, String worldName) {
-        PlayerOffsetData data = playerOffsetData.get(player.getUuid());
-        if (data == null) return null;
-        return data.savedWorldOffsets.get(worldName);
     }
 
     /**
@@ -137,7 +116,7 @@ public class OffsetHolder {
         if (data == null) {
             throw new TimeoutException("Player " + playerUuid + " has no offset data!");
         }
-        return data.currentOffset;
+        return data.currentOffset.offset();
     }
 
     /**
@@ -154,11 +133,11 @@ public class OffsetHolder {
      * @return true if the player's offset changed, false if the player's offset was unchanged.
      */
     public boolean generateNextOffset(OffsetProviderContext context) {
-        Offset newOffset = core.getOffsetCreator().createOffset(context);
-        if (newOffset == null) {
+        CreatedOffset creation = core.getOffsetCreator().createOffset(context);
+        if (creation == null) {
             return false;
         }
-        return setNextOffset(context, newOffset);
+        return setNextOffset(context.player().getUuid(), creation);
     }
 
     /**
@@ -170,44 +149,63 @@ public class OffsetHolder {
      * to certain "position" packets. However, generating a <code>nextOffset</code> will set up an offset change for
      * when the "position" packet occurs.</p>
      *
-     * @param context Offset generation context, containing the player and world that should have an offset changed.
+     * @param playerUuid UUID of the player to set the next offset for.
      * @param newOffset The new offset to set.
      * @return true if the player's offset changed, false if the player's offset was unchanged.
      */
-    public boolean setNextOffset(OffsetProviderContext context, Offset newOffset) {
-        PlayerOffsetData d = playerOffsetData.compute(context.player().getUuid(), (uuid, existingOffsetData) -> {
+    public boolean setNextOffset(UUID playerUuid, CreatedOffset newOffset) {
+        PlayerOffsetData d = playerOffsetData.compute(playerUuid, (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
                 debugLog("Generate first: " +
                     newOffset + ", " +
                     newOffset + ", " +
                     null);
+                newOffset.log();
                 return new PlayerOffsetData(
-                    Map.of(context.worldName(), newOffset),
                     newOffset,
                     newOffset,
                     null
                 );
             }
-            Map<String, Offset> offsetPerWorld = new HashMap<>(existingOffsetData.savedWorldOffsets());
-            offsetPerWorld.put(context.worldName(), newOffset);
+
+            if (existingOffsetData.currentOffset.offset().equals(newOffset.offset())) {
+                /*
+                 * Shortcut: If the player's actual offset components haven't changed, don't bother setting next.
+                 * Just immediately swap in the new offset.
+                 * This can happen if the offset source changed compared to what we have in current now.
+                 */
+                debugLog("Unchanged offset:" +
+                    existingOffsetData.previousOffset + " , " +
+                    newOffset + ", " +
+                    existingOffsetData.nextOffset);
+                return new PlayerOffsetData(
+                    existingOffsetData.previousOffset, // Keep previous the same
+                    newOffset,  // Immediately swap in to current
+                    existingOffsetData.nextOffset // Keep next the same
+                );
+            }
+
             debugLog("Generate next: " +
                 existingOffsetData.previousOffset + ", " +
                 existingOffsetData.currentOffset + ", " +
                 newOffset);
             return new PlayerOffsetData(
-                Map.copyOf(offsetPerWorld),
                 existingOffsetData.previousOffset, // Keep previous the same
                 existingOffsetData.currentOffset,  // Keep current the same
                 newOffset // Set next
             );
         });
 
-        Object pendingOffsetDataLock = pendingDataLocks.computeIfAbsent(context.player().getUuid(), uuid -> new Object());
+        Object pendingOffsetDataLock = pendingDataLocks.computeIfAbsent(playerUuid, uuid -> new Object());
         synchronized (pendingOffsetDataLock) {
             pendingOffsetDataLock.notifyAll();
         }
 
-        return (d.nextOffset != null && !d.nextOffset.equals(d.currentOffset));
+        if (d.nextOffset != null && !d.nextOffset.offset().equals(d.currentOffset.offset())) {
+            newOffset.log();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -229,7 +227,6 @@ public class OffsetHolder {
                 existingOffsetData.currentOffset + ", " +
                 existingOffsetData.nextOffset + ", null");
             return new PlayerOffsetData(
-                existingOffsetData.savedWorldOffsets,
                 existingOffsetData.currentOffset, // Swap current into previous
                 existingOffsetData.nextOffset, // Swap next into current
                 null // Clear next

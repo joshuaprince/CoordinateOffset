@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 @NullMarked
-class OffsetCreator {
+public class OffsetCreator {
     private final CoordinateOffsetCore core;
 
     OffsetCreator(CoordinateOffsetCore core) {
@@ -23,19 +23,17 @@ class OffsetCreator {
      * @return A new offset to apply (which may be the same as the current offset), or null if the player's offset
      * should remain the same as it is now.
      */
-    @Nullable Offset createOffset(OffsetProviderContext context) {
+    @Nullable CreatedOffset createOffset(OffsetProviderContext context) {
         OffsetProvider provider = null;
-        ProviderSource providerSource = null;
-
-        Offset savedOffsetInWorld = core.getOffsetHolder().getSavedWorldOffset(context.player(), context.worldName());
+        boolean providerIsOverride = false;
 
         // Priority 0: Permission-based bypass
         if (core.getConfig().getBypassByPermission() &&
                 context.player().hasPermission(CoordinateOffsetPermission.BYPASS.node)) {
-            if (core.getConfig().getVerbose()) {
-                core.getLogger().info("Bypassing offset with permission for player " + context.player().getName() + ".");
-            }
-            return Offset.ZERO;
+            return new CreatedOffset(
+                Offset.ZERO,
+                new CreatedOffset.Source.PermissionBypass(CoordinateOffsetPermission.BYPASS),
+                context.player(), context.worldName(), context.reason());
         }
 
         // Priority 1: Config override rule
@@ -46,14 +44,13 @@ class OffsetCreator {
                     .filter(o -> providerOverrideAppliesTo(context, o)).findFirst();
             if (appliedOverride.isPresent()) {
                 provider = appliedOverride.get().getOffsetProvider();
-                providerSource = ProviderSource.OVERRIDE;
+                providerIsOverride = true;
             }
         }
 
         // Priority 2: Default provider
         if (provider == null) {
             provider = core.getProviderConfig().getDefaultOffsetProviderConfig();
-            providerSource = ProviderSource.DEFAULT;
         }
 
         // With provider selected, get the offset.
@@ -61,40 +58,10 @@ class OffsetCreator {
         if (offset == null) {
             return null;
         }
-        if (core.getConfig().getVerbose()) {
-            String usingOrReusing;
-            if (offset.equals(savedOffsetInWorld)) {
-                usingOrReusing = "Reusing";
-            } else {
-                usingOrReusing = "Using";
-            }
-
-            String reasonStr = null;
-            switch (context.reason()) {
-                case JOIN -> reasonStr = "player joined";
-                case DEATH_RESPAWN -> reasonStr = "player respawned";
-                case WORLD_CHANGE -> reasonStr = "player changed worlds";
-                case TELEPORT -> reasonStr = "player teleported";
-                case COMMAND -> reasonStr = "forced by command";
-                case PLUGIN -> reasonStr = "forced by plugin";
-            }
-
-            String sourceStr = null;
-            switch (providerSource) {
-                case DEFAULT -> sourceStr = "default provider";
-                case OVERRIDE -> sourceStr = "config.yml override";
-            }
-
-            core.getLogger().info(
-                usingOrReusing + " " + offset + " from provider \"" + provider.name + "\" (" + sourceStr + ") " +
-                        "for player " + context.player().getName() + " in world \"" + context.worldName() +
-                        "\" (" + reasonStr + ").");
-        }
-        return offset;
-    }
-
-    enum ProviderSource {
-        DEFAULT, OVERRIDE
+        return new CreatedOffset(
+            offset,
+            new CreatedOffset.Source.Provider(provider, providerIsOverride),
+            context.player(), context.worldName(), context.reason());
     }
 
     private boolean providerOverrideAppliesTo(OffsetProviderContext context, OffsetProviderOverrideConfig override) {

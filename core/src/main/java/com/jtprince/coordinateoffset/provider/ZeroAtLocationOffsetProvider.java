@@ -36,7 +36,8 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
             case JOIN -> {}
             case DEATH_RESPAWN -> { if (regenerateConfig.isRegenOnDeath()) willRegenerate = true; }
             case WORLD_CHANGE -> { if (regenerateConfig.isRegenOnWorldChange()) willRegenerate = true; }
-            case COMMAND, PLUGIN -> willRegenerate = true; /* Always regenerate when explicitly called */
+            /* Always regenerate when explicitly called */
+            case COMMAND_REGENERATE, PLUGIN_REGENERATE -> willRegenerate = true;
             case TELEPORT -> {
                 Objects.requireNonNull(context.previousLocation());
                 Double distanceTeleported = context.playerLocation().getDistance(context.previousLocation());

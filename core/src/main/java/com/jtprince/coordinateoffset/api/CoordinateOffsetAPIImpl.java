@@ -23,7 +23,7 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
 
     @Override
     public Offset getOffset(OffsetPlayer player) {
-        return core.getOffsetHolder().getOffset(player);
+        return core.getOffsetHolder().getOffset(player).offset();
     }
 
     @Override
