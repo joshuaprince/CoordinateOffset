@@ -41,7 +41,7 @@ public class OffsetCreator {
         if (provider == null) {
             Optional<OffsetProviderOverrideConfig> appliedOverride =
                 core.getProviderConfig().getOffsetProviderOverrides().stream()
-                    .filter(o -> providerOverrideAppliesTo(context, o)).findFirst();
+                    .filter(o -> o.appliesTo(context)).findFirst();
             if (appliedOverride.isPresent()) {
                 provider = appliedOverride.get().getOffsetProvider();
                 providerIsOverride = true;
@@ -62,16 +62,5 @@ public class OffsetCreator {
             offset,
             new CreatedOffset.Source.Provider(provider, providerIsOverride),
             context.player(), context.playerLocation().getWorld(), context.reason());
-    }
-
-    private boolean providerOverrideAppliesTo(OffsetProviderContext context, OffsetProviderOverrideConfig override) {
-        if (override.getPlayerUuid() != null && !override.getPlayerUuid().equals(context.player().getUuid())) return false;
-        if (override.getWorld() != null
-            && !override.getWorld().equals(context.playerLocation().getWorld().getName())
-            && !override.getWorld().equals(context.playerLocation().getWorld().getKey())
-            && !override.getWorld().equals(context.playerLocation().getWorld().getUuid().toString())) return false;
-        if (override.getPermission() != null && !context.player().hasPermission(override.getPermission())) return false;
-
-        return true;
     }
 }

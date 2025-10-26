@@ -35,14 +35,14 @@ public class CoordinateOffsetConfigFull extends CoordinateOffsetConfigBase imple
         "",
         "List of overrides to the default offset provider. The first item has the",
         "  highest priority. `provider` is a required key. Optional keys are",
-        "  `world`, `playerUuid`, and `permission` which, if present, must ALL match",
+        "  `world`, `player`, and `permission` which, if present, must ALL match",
         "  for the override to apply. Example:",
         "offsetProviderOverrides:",
         " - provider: constant",
         "   world: world_nether",
         "   permission: coordinateoffset.provider.my_custom_permission",
         " - provider: zeroAtLocation",
-        "   playerUuid: 00000000-0000-0000-0000-000000000000"
+        "   player: jeb_"
     })
     List<OffsetProviderOverrideConfigImpl> offsetProviderOverrides = List.of();
     public List<OffsetProviderOverrideConfig> getOffsetProviderOverrides() {
