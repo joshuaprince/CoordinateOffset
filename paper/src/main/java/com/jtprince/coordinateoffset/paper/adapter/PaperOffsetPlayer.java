@@ -39,7 +39,7 @@ public class PaperOffsetPlayer implements OffsetPlayer {
     }
 
     @Override
-    public Object getPlatformPlayerObject() {
+    public Player getPlatformPlayerObject() {
         return player;
     }
 

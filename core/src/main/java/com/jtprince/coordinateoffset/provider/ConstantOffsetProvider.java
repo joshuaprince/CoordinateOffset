@@ -22,7 +22,7 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
     @Override
     public Offset provideOffset(OffsetProviderContext context) {
         if (worldScaling != null) {
-            Double scaling = worldScaling.get(context.worldName());
+            Double scaling = worldScaling.get(context.playerLocation().getWorld().getName());
             if (scaling != null) {
                 return offset.scaleByDouble(scaling);
             }

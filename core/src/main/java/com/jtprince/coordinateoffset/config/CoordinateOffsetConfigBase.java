@@ -77,4 +77,6 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     public boolean getVerbose() {
         return verbose;
     }
+
+
 }

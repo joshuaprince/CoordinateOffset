@@ -55,7 +55,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
         }
 
         // Check if this world already has an offset calculated
-        Offset offset = perWorldOffsetStore.get(context.player(), context.worldName());
+        Offset offset = perWorldOffsetStore.get(context.player(), context.playerLocation().getWorld().getName());
         if (offset != null) {
             return offset;
         }
@@ -63,7 +63,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
         // Check if we need to align to an offset we already generated for this player in another world
         WorldAlignmentConfig.QueryResult alignment = null;
         if (worldAlignmentConfig != null) {
-            alignment = worldAlignmentConfig.findAlignment(context.worldName());
+            alignment = worldAlignmentConfig.findAlignment(context.playerLocation().getWorld().getName());
         }
         if (alignment != null) {
             Offset alignedWorldOffset = perWorldOffsetStore.get(context.player(), alignment.targetWorldName());
@@ -76,7 +76,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
                         scaleStr = " (scaled up by " + (1 << -alignment.rightShiftAmount()) + ").";
                     else scaleStr = " (scaled down by " + (1 << alignment.rightShiftAmount()) + ").";
                     CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Aligning new offset for world \"" +
-                        context.worldName() + "\" to offset from world \"" + alignment.targetWorldName() + "\"" + scaleStr);
+                        context.playerLocation().getWorld().getName() + "\" to offset from world \"" + alignment.targetWorldName() + "\"" + scaleStr);
                 }
             }
         }
@@ -86,12 +86,12 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
             OffsetLocation loc = context.playerLocation();
             int alignmentPower = 0;
             if (worldAlignmentConfig != null) {
-                alignmentPower = worldAlignmentConfig.greatestPossibleRightShiftForWorld(context.worldName());
+                alignmentPower = worldAlignmentConfig.greatestPossibleRightShiftForWorld(context.playerLocation().getWorld().getName());
             }
             offset = Offset.align((int) loc.getX(), (int) loc.getZ(), alignmentPower);
         }
 
-        perWorldOffsetStore.put(context.player(), context.worldName(), offset);
+        perWorldOffsetStore.put(context.player(), context.playerLocation().getWorld().getName(), offset);
         return offset;
     }
 

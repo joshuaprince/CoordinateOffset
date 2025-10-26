@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset.paper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
@@ -70,9 +71,9 @@ class BukkitEventListener implements Listener {
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             player,
-            event.getPlayer().getWorld().getName(),
             null,
             new PaperLocation(event.getPlayer().getLocation()),
+            null,
             OffsetProviderContext.ProvideReason.JOIN
         ));
     }
@@ -84,9 +85,9 @@ class BukkitEventListener implements Listener {
             PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
             core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
                 player,
-                event.getSpawnLocation().getWorld().getName(),
                 null,
                 new PaperLocation(event.getSpawnLocation()),
+                null,
                 OffsetProviderContext.ProvideReason.JOIN
             ));
         }
@@ -120,11 +121,12 @@ class BukkitEventListener implements Listener {
         }
 
         Location lastDeathLocation = this.lastDeathLocation.get(event.getPlayer().getUniqueId());
+        OffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
-            new PaperOffsetPlayer(event.getPlayer()),
-            event.getRespawnLocation().getWorld().getName(),
+            player,
             lastDeathLocation == null ? null : new PaperLocation(lastDeathLocation),
             new PaperLocation(event.getRespawnLocation()),
+            core.getOffsetHolder().getOffset(player).offset(),
             reason
         ));
     }
@@ -141,9 +143,9 @@ class BukkitEventListener implements Listener {
 
         boolean changed = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             offsetPlayer,
-            event.getTo().getWorld().getName(),
             new PaperLocation(event.getFrom()),
             new PaperLocation(event.getTo()),
+            core.getOffsetHolder().getOffset(offsetPlayer).offset(),
             reason
         ));
 

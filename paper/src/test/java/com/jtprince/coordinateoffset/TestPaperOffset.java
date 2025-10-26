@@ -95,7 +95,7 @@ public class TestPaperOffset {
 
     private void assertOffsetLocationsApproximatelyEqual(PaperLocation expected, PaperLocation actual) {
         // Deal with floating-point imprecision when we add/subtract for applying offsets
-        Assertions.assertEquals(expected.getWorldName(), actual.getWorldName());
+        Assertions.assertEquals(expected.getWorld(), actual.getWorld());
         Assertions.assertEquals(expected.getX(), actual.getX(), 0.001);
         Assertions.assertEquals(expected.getY(), actual.getY(), 0.001);
         Assertions.assertEquals(expected.getZ(), actual.getZ(), 0.001);

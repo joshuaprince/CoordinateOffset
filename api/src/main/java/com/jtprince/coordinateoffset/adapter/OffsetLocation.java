@@ -13,10 +13,16 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public interface OffsetLocation {
-    @Nullable String getWorldName();
+    OffsetWorld getWorld();
     double getX();
     double getY();
     double getZ();
+
+    /** @deprecated Use {@link #getWorld()} instead. */
+    @Deprecated
+    @Nullable default String getWorldName() {
+        return getWorld().getName();
+    }
 
     /**
      * Apply an offset to this location. This location should refer to coordinates in "real" space, i.e. not yet
@@ -48,12 +54,8 @@ public interface OffsetLocation {
      * @return A distance in blocks, or null if the locations are in different worlds.
      */
     default @Nullable Double getDistance(OffsetLocation other) {
-        if (getWorldName() != null || other.getWorldName() != null) {
-            if (getWorldName() == null ||
-                other.getWorldName() == null ||
-                !getWorldName().equals(other.getWorldName())) {
-                return null;
-            }
+        if (!getWorld().equals(other.getWorld())) {
+            return null;
         }
         return Math.sqrt(Math.pow(getX() - other.getX(), 2) + Math.pow(getY() - other.getY(), 2) + Math.pow(getZ() - other.getZ(), 2));
     }

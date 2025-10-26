@@ -33,7 +33,7 @@ public class OffsetCreator {
             return new CreatedOffset(
                 Offset.ZERO,
                 new CreatedOffset.Source.PermissionBypass(CoordinateOffsetPermission.BYPASS),
-                context.player(), context.worldName(), context.reason());
+                context.player(), context.playerLocation().getWorld(), context.reason());
         }
 
         // Priority 1: Config override rule
@@ -61,12 +61,15 @@ public class OffsetCreator {
         return new CreatedOffset(
             offset,
             new CreatedOffset.Source.Provider(provider, providerIsOverride),
-            context.player(), context.worldName(), context.reason());
+            context.player(), context.playerLocation().getWorld(), context.reason());
     }
 
     private boolean providerOverrideAppliesTo(OffsetProviderContext context, OffsetProviderOverrideConfig override) {
         if (override.getPlayerUuid() != null && !override.getPlayerUuid().equals(context.player().getUuid())) return false;
-        if (override.getWorld() != null && !override.getWorld().equals(context.worldName())) return false;
+        if (override.getWorld() != null
+            && !override.getWorld().equals(context.playerLocation().getWorld().getName())
+            && !override.getWorld().equals(context.playerLocation().getWorld().getKey())
+            && !override.getWorld().equals(context.playerLocation().getWorld().getUuid().toString())) return false;
         if (override.getPermission() != null && !context.player().hasPermission(override.getPermission())) return false;
 
         return true;

@@ -4,7 +4,6 @@ import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -34,8 +33,8 @@ public class ExampleOffsetProvider extends OffsetProvider {
         // If the player will be in any Nether dimension, return an Offset of 2000 blocks in each direction.
         // Always check the world provided in the context instead of Player#getWorld. The offset might be for
         //   a world the player is not in yet.
-        World world = Bukkit.getWorld(context.worldName());
-        if (world != null && world.getEnvironment() == World.Environment.NETHER) {
+        World world = (World) context.playerLocation().getWorld();
+        if (world.getEnvironment() == World.Environment.NETHER) {
             return new Offset(2000, 2000);
         }
 

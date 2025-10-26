@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.adapter.OffsetWorld;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
@@ -14,7 +15,7 @@ public record CreatedOffset(
     Offset offset,
     Source source,
     OffsetPlayer player,
-    String worldName,
+    OffsetWorld world,
     OffsetProviderContext.@Nullable ProvideReason reason
 ) {
     public sealed interface Source
@@ -50,7 +51,7 @@ public record CreatedOffset(
         s.append(" for player ");
         s.append(player.getName());
         s.append(" in world \"");
-        s.append(worldName);
+        s.append(world.getName());
         s.append("\"");
         if (reason != null) {
             s.append(" (");

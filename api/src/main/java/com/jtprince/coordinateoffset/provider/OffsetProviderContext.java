@@ -10,8 +10,6 @@ import org.jspecify.annotations.Nullable;
  * Container for relevant information when calculating a new {@link Offset}.
  *
  * @param player The Player that will receive this new Offset.
- * @param worldName Name of the World this Offset will apply to. Note that this may be different from
- *                  <code>player.getWorld()</code> because the Provider is called <i>before</i> a world change.
  * @param previousLocation The previous location of the Player before this Offset begins to take effect. If the player
  *                         is joining the server or the death location is unknown for a respawn, this will be
  *                         <code>null</code>.
@@ -23,9 +21,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public record OffsetProviderContext(
     OffsetPlayer player,
-    String worldName,
     @Nullable OffsetLocation previousLocation,
     OffsetLocation playerLocation,
+    @Nullable Offset previousOffset,
     ProvideReason reason
 ) {
     public enum ProvideReason {
@@ -61,5 +59,13 @@ public record OffsetProviderContext(
          * A player's offset is being generated immediately because a third-party plugin requested it.
          */
         PLUGIN_REGENERATE,
+    }
+
+    /**
+     * @deprecated Use {@link #playerLocation()} - {@link OffsetLocation#getWorld()} instead.
+     */
+    @Deprecated
+    public String worldName() {
+        return playerLocation.getWorld().getName();
     }
 }
