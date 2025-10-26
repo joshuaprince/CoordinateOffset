@@ -2,52 +2,53 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.provider.util.PerWorldOffsetStore;
+import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
+import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
-import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Objects;
+import java.util.SequencedMap;
+import java.util.UUID;
 
 @NullMarked
 public final class RandomOffsetProvider extends CoreOffsetProvider {
-    public static final String PERSISTENCE_KEY_CLASS_KEY = "random-persistence";
+    public static final String PERSISTENCE_KEY_CLASS_KEY = "provider.persistence";
     public static final String DEFAULT_PERSISTENCE_KEY = "default";
 
     private final int randomBound;
     private final RegenerateConfig regenerateConfig;
     private final @Nullable Boolean isPersistentConfig;
     private final @Nullable String persistenceKeyConfig;
-    private final @Nullable WorldAlignmentConfig worldAlignmentConfig;
 
-    private final PerWorldOffsetStore perWorldOffsetStore;
+    private final ProviderOffsetStore offsetStore;
 
     RandomOffsetProvider(
         String name,
         int randomBound,
         RegenerateConfig regenerateConfig,
         @Nullable Boolean isPersistentConfig,
-        @Nullable String persistenceKeyConfig,
-        @Nullable WorldAlignmentConfig worldAlignmentConfig
+        @Nullable String persistenceKeyConfig
     ) {
         super(name);
         this.randomBound = randomBound;
         this.regenerateConfig = regenerateConfig;
         this.isPersistentConfig = isPersistentConfig;
         this.persistenceKeyConfig = persistenceKeyConfig;
-        this.worldAlignmentConfig = worldAlignmentConfig;
 
         if (isPersistentConfig != null && isPersistentConfig) {
             if (persistenceKeyConfig == null) {
                 throw new IllegalArgumentException("Provider \"" + name +
                     ": Field `persistenceKey` for RandomOffsetProvider is required when `persistent` is true.");
             }
-            this.perWorldOffsetStore = new PerWorldOffsetStore.Persistent(
+            this.offsetStore = new ProviderOffsetStore.Persistent(
+                CoordinateOffsetCore.get().getAdapter().getPlayerOffsetPersistence(),
                 new PlayerOffsetPersistence.Key(PERSISTENCE_KEY_CLASS_KEY, persistenceKeyConfig));
         } else {
-            this.perWorldOffsetStore = new PerWorldOffsetStore.Cached();
+            this.offsetStore = new ProviderOffsetStore.Cached();
         }
     }
 
@@ -74,58 +75,32 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
             }
         }
         if (willRegenerate) {
-            perWorldOffsetStore.reset(context.player());
+            offsetStore.clear(context.player());
         }
 
-        // Check if this world already has an offset calculated
-        Offset offset = perWorldOffsetStore.get(context.player(), context.playerLocation().getWorld().getName());
-        if (offset != null) {
-            return offset;
-        }
-
-        // Check if we need to align to an offset we already generated for this player in another world
-        WorldAlignmentConfig.QueryResult alignment = null;
-        if (worldAlignmentConfig != null) {
-            alignment = worldAlignmentConfig.findAlignment(context.playerLocation().getWorld().getName());
-        }
-        if (alignment != null) {
-            Offset alignedWorldOffset = perWorldOffsetStore.get(context.player(), alignment.targetWorldName());
-            if (alignedWorldOffset != null) {
-                offset = alignedWorldOffset.scale(alignment.rightShiftAmount());
-                if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
-                    String scaleStr;
-                    if (alignment.rightShiftAmount() == 0) scaleStr = ".";
-                    else if (alignment.rightShiftAmount() < 0)
-                        scaleStr = " (scaled up by " + (1 << -alignment.rightShiftAmount()) + ").";
-                    else scaleStr = " (scaled down by " + (1 << alignment.rightShiftAmount()) + ").";
-                    CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Aligning new offset for world \"" +
-                        context.playerLocation().getWorld().getName() + "\" to offset from world \"" + alignment.targetWorldName() + "\"" + scaleStr);
-                }
-            }
-        }
-
-        // Generate a new offset if nothing else matched
+        // Check if the provider already has an offset calculated that was not cleared for a regenerate
+        Offset offset = offsetStore.get(context.player());
+        boolean isReusedOffset = true;
         if (offset == null) {
+            // Generate a new offset if we don't already have one for this player
             offset = Offset.random(randomBound);
+            offsetStore.put(context.player(), offset);
+            isReusedOffset = false;
         }
 
-        perWorldOffsetStore.put(context.player(), context.playerLocation().getWorld().getName(), offset);
-        return offset;
+        return CoordinateScaleUtils.scaleVerbosely(
+            offset,
+            context.playerLocation().getWorld(),
+            this,
+            isReusedOffset ? "stored" : "new"
+        );
     }
 
     @Override
     public void onPlayerDisconnect(UUID playerUuid) {
-        if (perWorldOffsetStore instanceof PerWorldOffsetStore.Cached) {
-            perWorldOffsetStore.reset(playerUuid);
+        if (offsetStore instanceof ProviderOffsetStore.Cached) {
+            offsetStore.clear(playerUuid);
         }
-    }
-
-    public boolean isPersistent() {
-        return perWorldOffsetStore instanceof PerWorldOffsetStore.Persistent;
-    }
-
-    public @Nullable WorldAlignmentConfig getWorldAlignmentConfig() {
-        return worldAlignmentConfig;
     }
 
     @Override
@@ -141,10 +116,6 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         }
         if (persistenceKeyConfig != null) {
             map.put("persistenceKey", persistenceKeyConfig);
-        }
-
-        if (worldAlignmentConfig != null) {
-            worldAlignmentConfig.serializeTo(map);
         }
 
         return map;
@@ -177,22 +148,12 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
             persistenceKeyConfig = DEFAULT_PERSISTENCE_KEY;
         }
 
-        WorldAlignmentConfig worldAlignment = null;
-        if (s.containsKey("worldAlignment")) {
-            if (!(s.get("worldAlignment") instanceof List<?> worldAlignmentList)) {
-                throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                    ": Field `worldAlignment` for RandomOffsetProvider is not a list.");
-            }
-            worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
-        }
-
         return new RandomOffsetProvider(
             config.getUserDefinedProviderName(),
             randomBound,
             regenerateConfig,
             isPersistentConfig,
-            persistenceKeyConfig,
-            worldAlignment
+            persistenceKeyConfig
         );
     }
 

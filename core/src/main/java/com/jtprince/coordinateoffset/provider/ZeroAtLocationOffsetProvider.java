@@ -1,31 +1,26 @@
 package com.jtprince.coordinateoffset.provider;
 
-import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.adapter.OffsetLocation;
-import com.jtprince.coordinateoffset.provider.util.PerWorldOffsetStore;
+import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
+import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
-import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Objects;
+import java.util.SequencedMap;
+import java.util.UUID;
 
 @NullMarked
 public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     private final RegenerateConfig regenerateConfig;
-    private final @Nullable WorldAlignmentConfig worldAlignmentConfig;
 
-    private final PerWorldOffsetStore perWorldOffsetStore = new PerWorldOffsetStore.Cached();
+    private final ProviderOffsetStore.Cached offsetStore = new ProviderOffsetStore.Cached();
 
-    ZeroAtLocationOffsetProvider(
-        String name,
-        RegenerateConfig regenerateConfig,
-        @Nullable WorldAlignmentConfig worldAlignmentConfig
-    ) {
+    ZeroAtLocationOffsetProvider(String name, RegenerateConfig regenerateConfig) {
         super(name);
         this.regenerateConfig = regenerateConfig;
-        this.worldAlignmentConfig = worldAlignmentConfig;
     }
 
     @Override
@@ -51,55 +46,34 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
             }
         }
         if (willRegenerate) {
-            perWorldOffsetStore.reset(context.player());
+            offsetStore.clear(context.player());
         }
 
-        // Check if this world already has an offset calculated
-        Offset offset = perWorldOffsetStore.get(context.player(), context.playerLocation().getWorld().getName());
-        if (offset != null) {
-            return offset;
-        }
-
-        // Check if we need to align to an offset we already generated for this player in another world
-        WorldAlignmentConfig.QueryResult alignment = null;
-        if (worldAlignmentConfig != null) {
-            alignment = worldAlignmentConfig.findAlignment(context.playerLocation().getWorld().getName());
-        }
-        if (alignment != null) {
-            Offset alignedWorldOffset = perWorldOffsetStore.get(context.player(), alignment.targetWorldName());
-            if (alignedWorldOffset != null) {
-                offset = alignedWorldOffset.scale(alignment.rightShiftAmount());
-                if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
-                    String scaleStr;
-                    if (alignment.rightShiftAmount() == 0) scaleStr = ".";
-                    else if (alignment.rightShiftAmount() < 0)
-                        scaleStr = " (scaled up by " + (1 << -alignment.rightShiftAmount()) + ").";
-                    else scaleStr = " (scaled down by " + (1 << alignment.rightShiftAmount()) + ").";
-                    CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Aligning new offset for world \"" +
-                        context.playerLocation().getWorld().getName() + "\" to offset from world \"" + alignment.targetWorldName() + "\"" + scaleStr);
-                }
-            }
-        }
-
-        // Generate a new offset if nothing else matched
+        // Check if the provider already has an offset calculated that was not cleared for a regenerate
+        Offset offset = offsetStore.get(context.player());
+        double coordinateScale = context.playerLocation().getWorld().getCoordinateScale(); // 8 for nether e.g.
+        boolean isReusedOffset = true;
         if (offset == null) {
-            OffsetLocation loc = context.playerLocation();
-            int alignmentPower = 0;
-            if (worldAlignmentConfig != null) {
-                alignmentPower = worldAlignmentConfig.greatestPossibleRightShiftForWorld(context.playerLocation().getWorld().getName());
-            }
-            offset = Offset.align((int) loc.getX(), (int) loc.getZ(), alignmentPower);
+            // Generate a new offset if we don't already have one for this player
+            offset = Offset.align(
+                (int) (context.playerLocation().getX() * coordinateScale),
+                (int) (context.playerLocation().getZ() * coordinateScale)
+            );
+            offsetStore.put(context.player(), offset);
+            isReusedOffset = false;
         }
 
-        perWorldOffsetStore.put(context.player(), context.playerLocation().getWorld().getName(), offset);
-        return offset;
+        return CoordinateScaleUtils.scaleVerbosely(
+            offset,
+            context.playerLocation().getWorld(),
+            this,
+            isReusedOffset ? "stored" : "new"
+        );
     }
 
     @Override
     public void onPlayerDisconnect(UUID playerUuid) {
-        if (perWorldOffsetStore instanceof PerWorldOffsetStore.Cached) {
-            perWorldOffsetStore.reset(playerUuid);
-        }
+        offsetStore.clear(playerUuid);
     }
 
     @Override
@@ -107,10 +81,6 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
         SequencedMap<String, Object> map = new LinkedHashMap<>();
 
         regenerateConfig.serializeTo(map);
-
-        if (worldAlignmentConfig != null) {
-            worldAlignmentConfig.serializeTo(map);
-        }
 
         return map;
     }
@@ -120,16 +90,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
 
         RegenerateConfig regenerateConfig = RegenerateConfig.deserialize(s); // nullable
 
-        WorldAlignmentConfig worldAlignment = null;
-        if (s.containsKey("worldAlignment")) {
-            if (!(s.get("worldAlignment") instanceof List<?> worldAlignmentList)) {
-                throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                    ": Field `worldAlignment` for ZeroAtLocationOffsetProvider is not a list.");
-            }
-            worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
-        }
-
-        return new ZeroAtLocationOffsetProvider(config.getUserDefinedProviderName(), regenerateConfig, worldAlignment);
+        return new ZeroAtLocationOffsetProvider(config.getUserDefinedProviderName(), regenerateConfig);
     }
 
     @Override

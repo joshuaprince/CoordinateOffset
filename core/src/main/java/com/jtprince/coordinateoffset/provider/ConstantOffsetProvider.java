@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.LinkedHashMap;
@@ -17,7 +18,12 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
 
     @Override
     public Offset provideOffset(OffsetProviderContext context) {
-        return offset.scaleDownBy(context.playerLocation().getWorld().getCoordinateScale());
+        return CoordinateScaleUtils.scaleVerbosely(
+            offset,
+            context.playerLocation().getWorld(),
+            this,
+            "constant"
+        );
     }
 
     @Override

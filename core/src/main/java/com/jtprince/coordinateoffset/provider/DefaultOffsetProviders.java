@@ -2,7 +2,6 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
-import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.LinkedHashMap;
@@ -24,14 +23,12 @@ public class DefaultOffsetProviders {
         100_000,
         new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
         false,
-        RandomOffsetProvider.DEFAULT_PERSISTENCE_KEY,
-        WorldAlignmentConfig.DEFAULT
+        RandomOffsetProvider.DEFAULT_PERSISTENCE_KEY
     );
 
     static final ZeroAtLocationOffsetProvider ZERO_LOC = new ZeroAtLocationOffsetProvider(
         "zeroAtLocation",
-        new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
-        WorldAlignmentConfig.DEFAULT
+        new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE)
     );
 
     public static SequencedMap<String, OffsetProvider> PROVIDERS = new LinkedHashMap<>();
