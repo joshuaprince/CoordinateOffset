@@ -3,7 +3,6 @@ package com.jtprince.coordinateoffset.paper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
@@ -14,7 +13,6 @@ import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionF
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -22,7 +20,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @NullMarked
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
@@ -107,7 +107,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
     public void regenerateOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason) {
         PaperLocation location = new PaperLocation(player.getLocation());
-        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        boolean changed = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             new PaperOffsetPlayer(player),
             player.getWorld().getName(),
             location,
@@ -115,46 +115,21 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
             reason
         ));
 
-        resendNearbyChunks(player);
-    }
+        if (!changed) return;
 
-    void resendNearbyChunks(Player player) {
-        int cx = player.getChunk().getX();
-        int cz = player.getChunk().getZ();
-        List<Chunk> chunksClosestFirst = player.getSentChunks().stream()
-            .sorted(Comparator.comparing(c -> ((c.getX() - cx) * (c.getX() - cx) + (c.getZ() - cz) * (c.getZ() - cz))))
-            .toList();
+        List<Chunk> chunksClosestFirst =
+            TeleportHelpers.sendUnloadAllSentChunksPackets(player);
 
-        for (Chunk chunk : chunksClosestFirst.reversed()) {
-            PacketEvents.getAPI().getPlayerManager().sendPacket(player,
-                new WrapperPlayServerUnloadChunk(chunk.getX(), chunk.getZ()));
-        }
-
+        /* Timing of these packets is important. See OffsetChangeSequencePaper.md */
         var l = player.getLocation();
-        var pkt = new WrapperPlayServerPlayerPositionAndLook(0,
-            new Vector3d(l.x(), l.y(), l.z()),
-            new Vector3d(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()),
-            l.getYaw(), l.getPitch(), (byte) 0);
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player, pkt);
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+            new WrapperPlayServerPlayerPositionAndLook(0,
+                new Vector3d(l.x(), l.y(), l.z()),
+                new Vector3d(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()),
+                l.getYaw(), l.getPitch(), (byte) 0));
         PacketEvents.getAPI().getPlayerManager().sendPacket(player,
             new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
 
-        Set<Entity> alreadyReloadedEntities = new HashSet<>();
-        for (Chunk chunk : chunksClosestFirst) {
-            player.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
-            for (Entity entity : chunk.getEntities()) {
-                if (entity.getTrackedBy().contains(player)) {
-                    player.hideEntity(this, entity);
-                    player.showEntity(this, entity);
-                    alreadyReloadedEntities.add(entity);
-                }
-            }
-        }
-        for (Entity entity : player.getWorld().getEntities()) {
-            if (entity.getTrackedBy().contains(player) && !alreadyReloadedEntities.contains(entity)) {
-                player.hideEntity(this, entity);
-                player.showEntity(this, entity);
-            }
-        }
+        TeleportHelpers.refreshChunksAndEntities(player, chunksClosestFirst);
     }
 }

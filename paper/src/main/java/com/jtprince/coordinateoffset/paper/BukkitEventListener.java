@@ -1,10 +1,8 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
@@ -12,7 +10,6 @@ import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,7 +20,10 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.jspecify.annotations.NullMarked;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,8 +139,7 @@ class BukkitEventListener implements Listener {
             reason = OffsetProviderContext.ProvideReason.TELEPORT;
         }
 
-        Offset currentOffset = core.getOffsetHolder().getOffset(offsetPlayer);
-        Offset nextOffset = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        boolean changed = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             offsetPlayer,
             event.getTo().getWorld().getName(),
             new PaperLocation(event.getFrom()),
@@ -148,8 +147,7 @@ class BukkitEventListener implements Listener {
             reason
         ));
 
-        if (nextOffset != null && !currentOffset.equals(nextOffset) &&
-            reason == OffsetProviderContext.ProvideReason.TELEPORT) {
+        if (changed && reason == OffsetProviderContext.ProvideReason.TELEPORT) {
             /*
              * Nearby teleportation workaround:
              * A player teleporting a short distance does not trigger chunk unloads and reloads.
@@ -163,42 +161,20 @@ class BukkitEventListener implements Listener {
             double viewDistanceBlocks = (double) viewDistanceChunks * 16;
             double tpDistanceSq = event.getFrom().distanceSquared(event.getTo());
             if (tpDistanceSq < viewDistanceBlocks * viewDistanceBlocks) {
-                int cx = event.getPlayer().getChunk().getX();
-                int cz = event.getPlayer().getChunk().getZ();
-                List<Chunk> chunksClosestFirst = event.getPlayer().getSentChunks().stream()
-                    .sorted(Comparator.comparing(c -> ((c.getX() - cx) * (c.getX() - cx) + (c.getZ() - cz) * (c.getZ() - cz))))
-                    .toList();
-                for (Chunk chunk : chunksClosestFirst.reversed()) {
-                    PacketEvents.getAPI().getPlayerManager().sendPacket(event.getPlayer(),
-                        new WrapperPlayServerUnloadChunk(chunk.getX(), chunk.getZ()));
-                }
+                List<Chunk> chunksClosestFirst =
+                    TeleportHelpers.sendUnloadAllSentChunksPackets(event.getPlayer());
 
                 UUID playerId = event.getPlayer().getUniqueId();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> { // on the next tick (post teleport)
                     Player player = Bukkit.getPlayer(playerId);
                     if (player == null) return;
 
-                    Set<Entity> alreadyReloadedEntities = new HashSet<>();
                     // View position packet only seems necessary when teleporting within a chunk; otherwise the
                     // teleport itself sends a correct view position packet. Just always send one for now (no harm).
                     PacketEvents.getAPI().getPlayerManager().sendPacket(player,
                         new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
-                    for (Chunk chunk : chunksClosestFirst) {
-                        player.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
-                        for (Entity entity : chunk.getEntities()) {
-                            if (entity.getTrackedBy().contains(player)) {
-                                player.hideEntity(plugin, entity);
-                                player.showEntity(plugin, entity);
-                                alreadyReloadedEntities.add(entity);
-                            }
-                        }
-                    }
-                    for (Entity entity : player.getWorld().getEntities()) {
-                        if (entity.getTrackedBy().contains(player) && !alreadyReloadedEntities.contains(entity)) {
-                            player.hideEntity(plugin, entity);
-                            player.showEntity(plugin, entity);
-                        }
-                    }
+
+                    TeleportHelpers.refreshChunksAndEntities(player, chunksClosestFirst);
                 }, 1L);
             }
         }
