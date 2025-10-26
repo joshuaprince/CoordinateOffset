@@ -105,14 +105,27 @@ public record Offset (int x, int z) {
     }
 
     /**
-     * Get a new Offset with the components of this offset multiplied by an arbitrary number and rounded.
+     * Get a new Offset with the components of this offset <b>multiplied</b> by an arbitrary number and rounded.
      *
+     * @deprecated Ambiguous scaling direction. Use {@link #scaleDownBy(double)} instead.
      * @param scaleFactor The factor to multiply this offset by.
      * @return A new Offset aligned to 1 chunk.
      */
+    @Deprecated
     @Pure
     public Offset scaleByDouble(double scaleFactor) {
         return Offset.align((int) Math.round(x * scaleFactor), (int) Math.round(z * scaleFactor));
+    }
+
+    /**
+     * Get a new Offset with the components of this offset <b>divided</b> by an arbitrary number and rounded.
+     *
+     * @param scaleFactor The factor to divide this offset by.
+     * @return A new Offset aligned to 1 chunk.
+     */
+    @Pure
+    public Offset scaleDownBy(double scaleFactor) {
+        return Offset.align((int) Math.round(x / scaleFactor), (int) Math.round(z / scaleFactor));
     }
 
     /**

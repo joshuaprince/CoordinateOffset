@@ -27,6 +27,13 @@ public interface OffsetWorld {
     String getKey();
 
     /**
+     * Get the scaling factor for this world. This is used to scale the offset by the world's size.
+     * Offsets are <b>divided</b> by this factor. For example, the default nether has a scaling factor of 8.
+     * @return Scaling factor for this world.
+     */
+    Double getCoordinateScale();
+
+    /**
      * Get the underlying platform-specific player object, for example a Bukkit World.
      */
     Object getPlatformPlayerObject();

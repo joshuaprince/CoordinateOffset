@@ -6,20 +6,17 @@ import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.SequencedMap;
 
 @NullMarked
 public class DefaultOffsetProviders {
     static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
         "constant",
-        new Offset(1024, 1024),
-        Map.of("world_nether", 0.125)
+        new Offset(1024, 1024)
     );
     static final ConstantOffsetProvider CONSTANT_DISABLED = new ConstantOffsetProvider(
         "disabled",
-        Offset.ZERO,
-        null
+        Offset.ZERO
     );
 
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(

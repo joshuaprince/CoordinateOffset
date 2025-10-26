@@ -31,6 +31,11 @@ public class PaperWorld implements OffsetWorld {
     }
 
     @Override
+    public Double getCoordinateScale() {
+        return getPlatformPlayerObject().getCoordinateScale();
+    }
+
+    @Override
     public World getPlatformPlayerObject() {
         return Objects.requireNonNull(Bukkit.getWorld(uuid));
     }
