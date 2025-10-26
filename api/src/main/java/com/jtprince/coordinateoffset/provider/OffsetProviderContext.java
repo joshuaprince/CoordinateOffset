@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Container for relevant information when calculating a new {@link Offset}.
@@ -11,6 +12,9 @@ import org.jspecify.annotations.NullMarked;
  * @param player The Player that will receive this new Offset.
  * @param worldName Name of the World this Offset will apply to. Note that this may be different from
  *                  <code>player.getWorld()</code> because the Provider is called <i>before</i> a world change.
+ * @param previousLocation The previous location of the Player before this Offset begins to take effect. If the player
+ *                         is joining the server or the death location is unknown for a respawn, this will be
+ *                         <code>null</code>.
  * @param playerLocation The real location that the Player will be at as soon as this Offset begins to take effect.
  *                       Note that this may be different from <code>player.getLocation()</code> because the Provider is
  *                       called <i>before</i> a teleport completes.
@@ -20,6 +24,7 @@ import org.jspecify.annotations.NullMarked;
 public record OffsetProviderContext(
     OffsetPlayer player,
     String worldName,
+    @Nullable OffsetLocation previousLocation,
     OffsetLocation playerLocation,
     ProvideReason reason
 ) {
@@ -42,14 +47,13 @@ public record OffsetProviderContext(
         WORLD_CHANGE,
 
         /**
-         * A player's offset is being generated because they are teleporting within the same world. The teleport must
-         * be far enough such that there are no chunks visible both before and after the teleport.
+         * A player's offset is being generated because they are teleporting within the same world.
          */
-        DISTANT_TELEPORT,
+        TELEPORT,
 
         /**
          * A player's offset is being generated immediately because someone executed a command (such as
-         * /offset regenerate).
+         * <code>/offset regenerate</code>).
          */
         COMMAND,
 

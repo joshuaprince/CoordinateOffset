@@ -20,7 +20,4 @@ public interface CoordinateOffsetConfig {
     boolean getObfuscateWorldBorder();
     boolean getObfuscateDebugPropertySubscriptions();
     boolean getVerbose();
-
-    // Hidden configurations
-    boolean getUnsafeResetOnDistantTeleport();
 }

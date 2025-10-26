@@ -25,20 +25,17 @@ public class DefaultOffsetProviders {
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
         "random",
         100_000,
-        null
+        new ResetConfig(false, false, false, ResetConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
+        false,
+        RandomOffsetProvider.DEFAULT_PERSISTENCE_KEY,
+        WorldAlignmentConfig.DEFAULT
     );
-    static {
-        RANDOM.resetConfig = new ResetConfig(false, false, null);
-        RANDOM.isPersistentConfig = false;
-        RANDOM.persistenceKeyConfig = RandomOffsetProvider.DEFAULT_PERSISTENCE_KEY;
-        RANDOM.worldAlignmentConfig = WorldAlignmentConfig.DEFAULT;
-    }
 
-    static final ZeroAtLocationOffsetProvider ZERO_LOC = new ZeroAtLocationOffsetProvider("zeroAtLocation");
-    static {
-        ZERO_LOC.resetConfig = new ResetConfig(false, false, null);
-        ZERO_LOC.worldAlignmentConfig = WorldAlignmentConfig.DEFAULT;
-    }
+    static final ZeroAtLocationOffsetProvider ZERO_LOC = new ZeroAtLocationOffsetProvider(
+        "zeroAtLocation",
+        new ResetConfig(false, false, false, ResetConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
+        WorldAlignmentConfig.DEFAULT
+    );
 
     public static SequencedMap<String, OffsetProvider> PROVIDERS = new LinkedHashMap<>();
     static {

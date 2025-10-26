@@ -106,13 +106,19 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     }
 
     public void regenerateOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason) {
+        PaperLocation location = new PaperLocation(player.getLocation());
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             new PaperOffsetPlayer(player),
             player.getWorld().getName(),
-            new PaperLocation(player.getLocation()),
+            location,
+            location,
             reason
         ));
 
+        resendNearbyChunks(player);
+    }
+
+    void resendNearbyChunks(Player player) {
         int cx = player.getChunk().getX();
         int cz = player.getChunk().getZ();
         List<Chunk> chunksClosestFirst = player.getSentChunks().stream()

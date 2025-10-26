@@ -4,6 +4,7 @@ import com.jtprince.coordinateoffset.config.OffsetProviderOverrideConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -15,7 +16,14 @@ class OffsetCreator {
         this.core = core;
     }
 
-    Offset createOffset(OffsetProviderContext context) {
+    /**
+     * Select and query an offset provider to generate a new offset for a player.
+     *
+     * @param context Context containing player, world, location, reason for offset change, etc.
+     * @return A new offset to apply (which may be the same as the current offset), or null if the player's offset
+     * should remain the same as it is now.
+     */
+    @Nullable Offset createOffset(OffsetProviderContext context) {
         OffsetProvider provider = null;
         ProviderSource providerSource = null;
 
@@ -50,6 +58,9 @@ class OffsetCreator {
 
         // With provider selected, get the offset.
         Offset offset = provider.provideOffset(context);
+        if (offset == null) {
+            return null;
+        }
         if (core.getConfig().getVerbose()) {
             String usingOrReusing;
             if (offset.equals(savedOffsetInWorld)) {
@@ -63,7 +74,7 @@ class OffsetCreator {
                 case JOIN -> reasonStr = "player joined";
                 case DEATH_RESPAWN -> reasonStr = "player respawned";
                 case WORLD_CHANGE -> reasonStr = "player changed worlds";
-                case DISTANT_TELEPORT -> reasonStr = "player teleported";
+                case TELEPORT -> reasonStr = "player teleported";
                 case COMMAND -> reasonStr = "forced by command";
                 case PLUGIN -> reasonStr = "forced by plugin";
             }

@@ -154,11 +154,16 @@ public class OffsetHolder {
      * join, respawn, or teleport.</p>
      *
      * @param context Offset generation context, containing the player and world that should have an offset regenerated.
+     * @return The new offset that was generated and enqueued for this player, or null if the player's offset will not
+     * change. This may be equal to the player's current offset.
      */
-    public void generateNextOffset(OffsetProviderContext context) {
+    public @Nullable Offset generateNextOffset(OffsetProviderContext context) {
         Offset newOffset = core.getOffsetCreator().createOffset(context);
+        if (newOffset == null) {
+            return null;
+        }
 
-        playerOffsetData.compute(context.player().getUuid(), (uuid, existingOffsetData) -> {
+        PlayerOffsetData d = playerOffsetData.compute(context.player().getUuid(), (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
                 debugLog("Generate first: " +
                     newOffset + ", " +
@@ -189,6 +194,8 @@ public class OffsetHolder {
         synchronized (pendingOffsetDataLock) {
             pendingOffsetDataLock.notifyAll();
         }
+
+        return d.nextOffset;
     }
 
     /**

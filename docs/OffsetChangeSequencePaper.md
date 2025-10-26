@@ -46,6 +46,22 @@ On player join:
                                                UPDATE_VIEW_POSITION
                                                INITIALIZE_WORLD_BORDER
                                                SPAWN_POSITION
+                                               CHUNK_DATA (1+)
+
+On teleport (across chunk boundaries):
+   Event                                       Packet
+  ------------------------------              -------------------------
+   PlayerTeleportEvent
+                                               PLAYER_POSITION_AND_LOOK
+                                               UNLOAD_CHUNK (1+)
+                                               UPDATE_VIEW_POSITION
+                                               CHUNK_DATA (1+)
+
+On teleport (within same chunk):
+   Event                                       Packet
+  ------------------------------              -------------------------
+   PlayerTeleportEvent
+                                               PLAYER_POSITION_AND_LOOK
 
 On world change:
    Event                                       Packet
@@ -56,7 +72,8 @@ On world change:
                                            ├►  PLAYER_POSITION_AND_LOOK
                                            ├►  UPDATE_VIEW_POSITION
                                            ├►  INITIALIZE_WORLD_BORDER
-                                           └►  SPAWN_POSITION
+                                           ├►  SPAWN_POSITION
+                                           └►  CHUNK_DATA (1+)
 
 On respawn after death:
    Event                                       Packet
@@ -68,7 +85,8 @@ On respawn after death:
                                            ├►  SPAWN_POSITION
                                            ├►  INITIALIZE_WORLD_BORDER
                                            ├►  SPAWN_POSITION
-                                           └►  UPDATE_VIEW_POSITION
+                                           ├►  UPDATE_VIEW_POSITION
+                                           └►  CHUNK_DATA (1+)
 *Deprecated in 1.21.9.
 ```
 

@@ -9,39 +9,70 @@ import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.SequencedMap;
-import java.util.UUID;
+import java.util.*;
 
 @NullMarked
-public class RandomOffsetProvider extends OffsetProvider {
+public final class RandomOffsetProvider extends CoreOffsetProvider {
     public static final String PERSISTENCE_KEY_CLASS_KEY = "random-persistence";
     public static final String DEFAULT_PERSISTENCE_KEY = "default";
 
-    final int randomBound;
-
-    @Nullable ResetConfig resetConfig;
-    @Nullable WorldAlignmentConfig worldAlignmentConfig;
-    @Nullable Boolean isPersistentConfig;
-    @Nullable String persistenceKeyConfig;
+    private final int randomBound;
+    private final ResetConfig resetConfig;
+    private final @Nullable Boolean isPersistentConfig;
+    private final @Nullable String persistenceKeyConfig;
+    private final @Nullable WorldAlignmentConfig worldAlignmentConfig;
 
     private final PerWorldOffsetStore perWorldOffsetStore;
 
-    RandomOffsetProvider(String name, int randomBound, PlayerOffsetPersistence.@Nullable Key persistenceKey) {
+    RandomOffsetProvider(
+        String name,
+        int randomBound,
+        ResetConfig resetConfig,
+        @Nullable Boolean isPersistentConfig,
+        @Nullable String persistenceKeyConfig,
+        @Nullable WorldAlignmentConfig worldAlignmentConfig
+    ) {
         super(name);
         this.randomBound = randomBound;
-        if (persistenceKey != null) {
-            this.perWorldOffsetStore = new PerWorldOffsetStore.Persistent(persistenceKey);
+        this.resetConfig = resetConfig;
+        this.isPersistentConfig = isPersistentConfig;
+        this.persistenceKeyConfig = persistenceKeyConfig;
+        this.worldAlignmentConfig = worldAlignmentConfig;
+
+        if (isPersistentConfig != null && isPersistentConfig) {
+            if (persistenceKeyConfig == null) {
+                throw new IllegalArgumentException("Provider \"" + name +
+                    ": Field `persistenceKey` for RandomOffsetProvider is required when `persistent` is true.");
+            }
+            this.perWorldOffsetStore = new PerWorldOffsetStore.Persistent(
+                new PlayerOffsetPersistence.Key(PERSISTENCE_KEY_CLASS_KEY, persistenceKeyConfig));
         } else {
             this.perWorldOffsetStore = new PerWorldOffsetStore.Cached();
         }
     }
 
     @Override
-    public Offset provideOffset(OffsetProviderContext context) {
+    public @Nullable Offset provideOffset(OffsetProviderContext context) {
         //noinspection DuplicatedCode (with ZeroAtLocationOffsetProvider)
-        if (resetConfig != null && resetConfig.resetOn(context.reason())) {
+        boolean willRegenerate = false;
+        switch (context.reason()) {
+            case JOIN -> {}
+            case DEATH_RESPAWN -> { if (resetConfig.isResetOnDeath()) willRegenerate = true; }
+            case WORLD_CHANGE -> { if (resetConfig.isResetOnWorldChange()) willRegenerate = true; }
+            case COMMAND, PLUGIN -> willRegenerate = true; /* Always regenerate when explicitly reset */
+            case TELEPORT -> {
+                Objects.requireNonNull(context.previousLocation());
+                Double distanceTeleported = context.playerLocation().getDistance(context.previousLocation());
+                Objects.requireNonNull(distanceTeleported);
+                if (resetConfig.isResetOnDistantTeleport(distanceTeleported)) {
+                    willRegenerate = true;
+                } else {
+                    // Special case to avoid log spam: Returning null means "no offset change" with no log message
+                    return null;
+                }
+            }
+        }
+        if (willRegenerate) {
             perWorldOffsetStore.reset(context.player());
         }
 
@@ -106,9 +137,7 @@ public class RandomOffsetProvider extends OffsetProvider {
 
         map.put("randomBound", (long) randomBound);
 
-        if (resetConfig != null) {
-            resetConfig.serializeTo(map);
-        }
+        resetConfig.serializeTo(map);
 
         if (isPersistentConfig != null) {
             map.put("persistent", isPersistentConfig);
@@ -133,26 +162,22 @@ public class RandomOffsetProvider extends OffsetProvider {
         }
         int randomBound = randomBoundNum.intValue();
 
-        ResetConfig resetConfig = ResetConfig.deserialize(s); // nullable
+        ResetConfig resetConfig = ResetConfig.deserialize(s);
 
-        Boolean persistent = null;
+        Boolean isPersistentConfig = null;
         if (s.containsKey("persistent")) {
             if (!(s.get("persistent") instanceof Boolean)) {
                 throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
                     ": Field `persistent` for RandomOffsetProvider is not a boolean.");
             }
-            persistent = (Boolean) s.get("persistent");
+            isPersistentConfig = (Boolean) s.get("persistent");
         }
         String persistenceKeyConfig = null;
         if (s.containsKey("persistenceKey")) {
             persistenceKeyConfig = s.get("persistenceKey").toString();
-        }
-        PlayerOffsetPersistence.Key persistenceKey = null;
-        if (persistent != null && persistent) {
-            persistenceKey = new PlayerOffsetPersistence.Key(
-                PERSISTENCE_KEY_CLASS_KEY,
-                persistenceKeyConfig != null ? persistenceKeyConfig : DEFAULT_PERSISTENCE_KEY
-            );
+        } else if (isPersistentConfig != null && isPersistentConfig) {
+            // Write default persistenceKey if persistence is enabled but the key isn't present in config
+            persistenceKeyConfig = DEFAULT_PERSISTENCE_KEY;
         }
 
         WorldAlignmentConfig worldAlignment = null;
@@ -164,11 +189,24 @@ public class RandomOffsetProvider extends OffsetProvider {
             worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
         }
 
-        RandomOffsetProvider provider = new RandomOffsetProvider(config.getUserDefinedProviderName(), randomBound, persistenceKey);
-        provider.resetConfig = resetConfig;
-        provider.isPersistentConfig = persistent;
-        provider.persistenceKeyConfig = persistenceKeyConfig;
-        provider.worldAlignmentConfig = worldAlignment;
-        return provider;
+        return new RandomOffsetProvider(
+            config.getUserDefinedProviderName(),
+            randomBound,
+            resetConfig,
+            isPersistentConfig,
+            persistenceKeyConfig,
+            worldAlignment
+        );
+    }
+
+    @Override
+    public String getMetricsClassName() {
+        return "RandomOffsetProvider";
+    }
+
+    @Override
+    public String getMetricsDetails() {
+        return ((isPersistentConfig != null && isPersistentConfig) ? "Persistent" : "Not Persistent")
+            + " | Reset " + resetConfig.getMetricsCharacterString();
     }
 }

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.SequencedMap;
 
 @NullMarked
-public class ConstantOffsetProvider extends OffsetProvider {
+public final class ConstantOffsetProvider extends CoreOffsetProvider {
     final Offset offset;
     @Nullable final Map<String, Double> worldScaling;
 
@@ -87,5 +87,16 @@ public class ConstantOffsetProvider extends OffsetProvider {
             new Offset(offsetX, offsetZ),
             worldScaling
         );
+    }
+
+    @Override
+    public String getMetricsClassName() {
+        return "ConstantOffsetProvider";
+    }
+
+    @Override
+    public String getMetricsDetails() {
+        // No details reported for constant providers.
+        return getMetricsClassName();
     }
 }

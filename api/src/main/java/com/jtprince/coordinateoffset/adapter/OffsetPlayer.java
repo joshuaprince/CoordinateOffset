@@ -12,6 +12,7 @@ public interface OffsetPlayer {
     UUID getUuid();
     String getName();
     boolean hasPermission(String permission);
+    OffsetLocation getLocation();
 
     /**
      * Get the underlying platform-specific player object, for example a Bukkit Player.

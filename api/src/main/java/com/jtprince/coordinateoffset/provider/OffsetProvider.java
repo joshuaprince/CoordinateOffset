@@ -6,6 +6,7 @@ import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import de.exlll.configlib.Configuration;
 import de.exlll.configlib.Polymorphic;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.SequencedMap;
 import java.util.UUID;
@@ -40,11 +41,16 @@ public abstract class OffsetProvider {
      * <p>This function is called whenever the player's Offset has an opportunity to change. The reasons that an Offset
      * might be changing are enumerated in {@link OffsetProviderContext.ProvideReason}.</p>
      *
+     * <p>This function may return null to indicate that the player's current offset should <b>not change</b>.
+     * Returning null does not result in a zero offset. To clear the player's offset, return
+     * {@link Offset#ZERO}. Returning null results in no "verbose" message being printed to the console; to print a
+     * "reusing offset" message, return the same offset the player previously had in the same world.</p>
+     *
      * @param context Container for all context associated with this Offset change, such as the {@link OffsetPlayer}
      *                this Offset will be for, and the name of the World the Offset will be applied in.
-     * @return The desired offset for this player.
+     * @return The desired offset for this player, or null to leave the offset unchanged and print no verbose message.
      */
-    public abstract Offset provideOffset(OffsetProviderContext context);
+    public abstract @Nullable Offset provideOffset(OffsetProviderContext context);
 
     /**
      * Called on this provider whenever a player leaves. The provider may override this function to write to disk

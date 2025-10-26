@@ -1,8 +1,8 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.provider.*;
-import com.jtprince.coordinateoffset.provider.util.ResetConfig;
+import com.jtprince.coordinateoffset.provider.CoreOffsetProvider;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
@@ -24,28 +24,9 @@ public class MetricsWrapper {
         metrics.addCustomChart(new DrilldownPie("default_offset_provider", () -> {
             Map<String, Map<String, Integer>> result = new HashMap<>();
             OffsetProvider defaultProvider = core.getProviderConfig().getDefaultOffsetProviderConfig();
-            if (defaultProvider instanceof ConstantOffsetProvider) {
-                result.put("ConstantOffsetProvider", Map.of("ConstantOffsetProvider", 1));
-            } else if (defaultProvider instanceof RandomOffsetProvider randomOffsetProvider) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(randomOffsetProvider.isPersistent() ? "Persistent" : "Not Persistent");
-
-                sb.append(" | Reset ");
-                ResetConfig rc = randomOffsetProvider.getResetConfig();
-                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
-                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
-                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
-
-                result.put("RandomOffsetProvider", Map.of(sb.toString(), 1));
-            } else if (defaultProvider instanceof ZeroAtLocationOffsetProvider zeroAtLocationOffsetProvider) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Reset ");
-                ResetConfig rc = zeroAtLocationOffsetProvider.getResetConfig();
-                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DEATH_RESPAWN) ? "D" : "x");
-                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.WORLD_CHANGE) ? "W" : "x");
-                sb.append(rc != null && rc.resetOn(OffsetProviderContext.ProvideReason.DISTANT_TELEPORT) ? "T" : "x");
-
-                result.put("ZeroAtLocationOffsetProvider", Map.of(sb.toString(), 1));
+            if (defaultProvider instanceof CoreOffsetProvider coreOffsetProvider) {
+                // Only report full metrics for built-in ("core") offset providers.
+                result.put(coreOffsetProvider.getMetricsClassName(), Map.of(coreOffsetProvider.getMetricsDetails(), 1));
             } else {
                 // Intentionally obfuscate the name of any extensions made to CoordinateOffset.
                 result.put("Custom Provider", Map.of("Unknown Offset Provider", 1));
@@ -58,9 +39,6 @@ public class MetricsWrapper {
 
         metrics.addCustomChart(new SimplePie("debug_packet_obfuscation", () ->
             enabledDisabledStr(core.getConfig().getObfuscateDebugPropertySubscriptions())));
-
-        metrics.addCustomChart(new SimplePie("unsafe_reset_on_teleport", () ->
-            enabledDisabledStr(core.getConfig().getUnsafeResetOnDistantTeleport())));
 
         metrics.addCustomChart(new SimplePie("fix_collision", () -> {
             boolean enabled = false;

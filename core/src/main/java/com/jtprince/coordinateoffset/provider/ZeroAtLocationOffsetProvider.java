@@ -9,26 +9,47 @@ import com.jtprince.coordinateoffset.provider.util.WorldAlignmentConfig;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.SequencedMap;
-import java.util.UUID;
+import java.util.*;
 
 @NullMarked
-public class ZeroAtLocationOffsetProvider extends OffsetProvider {
-    @Nullable ResetConfig resetConfig;
-    @Nullable WorldAlignmentConfig worldAlignmentConfig;
+public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
+    private final ResetConfig resetConfig;
+    private final @Nullable WorldAlignmentConfig worldAlignmentConfig;
 
     private final PerWorldOffsetStore perWorldOffsetStore = new PerWorldOffsetStore.Cached();
 
-    ZeroAtLocationOffsetProvider(String name) {
+    ZeroAtLocationOffsetProvider(
+        String name,
+        ResetConfig resetConfig,
+        @Nullable WorldAlignmentConfig worldAlignmentConfig
+    ) {
         super(name);
+        this.resetConfig = resetConfig;
+        this.worldAlignmentConfig = worldAlignmentConfig;
     }
 
     @Override
-    public Offset provideOffset(OffsetProviderContext context) {
+    public @Nullable Offset provideOffset(OffsetProviderContext context) {
         //noinspection DuplicatedCode (with RandomOffsetProvider)
-        if (resetConfig != null && resetConfig.resetOn(context.reason())) {
+        boolean willRegenerate = false;
+        switch (context.reason()) {
+            case JOIN -> {}
+            case DEATH_RESPAWN -> { if (resetConfig.isResetOnDeath()) willRegenerate = true; }
+            case WORLD_CHANGE -> { if (resetConfig.isResetOnWorldChange()) willRegenerate = true; }
+            case COMMAND, PLUGIN -> willRegenerate = true; /* Always regenerate when explicitly reset */
+            case TELEPORT -> {
+                Objects.requireNonNull(context.previousLocation());
+                Double distanceTeleported = context.playerLocation().getDistance(context.previousLocation());
+                Objects.requireNonNull(distanceTeleported);
+                if (resetConfig.isResetOnDistantTeleport(distanceTeleported)) {
+                    willRegenerate = true;
+                } else {
+                    // Special case to avoid log spam: Returning null means "no offset change" with no log message
+                    return null;
+                }
+            }
+        }
+        if (willRegenerate) {
             perWorldOffsetStore.reset(context.player());
         }
 
@@ -80,17 +101,11 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
         }
     }
 
-    public @Nullable ResetConfig getResetConfig() {
-        return resetConfig;
-    }
-
     @Override
     public SequencedMap<String, ?> serialize() {
         SequencedMap<String, Object> map = new LinkedHashMap<>();
 
-        if (resetConfig != null) {
-            resetConfig.serializeTo(map);
-        }
+        resetConfig.serializeTo(map);
 
         if (worldAlignmentConfig != null) {
             worldAlignmentConfig.serializeTo(map);
@@ -113,9 +128,16 @@ public class ZeroAtLocationOffsetProvider extends OffsetProvider {
             worldAlignment = WorldAlignmentConfig.deserialize(worldAlignmentList.stream().map(Object::toString).toList());
         }
 
-        ZeroAtLocationOffsetProvider provider = new ZeroAtLocationOffsetProvider(config.getUserDefinedProviderName());
-        provider.resetConfig = resetConfig;
-        provider.worldAlignmentConfig = worldAlignment;
-        return provider;
+        return new ZeroAtLocationOffsetProvider(config.getUserDefinedProviderName(), resetConfig, worldAlignment);
+    }
+
+    @Override
+    public String getMetricsClassName() {
+        return "ZeroAtLocationOffsetProvider";
+    }
+
+    @Override
+    public String getMetricsDetails() {
+        return "Reset " + resetConfig.getMetricsCharacterString();
     }
 }

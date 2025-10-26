@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.paper.adapter;
 
+import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -30,6 +31,11 @@ public class PaperOffsetPlayer implements OffsetPlayer {
     @Override
     public boolean hasPermission(String permission) {
         return player.hasPermission(permission);
+    }
+
+    @Override
+    public OffsetLocation getLocation() {
+        return new PaperLocation(player.getLocation());
     }
 
     @Override

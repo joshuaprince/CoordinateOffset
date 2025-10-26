@@ -1,21 +1,29 @@
 package com.jtprince.coordinateoffset.paper;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.jspecify.annotations.NullMarked;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +71,7 @@ class BukkitEventListener implements Listener {
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             player,
             event.getPlayer().getWorld().getName(),
+            null,
             new PaperLocation(event.getPlayer().getLocation()),
             OffsetProviderContext.ProvideReason.JOIN
         ));
@@ -76,10 +85,17 @@ class BukkitEventListener implements Listener {
             core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
                 player,
                 event.getSpawnLocation().getWorld().getName(),
+                null,
                 new PaperLocation(event.getSpawnLocation()),
                 OffsetProviderContext.ProvideReason.JOIN
             ));
         }
+    }
+
+    private final Map<UUID, Location> lastDeathLocation = new HashMap<>();
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        lastDeathLocation.put(event.getEntity().getUniqueId(), event.getEntity().getLocation());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -103,9 +119,11 @@ class BukkitEventListener implements Listener {
             }
         }
 
+        Location lastDeathLocation = this.lastDeathLocation.get(event.getPlayer().getUniqueId());
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             new PaperOffsetPlayer(event.getPlayer()),
             event.getRespawnLocation().getWorld().getName(),
+            lastDeathLocation == null ? null : new PaperLocation(lastDeathLocation),
             new PaperLocation(event.getRespawnLocation()),
             reason
         ));
@@ -113,28 +131,77 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-        OffsetProviderContext.ProvideReason reason = null;
-        if (event.getFrom().getWorld() != Objects.requireNonNull(event.getTo()).getWorld()) {
+        PaperOffsetPlayer offsetPlayer = new PaperOffsetPlayer(event.getPlayer());
+        OffsetProviderContext.ProvideReason reason;
+        if (!event.getFrom().getWorld().equals(event.getTo().getWorld())) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
-        } else if (event.getFrom().distanceSquared(event.getTo()) > getMinimumTeleportDistanceSquared(event.getTo().getWorld())) {
-            /*
-             * DISTANT_TELEPORT activation requires opt-in
-             * https://github.com/joshuaprince/CoordinateOffset/wiki/resetOnDistantTeleport
-             */
-            if (core.getConfig().getUnsafeResetOnDistantTeleport()) {
-                reason = OffsetProviderContext.ProvideReason.DISTANT_TELEPORT;
-            }
+        } else {
+            reason = OffsetProviderContext.ProvideReason.TELEPORT;
         }
 
-        if (reason == null) return;
-
-        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
-            player,
+        Offset currentOffset = core.getOffsetHolder().getOffset(offsetPlayer);
+        Offset nextOffset = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+            offsetPlayer,
             event.getTo().getWorld().getName(),
+            new PaperLocation(event.getFrom()),
             new PaperLocation(event.getTo()),
             reason
         ));
+
+        if (nextOffset != null && !currentOffset.equals(nextOffset) &&
+            reason == OffsetProviderContext.ProvideReason.TELEPORT) {
+            /*
+             * Nearby teleportation workaround:
+             * A player teleporting a short distance does not trigger chunk unloads and reloads.
+             * But if their offset changed, the client sees a much longer teleport distance.
+             * Work around this by forcibly resending all chunks that overlap before and after the teleport.
+             */
+            int viewDistanceChunks = Math.max(
+                event.getPlayer().getViewDistance(),
+                event.getPlayer().getSendViewDistance()
+            ) + 2; // extra buffer to be safe
+            double viewDistanceBlocks = (double) viewDistanceChunks * 16;
+            double tpDistanceSq = event.getFrom().distanceSquared(event.getTo());
+            if (tpDistanceSq < viewDistanceBlocks * viewDistanceBlocks) {
+                int cx = event.getPlayer().getChunk().getX();
+                int cz = event.getPlayer().getChunk().getZ();
+                List<Chunk> chunksClosestFirst = event.getPlayer().getSentChunks().stream()
+                    .sorted(Comparator.comparing(c -> ((c.getX() - cx) * (c.getX() - cx) + (c.getZ() - cz) * (c.getZ() - cz))))
+                    .toList();
+                for (Chunk chunk : chunksClosestFirst.reversed()) {
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(event.getPlayer(),
+                        new WrapperPlayServerUnloadChunk(chunk.getX(), chunk.getZ()));
+                }
+
+                UUID playerId = event.getPlayer().getUniqueId();
+                Bukkit.getScheduler().runTaskLater(plugin, () -> { // on the next tick (post teleport)
+                    Player player = Bukkit.getPlayer(playerId);
+                    if (player == null) return;
+
+                    Set<Entity> alreadyReloadedEntities = new HashSet<>();
+                    // View position packet only seems necessary when teleporting within a chunk; otherwise the
+                    // teleport itself sends a correct view position packet. Just always send one for now (no harm).
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+                        new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
+                    for (Chunk chunk : chunksClosestFirst) {
+                        player.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+                        for (Entity entity : chunk.getEntities()) {
+                            if (entity.getTrackedBy().contains(player)) {
+                                player.hideEntity(plugin, entity);
+                                player.showEntity(plugin, entity);
+                                alreadyReloadedEntities.add(entity);
+                            }
+                        }
+                    }
+                    for (Entity entity : player.getWorld().getEntities()) {
+                        if (entity.getTrackedBy().contains(player) && !alreadyReloadedEntities.contains(entity)) {
+                            player.hideEntity(plugin, entity);
+                            player.showEntity(plugin, entity);
+                        }
+                    }
+                }, 1L);
+            }
+        }
 
         worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
     }
@@ -149,29 +216,6 @@ class BukkitEventListener implements Listener {
         for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
             provider.onPlayerQuit(new PaperOffsetPlayer(event.getPlayer()));
         }
-    }
-
-    private int getMinimumTeleportDistanceSquared(World world) {
-        int viewDistance = world.getViewDistance();
-
-        /*
-         * Problem: If the player's offset changes when they teleport a short distance, the server won't re-send the
-         * chunks that the server thinks the player already has. That means that the player will just never get some
-         * chunks in their "new" location.
-         * Easy Solution: Only allow an offset change when the player teleports if there are no overlapping chunks in
-         * view distance before and after the teleport.
-         * Future Solution: Find a way to resend all visible chunks on demand. Paper's Player#setSendViewDistance or
-         * World#refreshChunk might be promising.
-         */
-        int minimumBlocks = ((viewDistance + 1) * 2) * 16;
-
-        // TODO: Reinstate this config option, but document it better.
-//        if (plugin.getConfig().isInt("distantTeleportMinimumDistance")) {
-//            // TODO: Not documented for now. Need to either fix the problem described above or document around it.
-//            minimumBlocks = plugin.getConfig().getInt("distantTeleportMinimumDistance");
-//        }
-
-        return minimumBlocks * minimumBlocks;
     }
 
     private boolean is1_21_9OrGreater() {
