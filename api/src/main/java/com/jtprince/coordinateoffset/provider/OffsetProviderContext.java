@@ -53,7 +53,7 @@ public record OffsetProviderContext(
 
         /**
          * A player's offset is being generated immediately because someone executed a command (such as
-         * <code>/offset regenerate</code>).
+         * <code>/offset reset</code>).
          */
         COMMAND,
 

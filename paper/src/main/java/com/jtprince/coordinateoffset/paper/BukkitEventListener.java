@@ -162,7 +162,7 @@ class BukkitEventListener implements Listener {
             double tpDistanceSq = event.getFrom().distanceSquared(event.getTo());
             if (tpDistanceSq < viewDistanceBlocks * viewDistanceBlocks) {
                 List<Chunk> chunksClosestFirst =
-                    TeleportHelpers.sendUnloadAllSentChunksPackets(event.getPlayer());
+                    OffsetSwapHelpers.sendUnloadAllSentChunksPackets(event.getPlayer());
 
                 UUID playerId = event.getPlayer().getUniqueId();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> { // on the next tick (post teleport)
@@ -174,7 +174,7 @@ class BukkitEventListener implements Listener {
                     PacketEvents.getAPI().getPlayerManager().sendPacket(player,
                         new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
 
-                    TeleportHelpers.refreshChunksAndEntities(player, chunksClosestFirst);
+                    OffsetSwapHelpers.refreshChunksAndEntities(player, chunksClosestFirst);
                 }, 1L);
             }
         }

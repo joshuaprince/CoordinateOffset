@@ -1,7 +1,12 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.util.Vector3d;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
+import com.jtprince.coordinateoffset.OffsetHolder;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -13,7 +18,34 @@ import java.util.List;
 import java.util.Set;
 
 @NullMarked
-public class TeleportHelpers {
+public class OffsetSwapHelpers {
+    /**
+     * Forcibly swap the player's offset.
+     * 
+     * <p>This may be called after {@link OffsetHolder#generateNextOffset(OffsetProviderContext)} to apply an offset
+     * change immediately.</p>
+     *
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * @param player Player to swap the offset for.
+     */
+    public static void forceOffsetSwap(Player player) {
+        List<Chunk> chunksClosestFirst =
+            sendUnloadAllSentChunksPackets(player);
+
+        /* Timing of these packets is important. See OffsetChangeSequencePaper.md */
+        var l = player.getLocation();
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+            new WrapperPlayServerPlayerPositionAndLook(0,
+                new Vector3d(l.x(), l.y(), l.z()),
+                new Vector3d(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()),
+                l.getYaw(), l.getPitch(), (byte) 0));
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+            new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
+
+        refreshChunksAndEntities(player, chunksClosestFirst);
+    }
+
     /**
      * Get a list of chunks that the player has been sent, sorted by ascending distance from the player's current chunk.
      *

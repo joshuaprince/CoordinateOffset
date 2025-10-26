@@ -150,9 +150,6 @@ public class OffsetHolder {
      * to certain "position" packets. However, generating a <code>nextOffset</code> will set up an offset change for
      * when the "position" packet occurs.</p>
      *
-     * <p>If is very important that this only be called at specific times, namely when the player is <b>about to</b>
-     * join, respawn, or teleport.</p>
-     *
      * @param context Offset generation context, containing the player and world that should have an offset regenerated.
      * @return true if the player's offset changed, false if the player's offset was unchanged.
      */
@@ -161,7 +158,23 @@ public class OffsetHolder {
         if (newOffset == null) {
             return false;
         }
+        return setNextOffset(context, newOffset);
+    }
 
+    /**
+     * Set a player's next offset to a specific offset.
+     *
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * <p>Note that this does not immediately change the player's offset. Offset changes themselves happen in response
+     * to certain "position" packets. However, generating a <code>nextOffset</code> will set up an offset change for
+     * when the "position" packet occurs.</p>
+     *
+     * @param context Offset generation context, containing the player and world that should have an offset changed.
+     * @param newOffset The new offset to set.
+     * @return true if the player's offset changed, false if the player's offset was unchanged.
+     */
+    public boolean setNextOffset(OffsetProviderContext context, Offset newOffset) {
         PlayerOffsetData d = playerOffsetData.compute(context.player().getUuid(), (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
                 debugLog("Generate first: " +

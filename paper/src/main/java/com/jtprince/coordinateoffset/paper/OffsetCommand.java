@@ -6,6 +6,7 @@ import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -48,16 +49,16 @@ public class OffsetCommand {
                 ROOT_COMMAND_PERMS.stream().anyMatch(p -> sender.getSender().hasPermission(p.node)))
             .executes(this::querySelf);
 
-        // /offset query <player>
+        // /offset query [<player>]
         root.then(Commands.literal("query")
             .requires(sender -> pluginEnabled() &&
-                sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_SELF.node) ||
-                    sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_OTHERS.node))
+                (sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_SELF.node) ||
+                    sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_OTHERS.node)))
             .executes(this::querySelf)
-            .then(Commands.argument("player", ArgumentTypes.player())
-                .requires(sender -> pluginEnabled() &&
-                    sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_OTHERS.node))
-                .executes(this::queryOther)));
+                .then(Commands.argument("player", ArgumentTypes.player())
+                    .requires(sender -> pluginEnabled() &&
+                        sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_OTHERS.node))
+                    .executes(this::queryOther)));
 
         // /offset reload
         root.then(Commands.literal("reload")
@@ -65,24 +66,36 @@ public class OffsetCommand {
                 sender.getSender().hasPermission(CoordinateOffsetPermission.RELOAD.node))
             .executes(this::reload));
 
+        // /offset reset [<player>]
+        root.then(Commands.literal("reset")
+            .requires(sender -> pluginEnabled() &&
+                (sender.getSender().hasPermission(CoordinateOffsetPermission.RESET.node) ||
+                sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node)))
+            .executes(this::reset)
+                .then(Commands.argument("player", ArgumentTypes.player())
+                    .executes(this::reset)));
+
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register(root.build());
         });
 
-        // /offset set
-        root.then(Commands.literal("regenerate")
+        // /offset set x z [<player>]
+        root.then(Commands.literal("set")
             .requires(sender -> pluginEnabled() &&
-                sender.getSender().hasPermission(CoordinateOffsetPermission.QUERY_SELF.node)) // TODO
-            .then(Commands.argument("player", ArgumentTypes.player())
-                .executes(this::regenerate)));
-    }
+                (sender.getSender().hasPermission(CoordinateOffsetPermission.SET.node) ||
+                sender.getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node)))
+            .then(Commands.argument("x", IntegerArgumentType.integer())
+            .then(Commands.argument("z", IntegerArgumentType.integer())
+            .executes(this::set)
+                .then(Commands.argument("player", ArgumentTypes.player())
+                    .requires(sender -> pluginEnabled() &&
+                        sender.getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node))
+                    .executes(this::set)
+            ))));
 
-    private int regenerate(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
-        Player player = targetResolver.resolve(context.getSource()).getFirst();
-        plugin.regenerateOffsetImmediately(player, OffsetProviderContext.ProvideReason.COMMAND);
-
-        return Command.SINGLE_SUCCESS;
+        plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(root.build());
+        });
     }
 
     private int reload(CommandContext<CommandSourceStack> context) {
@@ -148,6 +161,63 @@ public class OffsetCommand {
             .append(Component.text("'s real coordinates are: "))
             .append(formatLocation(target.getLocation()))
             .color(NamedTextColor.GRAY));
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int reset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Player target;
+        try {
+            PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
+            target = targetResolver.resolve(context.getSource()).getFirst();
+        } catch (IllegalArgumentException e) {
+            if (!(context.getSource().getSender() instanceof Player player)) {
+                context.getSource().getSender().sendMessage(Component.text("You must be a player to reset your own offset."));
+                return 0;
+            }
+            target = player;
+        }
+        if (!target.equals(context.getSource().getSender()) &&
+            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node)) {
+            context.getSource().getSender().sendMessage(Bukkit.permissionMessage());
+            return 0;
+        }
+
+        plugin.regenerateOffsetImmediately(target, OffsetProviderContext.ProvideReason.COMMAND);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int set(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Player target;
+        try {
+            PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
+            target = targetResolver.resolve(context.getSource()).getFirst();
+        } catch (IllegalArgumentException e) {
+            if (!(context.getSource().getSender() instanceof Player player)) {
+                context.getSource().getSender().sendMessage(Component.text("You must be a player to set your own offset."));
+                return 0;
+            }
+            target = player;
+        }
+        if (!target.equals(context.getSource().getSender()) &&
+            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node)) {
+            context.getSource().getSender().sendMessage(Bukkit.permissionMessage());
+            return 0;
+        }
+
+        int x = IntegerArgumentType.getInteger(context, "x");
+        int z = IntegerArgumentType.getInteger(context, "z");
+
+        Offset offset;
+        try {
+            offset = new Offset(x, z);
+        } catch (IllegalArgumentException e) {
+            context.getSource().getSender().sendMessage(Component.text("Invalid offset: " + e.getMessage()).color(NamedTextColor.RED));
+            return 0;
+        }
+
+        plugin.setOffsetImmediately(target, OffsetProviderContext.ProvideReason.COMMAND, offset);
 
         return Command.SINGLE_SUCCESS;
     }

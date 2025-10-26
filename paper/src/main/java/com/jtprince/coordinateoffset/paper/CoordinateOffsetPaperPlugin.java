@@ -1,18 +1,14 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
+import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperAdapter;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.lib.org.geysermc.hurricane.CollisionFix;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -21,8 +17,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @NullMarked
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
@@ -107,7 +103,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
     public void regenerateOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason) {
         PaperLocation location = new PaperLocation(player.getLocation());
-        boolean changed = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        boolean changed = Objects.requireNonNull(core).getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             new PaperOffsetPlayer(player),
             player.getWorld().getName(),
             location,
@@ -115,21 +111,23 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
             reason
         ));
 
-        if (!changed) return;
+        if (changed) {
+            OffsetSwapHelpers.forceOffsetSwap(player);
+        }
+    }
 
-        List<Chunk> chunksClosestFirst =
-            TeleportHelpers.sendUnloadAllSentChunksPackets(player);
+    public void setOffsetImmediately(Player player, OffsetProviderContext.ProvideReason reason, Offset offset) {
+        PaperLocation location = new PaperLocation(player.getLocation());
+        boolean changed = Objects.requireNonNull(core).getOffsetHolder().setNextOffset(new OffsetProviderContext(
+            new PaperOffsetPlayer(player),
+            player.getWorld().getName(),
+            location,
+            location,
+            reason
+        ), offset);
 
-        /* Timing of these packets is important. See OffsetChangeSequencePaper.md */
-        var l = player.getLocation();
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
-            new WrapperPlayServerPlayerPositionAndLook(0,
-                new Vector3d(l.x(), l.y(), l.z()),
-                new Vector3d(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()),
-                l.getYaw(), l.getPitch(), (byte) 0));
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
-            new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
-
-        TeleportHelpers.refreshChunksAndEntities(player, chunksClosestFirst);
+        if (changed) {
+            OffsetSwapHelpers.forceOffsetSwap(player);
+        }
     }
 }
