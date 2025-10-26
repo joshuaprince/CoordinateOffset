@@ -17,12 +17,15 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class OffsetCommand {
@@ -30,7 +33,11 @@ public class OffsetCommand {
     private static final Set<CoordinateOffsetPermission> ROOT_COMMAND_PERMS = Set.of(
         CoordinateOffsetPermission.QUERY_SELF,
         CoordinateOffsetPermission.QUERY_OTHERS,
-        CoordinateOffsetPermission.RELOAD
+        CoordinateOffsetPermission.RELOAD,
+        CoordinateOffsetPermission.RESET_SELF,
+        CoordinateOffsetPermission.RESET_OTHERS,
+        CoordinateOffsetPermission.SET_SELF,
+        CoordinateOffsetPermission.SET_OTHERS
     );
 
     private final CoordinateOffsetPaperPlugin plugin;
@@ -69,10 +76,12 @@ public class OffsetCommand {
         // /offset reset [<player>]
         root.then(Commands.literal("reset")
             .requires(sender -> pluginEnabled() &&
-                (sender.getSender().hasPermission(CoordinateOffsetPermission.RESET.node) ||
+                (sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_SELF.node) ||
                 sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node)))
             .executes(this::reset)
-                .then(Commands.argument("player", ArgumentTypes.player())
+                .then(Commands.argument("players", ArgumentTypes.players())
+                    .requires(sender -> pluginEnabled() &&
+                        sender.getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node))
                     .executes(this::reset)));
 
         plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
@@ -82,12 +91,12 @@ public class OffsetCommand {
         // /offset set x z [<player>]
         root.then(Commands.literal("set")
             .requires(sender -> pluginEnabled() &&
-                (sender.getSender().hasPermission(CoordinateOffsetPermission.SET.node) ||
+                (sender.getSender().hasPermission(CoordinateOffsetPermission.SET_SELF.node) ||
                 sender.getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node)))
             .then(Commands.argument("x", IntegerArgumentType.integer())
             .then(Commands.argument("z", IntegerArgumentType.integer())
             .executes(this::set)
-                .then(Commands.argument("player", ArgumentTypes.player())
+                .then(Commands.argument("players", ArgumentTypes.players())
                     .requires(sender -> pluginEnabled() &&
                         sender.getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node))
                     .executes(this::set)
@@ -150,14 +159,12 @@ public class OffsetCommand {
         Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(target));
 
         context.getSource().getSender().sendMessage(Component.empty()
-            .append(Component.text(target.getName())
-                .color(NamedTextColor.BLUE))
+            .append(formatPlayerName(target))
             .append(Component.text("'s coordinate offset is: "))
             .append(formatOffset(offset))
             .color(NamedTextColor.GRAY));
         context.getSource().getSender().sendMessage(Component.empty()
-            .append(Component.text(target.getName())
-                .color(NamedTextColor.BLUE))
+            .append(formatPlayerName(target))
             .append(Component.text("'s real coordinates are: "))
             .append(formatLocation(target.getLocation()))
             .color(NamedTextColor.GRAY));
@@ -166,42 +173,50 @@ public class OffsetCommand {
     }
 
     private int reset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        Player target;
+        List<Player> targets;
         try {
-            PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
-            target = targetResolver.resolve(context.getSource()).getFirst();
+            PlayerSelectorArgumentResolver targetResolver = context.getArgument("players", PlayerSelectorArgumentResolver.class);
+            targets = targetResolver.resolve(context.getSource());
         } catch (IllegalArgumentException e) {
             if (!(context.getSource().getSender() instanceof Player player)) {
                 context.getSource().getSender().sendMessage(Component.text("You must be a player to reset your own offset."));
                 return 0;
             }
-            target = player;
+            targets = List.of(player);
         }
-        if (!target.equals(context.getSource().getSender()) &&
-            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node)) {
+        if (targets.stream().anyMatch(target -> !target.equals(context.getSource().getSender()) &&
+            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.RESET_OTHERS.node))) {
             context.getSource().getSender().sendMessage(Bukkit.permissionMessage());
             return 0;
         }
 
-        plugin.regenerateOffsetImmediately(target, OffsetProviderContext.ProvideReason.COMMAND);
+        context.getSource().getSender().sendMessage(Component.text("Regenerated coordinate offset for ")
+            .color(NamedTextColor.GRAY)
+            .append(formatPlayerNames(targets))
+            .append(Component.text("."))
+        );
+
+        for (Player target : targets) {
+            plugin.regenerateOffsetImmediately(target, OffsetProviderContext.ProvideReason.COMMAND);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
 
     private int set(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        Player target;
+        List<Player> targets;
         try {
-            PlayerSelectorArgumentResolver targetResolver = context.getArgument("player", PlayerSelectorArgumentResolver.class);
-            target = targetResolver.resolve(context.getSource()).getFirst();
+            PlayerSelectorArgumentResolver targetResolver = context.getArgument("players", PlayerSelectorArgumentResolver.class);
+            targets = targetResolver.resolve(context.getSource());
         } catch (IllegalArgumentException e) {
             if (!(context.getSource().getSender() instanceof Player player)) {
                 context.getSource().getSender().sendMessage(Component.text("You must be a player to set your own offset."));
                 return 0;
             }
-            target = player;
+            targets = List.of(player);
         }
-        if (!target.equals(context.getSource().getSender()) &&
-            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node)) {
+        if (targets.stream().anyMatch(target -> !target.equals(context.getSource().getSender()) &&
+            !context.getSource().getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node))) {
             context.getSource().getSender().sendMessage(Bukkit.permissionMessage());
             return 0;
         }
@@ -217,7 +232,17 @@ public class OffsetCommand {
             return 0;
         }
 
-        plugin.setOffsetImmediately(target, OffsetProviderContext.ProvideReason.COMMAND, offset);
+        context.getSource().getSender().sendMessage(Component.text("Set coordinate offset for ")
+            .color(NamedTextColor.GRAY)
+            .append(formatPlayerNames(targets))
+            .append(Component.text(" to "))
+            .append(formatOffset(offset))
+            .append(Component.text("."))
+        );
+
+        for (Player target : targets) {
+            plugin.setOffsetImmediately(target, OffsetProviderContext.ProvideReason.COMMAND, offset);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -240,6 +265,24 @@ public class OffsetCommand {
             .append(Component.text((int) location.getZ()).color(NamedTextColor.GOLD))
             .append(Component.text("]"))
             .color(NamedTextColor.LIGHT_PURPLE);
+    }
+
+    private Component formatPlayerName(Player player) {
+        return Component.text(player.getName())
+            .color(TextColor.color(0x18a9ff))
+            .hoverEvent(Component.text(player.getUniqueId().toString()));
+    }
+
+    private Component formatPlayerNames(List<Player> players) {
+        if (players.size() == 1) {
+            return formatPlayerName(players.getFirst());
+        } else {
+            return Component.text(players.size() + " players")
+                .color(TextColor.color(0x18a9ff))
+                .hoverEvent(Component.text(players.stream()
+                    .map(Player::getName)
+                    .collect(Collectors.joining(", "))));
+        }
     }
 
     private boolean pluginEnabled() {

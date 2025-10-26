@@ -16,9 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @NullMarked
 public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
@@ -51,11 +50,8 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
         }
 
         for (CoordinateOffsetPermission p : CoordinateOffsetPermission.values()) {
-            Map<String, Boolean> children = new HashMap<>();
-            if (p == CoordinateOffsetPermission.QUERY_OTHERS) {
-                children.put(CoordinateOffsetPermission.QUERY_SELF.node, true);
-            }
-            Bukkit.getPluginManager().addPermission(new Permission(p.node, p.description, PermissionDefault.OP, children));
+            Bukkit.getPluginManager().addPermission(new Permission(p.node, p.description, PermissionDefault.OP,
+                p.getChildren().stream().collect(Collectors.toMap(p1 -> p1.node, p1 -> true))));
         }
 
         if (core.getConfig().getFixCollisionBamboo() || core.getConfig().getFixCollisionDripstone()) {

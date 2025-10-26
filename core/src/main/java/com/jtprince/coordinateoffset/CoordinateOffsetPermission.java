@@ -2,8 +2,14 @@ package com.jtprince.coordinateoffset;
 
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @NullMarked
 public enum CoordinateOffsetPermission {
+    ALL("coordinateoffset.*",
+        "Players with this permission will have all other permissions granted."),
     BYPASS("coordinateoffset.bypass",
         "Players with this permission will never have their coordinates offsetted."),
     QUERY_SELF("coordinateoffset.query",
@@ -12,11 +18,11 @@ public enum CoordinateOffsetPermission {
         "Allows use of command /offset query <player>, which prints another player's offset and coordinates."),
     RELOAD("coordinateoffset.reload",
         "Players with this permission can use the /offset reload command to reload the plugin."),
-    RESET("coordinateoffset.reset",
+    RESET_SELF("coordinateoffset.reset",
         "Allows use of the command /offset reset, which regenerates the player's offset using configured offset providers."),
     RESET_OTHERS("coordinateoffset.reset.others",
         "Allows use of the command /offset reset <player>, which regenerates another player's offset using configured offset providers."),
-    SET("coordinateoffset.set",
+    SET_SELF("coordinateoffset.set",
         "Allows use of the command /offset set, which sets the player's offset to a specific value."),
     SET_OTHERS("coordinateoffset.set.others",
         "Allows use of the command /offset set <player>, which sets another player's offset to a specific value.");
@@ -28,6 +34,16 @@ public enum CoordinateOffsetPermission {
         // All permissions default to Operators only
         this.node = node;
         this.description = description;
+    }
+
+    public Set<CoordinateOffsetPermission> getChildren() {
+        return switch (this) {
+            case ALL -> Arrays.stream(values()).filter(p -> p != ALL).collect(Collectors.toSet());
+            case QUERY_OTHERS -> Set.of(QUERY_SELF);
+            case RESET_OTHERS -> Set.of(RESET_SELF);
+            case SET_OTHERS -> Set.of(SET_SELF);
+            default -> Set.of();
+        };
     }
 
     @Override
