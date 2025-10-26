@@ -7,6 +7,7 @@ import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -305,6 +306,15 @@ public class OffsetCommand {
 
             if (changed) {
                 OffsetSwapHelpers.forceOffsetSwap(target);
+            }
+
+            // Inform providers that an offset was set by command (providers may want to update their own storage)
+            for (OffsetProvider p : CoordinateOffsetCore.get().getProviderConfig().getAllOffsetProviderConfigs().values()) {
+                try {
+                    p.onOffsetSetByCommand(player, offset);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 

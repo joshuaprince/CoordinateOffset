@@ -173,7 +173,11 @@ class PacketOffsetAdapter {
 
             core.getOffsetHolder().remove(playerUuid);
             for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
-                provider.onPlayerDisconnect(playerUuid);
+                try {
+                    provider.onPlayerDisconnect(playerUuid);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
             if (coPlugin.getWorldBorderObfuscator() != null) {
                 coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);

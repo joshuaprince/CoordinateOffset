@@ -192,7 +192,11 @@ class BukkitEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         for (OffsetProvider provider : core.getProviderConfig().getAllOffsetProviderConfigs().values()) {
-            provider.onPlayerQuit(new PaperOffsetPlayer(event.getPlayer()));
+            try {
+                provider.onPlayerQuit(new PaperOffsetPlayer(event.getPlayer()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

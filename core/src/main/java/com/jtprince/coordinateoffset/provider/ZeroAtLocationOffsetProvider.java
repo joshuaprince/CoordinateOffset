@@ -1,6 +1,8 @@
 package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
@@ -74,6 +76,16 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     @Override
     public void onPlayerDisconnect(UUID playerUuid) {
         offsetStore.clear(playerUuid);
+    }
+
+    @Override
+    public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
+        if (CoordinateOffsetCore.get().getConfig().getVerbose()
+            && offsetStore.get(target) != null) {
+            CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating offset " +
+                "for player \"" + target.getName() + "\" to " + offset);
+        }
+        offsetStore.put(target, offset);
     }
 
     @Override

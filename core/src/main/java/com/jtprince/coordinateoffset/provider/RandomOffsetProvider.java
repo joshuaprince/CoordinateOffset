@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
 import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
@@ -101,6 +102,17 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         if (offsetStore instanceof ProviderOffsetStore.Cached) {
             offsetStore.clear(playerUuid);
         }
+    }
+
+    @Override
+    public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
+        if (CoordinateOffsetCore.get().getConfig().getVerbose()
+            && offsetStore.get(target) != null) {
+            CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating " +
+                (offsetStore instanceof ProviderOffsetStore.Persistent ? "persistent " : "") + "offset " +
+                "for player \"" + target.getName() + "\" to " + offset);
+        }
+        offsetStore.put(target, offset);
     }
 
     @Override
