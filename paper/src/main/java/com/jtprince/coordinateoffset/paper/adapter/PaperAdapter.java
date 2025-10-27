@@ -2,9 +2,9 @@ package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
+import com.jtprince.coordinateoffset.adapter.OffsetPersistenceAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
-import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -63,7 +63,7 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public PlayerOffsetPersistence getPlayerOffsetPersistence() {
+    public OffsetPersistenceAdapter getPersistenceAdapter() {
         return offsetPersistence;
     }
 

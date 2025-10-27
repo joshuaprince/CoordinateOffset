@@ -4,9 +4,10 @@ import com.jeff_media.morepersistentdatatypes.DataType;
 import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.adapter.OffsetPersistenceAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
-import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
+import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -21,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @NullMarked
-public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
+public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
     private static final PersistentDataType<int[], Offset> PDT_OFFSET =
         new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class,
             PaperPlayerOffsetPersistence::fromPdt, PaperPlayerOffsetPersistence::toPdt);
@@ -32,29 +33,7 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
     }
 
     @Override
-    public void storeOffset(OffsetPlayer player, PlayerOffsetPersistence.Key persistenceKey, Offset offset) {
-        if (!(player instanceof PaperOffsetPlayer paperPlayer)) {
-            throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
-        }
-
-        paperPlayer.getPlayer().getPersistentDataContainer().set(persistenceKeyToBukkitKey(persistenceKey), PDT_OFFSET, offset);
-    }
-
-    @Override
-    public void clearOffset(UUID playerUuid, Key persistenceKey) {
-        Player player = Bukkit.getPlayer(playerUuid);
-        if (player == null) {
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUuid);
-            plugin.getLogger().warning("Failed to clear persistent offset for offline player " + offlinePlayer.getName() + " (" + playerUuid + ")");
-            return;
-        }
-
-        player.getPersistentDataContainer().remove(persistenceKeyToBukkitKey(persistenceKey));
-        preV6.clearOldPersistence(player, persistenceKey.userKey());
-    }
-
-    @Override
-    public @Nullable Offset getOffset(OffsetPlayer player, PlayerOffsetPersistence.Key persistenceKey) {
+    public @Nullable Offset get(OffsetPlayer player, Key persistenceKey) {
         if (!(player instanceof PaperOffsetPlayer paperPlayer)) {
             throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
         }
@@ -64,12 +43,34 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
             return pdc.get(persistenceKeyToBukkitKey(persistenceKey), PDT_OFFSET);
         } else {
             // Check for old offset data to migrate
-            Offset recovered = preV6.recover(paperPlayer.getPlayer(), persistenceKey.userKey());
+            Offset recovered = preV6.recover(paperPlayer.getPlayer(), persistenceKey);
             if (recovered != null) {
-                storeOffset(paperPlayer, persistenceKey, recovered);
+                put(paperPlayer, persistenceKey, recovered);
             }
             return recovered;
         }
+    }
+
+    @Override
+    public void put(OffsetPlayer player, Key persistenceKey, Offset offset) {
+        if (!(player instanceof PaperOffsetPlayer paperPlayer)) {
+            throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
+        }
+
+        paperPlayer.getPlayer().getPersistentDataContainer().set(persistenceKeyToBukkitKey(persistenceKey), PDT_OFFSET, offset);
+    }
+
+    @Override
+    public void clear(UUID playerUuid, Key persistenceKey) {
+        Player player = Bukkit.getPlayer(playerUuid);
+        if (player == null) {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUuid);
+            plugin.getLogger().warning("Failed to clear persistent offset for offline player " + offlinePlayer.getName() + " (" + playerUuid + ")");
+            return;
+        }
+
+        player.getPersistentDataContainer().remove(persistenceKeyToBukkitKey(persistenceKey));
+        preV6.clearOldPersistence(player, persistenceKey);
     }
 
     private static Offset fromPdt(int[] arr) {
@@ -80,9 +81,9 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
         return new int[] { offset.x(), offset.z() };
     }
 
-    private NamespacedKey persistenceKeyToBukkitKey(PlayerOffsetPersistence.Key persistenceKey) {
-        // e.g. "coordinateoffset:provider.persistence.default"
-        return new NamespacedKey(plugin, persistenceKey.toString());
+    private NamespacedKey persistenceKeyToBukkitKey(Key persistenceKey) {
+        // e.g. "coordinateoffset:provider.random"
+        return new NamespacedKey(plugin, persistenceKey.getPersistenceKey());
     }
 
     private final PreV6 preV6 = new PreV6();
@@ -92,19 +93,35 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
         private static final String OLD_KEY_PREFIX = "random-persistence.";
         private static final String MIGRATED_KEY_SUFFIX = ".old-migrated-v6";
 
-        @Nullable Offset recover(Player player, String persistenceKeyUserSet) {
+        @Nullable Offset recover(Player player, Key persistenceKey) {
             try {
-                String key = OLD_KEY_PREFIX + persistenceKeyUserSet; // e.g. "random-persistence.default"
-                NamespacedKey fullKey = new NamespacedKey(plugin, key); // e.g. "coordinateoffset:random-persistence.default"
-                Map<String /* world name */, Offset> map =
-                    player.getPersistentDataContainer().get(fullKey, PDT_WORLD_OFFSET_CONTAINER);
-                if (map == null) return null;
+                String key = null;
+                NamespacedKey fullKey = null;
+                Map<String /* world name */, Offset> foundData = null;
 
-                Offset offset = find(player, map);
+                // 1: look for old persistence from user override key (if override is set)
+                if (persistenceKey.persistenceKeyOverride() != null) {
+                    key = OLD_KEY_PREFIX + persistenceKey.persistenceKeyOverride(); // e.g. "random-persistence.foo"
+                    fullKey = new NamespacedKey(plugin, key); // e.g. "coordinateoffset:random-persistence.foo"
+                    foundData = player.getPersistentDataContainer().get(fullKey, PDT_WORLD_OFFSET_CONTAINER);
+                }
+
+                // 2: look for old persistence from old "default" key if override is not set
+                //     (config migration drops "persistenceKey=default", so this is required to handle configs where
+                //      the user didn't set a custom override)
+                if (foundData == null) {
+                    key = OLD_KEY_PREFIX + RegenerateConfig.LEGACY_DEFAULT_PERSISTENCE_KEY; // "random-persistence.default"
+                    fullKey = new NamespacedKey(plugin, key); // "coordinateoffset:random-persistence.default"
+                    foundData = player.getPersistentDataContainer().get(fullKey, PDT_WORLD_OFFSET_CONTAINER);
+                }
+
+                if (foundData == null) return null; // No data to recover.
+
+                Offset offset = find(player, foundData);
                 if (offset != null) {
                     // Found a valid offset, archive the old data for visibility that it's old
                     NamespacedKey oldKey = new NamespacedKey(plugin, key + MIGRATED_KEY_SUFFIX);
-                    player.getPersistentDataContainer().set(oldKey, PDT_WORLD_OFFSET_CONTAINER, map);
+                    player.getPersistentDataContainer().set(oldKey, PDT_WORLD_OFFSET_CONTAINER, foundData);
                     player.getPersistentDataContainer().remove(fullKey);
                 }
                 return offset;
@@ -149,9 +166,15 @@ public class PaperPlayerOffsetPersistence implements PlayerOffsetPersistence {
             return null;
         }
 
-        private void clearOldPersistence(Player player, String persistenceKeyUserSet) {
-            String key = OLD_KEY_PREFIX + persistenceKeyUserSet; // e.g. "random-persistence.default"
-            NamespacedKey fullKey = new NamespacedKey(plugin, key); // e.g. "coordinateoffset:random-persistence.default"
+        private void clearOldPersistence(Player player, Key persistenceKey) {
+            if (persistenceKey.persistenceKeyOverride() != null) {
+                String key = OLD_KEY_PREFIX + persistenceKey.persistenceKeyOverride(); // e.g. "random-persistence.foo"
+                NamespacedKey fullKey = new NamespacedKey(plugin, key); // e.g. "coordinateoffset:random-persistence.foo"
+                player.getPersistentDataContainer().remove(fullKey);
+            }
+
+            String key = OLD_KEY_PREFIX + RegenerateConfig.LEGACY_DEFAULT_PERSISTENCE_KEY; // "random-persistence.default"
+            NamespacedKey fullKey = new NamespacedKey(plugin, key); // "coordinateoffset:random-persistence.default"
             player.getPersistentDataContainer().remove(fullKey);
         }
     }

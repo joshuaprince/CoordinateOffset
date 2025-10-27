@@ -12,17 +12,20 @@ import org.jspecify.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.SequencedMap;
-import java.util.UUID;
 
 @NullMarked
 public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     private final RegenerateConfig regenerateConfig;
-
-    private final ProviderOffsetStore.Cached offsetStore = new ProviderOffsetStore.Cached();
+    private final ProviderOffsetStore offsetStore;
 
     ZeroAtLocationOffsetProvider(String name, RegenerateConfig regenerateConfig) {
         super(name);
         this.regenerateConfig = regenerateConfig;
+        this.offsetStore = new ProviderOffsetStore(
+            CoordinateOffsetCore.get().getAdapter().getPersistenceAdapter(),
+            name,
+            regenerateConfig.persistenceKeyOverride()
+        );
     }
 
     @Override
@@ -30,7 +33,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
         //noinspection DuplicatedCode (with RandomOffsetProvider)
         boolean willRegenerate = false;
         switch (context.reason()) {
-            case JOIN -> {}
+            case JOIN -> { if (regenerateConfig.isRegenOnJoin()) willRegenerate = true; }
             case DEATH_RESPAWN -> { if (regenerateConfig.isRegenOnDeath()) willRegenerate = true; }
             case WORLD_CHANGE -> { if (regenerateConfig.isRegenOnWorldChange()) willRegenerate = true; }
             /* Always regenerate when explicitly called */
@@ -48,7 +51,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
             }
         }
         if (willRegenerate) {
-            offsetStore.clear(context.player());
+            offsetStore.clear(context.player().getUuid());
         }
 
         // Check if the provider already has an offset calculated that was not cleared for a regenerate
@@ -74,11 +77,6 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     }
 
     @Override
-    public void onPlayerDisconnect(UUID playerUuid) {
-        offsetStore.clear(playerUuid);
-    }
-
-    @Override
     public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
         if (CoordinateOffsetCore.get().getConfig().getVerbose()
             && offsetStore.get(target) != null) {
@@ -100,7 +98,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     public static ZeroAtLocationOffsetProvider deserialize(OffsetProviderConfig config) throws IllegalArgumentException {
         SequencedMap<String, Object> s = config.getConfigSection();
 
-        RegenerateConfig regenerateConfig = RegenerateConfig.deserialize(s); // nullable
+        RegenerateConfig regenerateConfig = RegenerateConfig.deserialize(config.getUserDefinedProviderName(), s);
 
         return new ZeroAtLocationOffsetProvider(config.getUserDefinedProviderName(), regenerateConfig);
     }

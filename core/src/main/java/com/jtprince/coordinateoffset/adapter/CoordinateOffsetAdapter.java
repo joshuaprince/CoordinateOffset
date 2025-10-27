@@ -1,6 +1,5 @@
 package com.jtprince.coordinateoffset.adapter;
 
-import com.jtprince.coordinateoffset.provider.util.PlayerOffsetPersistence;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -19,9 +18,9 @@ public interface CoordinateOffsetAdapter {
     OffsetLocation adaptLocation(Object platformLocationObject) throws ClassCastException;
 
     /**
-     * Get a platform interface into storing persistent data on Players.
+     * Get a platform interface into storing persistent offset data on Players.
      */
-    PlayerOffsetPersistence getPlayerOffsetPersistence();
+    OffsetPersistenceAdapter getPersistenceAdapter();
 
     /**
      * Initiate internal shutdown of CoordinateOffset due to an error. Should not be called as part of server shutdown.

@@ -21,22 +21,24 @@ public class DefaultOffsetProviders {
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
         "random",
         100_000,
-        new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE),
-        false,
-        RandomOffsetProvider.DEFAULT_PERSISTENCE_KEY
+        new RegenerateConfig(false, false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE, null)
     );
 
     static final ZeroAtLocationOffsetProvider ZERO_LOC = new ZeroAtLocationOffsetProvider(
         "zeroAtLocation",
-        new RegenerateConfig(false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE)
+        new RegenerateConfig(false, false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE, null)
     );
 
     public static SequencedMap<String, OffsetProvider> PROVIDERS = new LinkedHashMap<>();
     static {
-        PROVIDERS.put(CONSTANT_1024.name, CONSTANT_1024);
-        PROVIDERS.put(CONSTANT_DISABLED.name, CONSTANT_DISABLED);
-        PROVIDERS.put(RANDOM.name, RANDOM);
-        PROVIDERS.put(RANDOM.name, RANDOM);
-        PROVIDERS.put(ZERO_LOC.name, ZERO_LOC);
+        try {
+            PROVIDERS.put(CONSTANT_1024.name, CONSTANT_1024);
+            PROVIDERS.put(CONSTANT_DISABLED.name, CONSTANT_DISABLED);
+            PROVIDERS.put(RANDOM.name, RANDOM);
+            PROVIDERS.put(RANDOM.name, RANDOM);
+            PROVIDERS.put(ZERO_LOC.name, ZERO_LOC);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
