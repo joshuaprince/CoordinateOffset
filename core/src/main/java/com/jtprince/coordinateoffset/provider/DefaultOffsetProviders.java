@@ -11,13 +11,15 @@ import java.util.SequencedMap;
 
 @NullMarked
 public class DefaultOffsetProviders {
-    static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
-        "constant",
-        new Offset(1024, 1024)
-    );
     static final ConstantOffsetProvider CONSTANT_DISABLED = new ConstantOffsetProvider(
         "disabled",
-        Offset.ZERO
+        Offset.ZERO,
+        null
+    );
+    static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
+        "constant",
+        new Offset(1024, 1024),
+        true
     );
 
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
@@ -34,8 +36,8 @@ public class DefaultOffsetProviders {
     public static SequencedMap<String, OffsetProvider> PROVIDERS = new LinkedHashMap<>();
     static {
         try {
-            PROVIDERS.put(CONSTANT_1024.name, CONSTANT_1024);
             PROVIDERS.put(CONSTANT_DISABLED.name, CONSTANT_DISABLED);
+            PROVIDERS.put(CONSTANT_1024.name, CONSTANT_1024);
             PROVIDERS.put(RANDOM.name, RANDOM);
             PROVIDERS.put(RANDOM.name, RANDOM);
             PROVIDERS.put(ZERO_LOC.name, ZERO_LOC);
