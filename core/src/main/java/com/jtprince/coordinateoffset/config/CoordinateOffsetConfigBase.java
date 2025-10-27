@@ -5,6 +5,10 @@ import de.exlll.configlib.Configuration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.LinkedHashMap;
+import java.util.Objects;
+import java.util.SequencedMap;
+
 @NullMarked
 @Configuration
 public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
@@ -81,5 +85,13 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
         return verbose;
     }
 
-
+    @Comment({
+        "",
+        "Custom scaling for coordinates between worlds. Default overworld/end scale is",
+        "  1.0 and default nether scale is 8.0. Offsets are divided by this value."
+    })
+    @Nullable SequencedMap<String, Double> worldCoordinateScaleOverrides = null; // Not in default config
+    public SequencedMap<String, Double> getWorldCoordinateScaleOverrides() {
+        return Objects.requireNonNullElseGet(worldCoordinateScaleOverrides, LinkedHashMap::new);
+    }
 }

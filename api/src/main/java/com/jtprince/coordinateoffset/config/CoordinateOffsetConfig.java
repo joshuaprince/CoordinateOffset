@@ -3,6 +3,8 @@ package com.jtprince.coordinateoffset.config;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.util.SequencedMap;
+
 /**
  * Configuration interface for CoordinateOffset. Provides access to various settings configured in the CoordinateOffset
  * configuration file.
@@ -22,4 +24,5 @@ public interface CoordinateOffsetConfig {
     boolean getObfuscateWorldBorder();
     boolean getObfuscateDebugPropertySubscriptions();
     boolean getVerbose();
+    SequencedMap<String, Double> getWorldCoordinateScaleOverrides();
 }
