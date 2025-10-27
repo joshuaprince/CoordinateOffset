@@ -98,8 +98,8 @@ public class OffsetCommand {
             .requires(sender -> pluginEnabled() &&
                 (sender.getSender().hasPermission(CoordinateOffsetPermission.SET_SELF.node) ||
                 sender.getSender().hasPermission(CoordinateOffsetPermission.SET_OTHERS.node)))
-            .then(Commands.argument("x", IntegerArgumentType.integer())
-            .then(Commands.argument("z", IntegerArgumentType.integer())
+            .then(Commands.argument("x", IntegerArgumentType.integer(-OffsetProvider.OFFSET_MAX, OffsetProvider.OFFSET_MAX))
+            .then(Commands.argument("z", IntegerArgumentType.integer(-OffsetProvider.OFFSET_MAX, OffsetProvider.OFFSET_MAX))
             .executes(this::set)
                 .then(Commands.argument("players", ArgumentTypes.players())
                     .requires(sender -> pluginEnabled() &&
