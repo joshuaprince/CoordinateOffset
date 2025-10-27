@@ -80,7 +80,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
         if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
             CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating offset " +
-                "for player \"" + target.getName() + "\" to " + offset);
+                "for " + target.getName() + " to " + offset);
         }
         offsetStore.put(target, offset);
     }

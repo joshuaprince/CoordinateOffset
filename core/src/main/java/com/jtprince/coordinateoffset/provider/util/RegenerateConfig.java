@@ -70,7 +70,8 @@ public record RegenerateConfig(
             persistenceKeyOverride = providerConfig.get("persistenceKeyOverride").toString();
         } else if (providerConfig.containsKey("persistenceKey")) {
             if (!(providerConfig.get("persistenceKey").toString().equals(LEGACY_DEFAULT_PERSISTENCE_KEY))) {
-                CoordinateOffsetCore.get().getLogger().info("Migrating legacy key persistenceKey to persistenceKeyOverride");
+                CoordinateOffsetCore.get().getLogger().info("Provider \"" + providerName + "\": " +
+                    "Migrating legacy key persistenceKey to persistenceKeyOverride");
                 persistenceKeyOverride = providerConfig.get("persistenceKey").toString();
             }
         }

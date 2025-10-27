@@ -82,7 +82,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
     public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
         if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
             CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating offset " +
-                "for player \"" + target.getName() + "\" to " + offset);
+                "for " + target.getName() + " to " + offset);
         }
         offsetStore.put(target, offset);
     }
@@ -103,7 +103,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
 
         if (!s.containsKey("randomBound") || !(s.get("randomBound") instanceof Number randomBoundNum)) {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                ": Required key `randomBound` for RandomOffsetProvider is missing or invalid.");
+                ": Required key randomBound for RandomOffsetProvider is missing or invalid.");
         }
         int randomBound = randomBoundNum.intValue();
 

@@ -62,7 +62,7 @@ public class ExampleOffsetProvider extends OffsetProvider {
         Object scale = config.getConfigSection().get("myScaleSetting");
         if (!(scale instanceof Number scaleNum)) { // Always use instanceof(Number), not Integer. Numbers may be Longs.
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                ": Required key `myScaleSetting` for ExampleOffsetProvider is missing or invalid.");
+                ": Required key myScaleSetting for ExampleOffsetProvider is missing or invalid.");
         }
 
         Object stringSettingObj = config.getConfigSection().get("myStringSetting");
@@ -71,7 +71,7 @@ public class ExampleOffsetProvider extends OffsetProvider {
             // Not required, but validate if provided
             if (!(stringSettingObj instanceof String)) {
                 throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                    "\": Optional key `myStringSetting` for ExampleOffsetProvider is not a string.");
+                    "\": Optional key myStringSetting for ExampleOffsetProvider is not a string.");
             }
             stringSetting = (String) stringSettingObj;
         }

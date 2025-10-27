@@ -45,7 +45,7 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
                 // User configured a remembered offset via a /set command for this player.
                 if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
                     CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Using " + storedOffset +
-                        " previously set via command for player \"" + context.player().getName() + "\"");
+                        " previously set via command for " + context.player().getName());
                 }
                 o = storedOffset;
             }
@@ -64,7 +64,7 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
         if (offsetStore != null) {
             if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
                 CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Remembering " + offset +
-                    "for player \"" + target.getName() + "\"");
+                    "for " + target.getName());
             }
             offsetStore.put(target, offset);
         }
@@ -86,11 +86,11 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
 
         if (!s.containsKey("offsetX") || !(s.get("offsetX") instanceof Number offsetXNum)) {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                "\": Required key `offsetX` for ConstantOffsetProvider is missing or invalid.");
+                "\": Required key offsetX for ConstantOffsetProvider is missing or invalid.");
         }
         if (!s.containsKey("offsetZ") || !(s.get("offsetZ") instanceof Number offsetZNum)) {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                "\": Required key `offsetZ` for ConstantOffsetProvider is missing or invalid.");
+                "\": Required key offsetZ for ConstantOffsetProvider is missing or invalid.");
         }
 
         int offsetX = offsetXNum.intValue();
@@ -98,18 +98,18 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
 
         if (Math.abs(offsetX) > OffsetProvider.OFFSET_MAX) {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                "\": `offsetX` value " + offsetX + " is too large! (Max 30M)");
+                "\": offsetX value " + offsetX + " is too large! (Max 30M)");
         }
         if (Math.abs(offsetZ) > OffsetProvider.OFFSET_MAX) {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                "\": `offsetZ` value " + offsetZ + " is too large! (Max 30M)");
+                "\": offsetZ value " + offsetZ + " is too large! (Max 30M)");
         }
 
         Boolean rememberChangesFromSetCommand = null;
         if (config.getConfigSection().containsKey("rememberChangesFromSetCommand")) {
             if (!((config.getConfigSection().get("rememberChangesFromSetCommand")) instanceof Boolean b)) {
                 throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
-                    "\": `rememberChangesFromSetCommand` must be a boolean");
+                    "\": rememberChangesFromSetCommand must be a boolean");
             }
             rememberChangesFromSetCommand = b;
         }
