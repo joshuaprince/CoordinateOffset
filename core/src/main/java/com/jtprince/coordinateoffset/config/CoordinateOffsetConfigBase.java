@@ -10,6 +10,9 @@ import org.jspecify.annotations.Nullable;
 public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     @Comment("Do not change this.")
     @Nullable Integer configVersion = null;
+    public @Nullable Integer getConfigVersion() {
+        return configVersion;
+    }
 
     @Configuration
     public static class FixCollision {

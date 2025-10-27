@@ -49,7 +49,7 @@ public record RegenerateConfig(
     }
 
     public static RegenerateConfig deserialize(String providerName, Map<String, ?> providerConfig) throws IllegalArgumentException {
-        boolean regenerateOnJoin = false;
+        boolean regenerateOnJoin;
         if (providerConfig.get("regenerateOnJoin") != null) {
             if (!(providerConfig.get("regenerateOnJoin") instanceof Boolean b)) {
                 throw new IllegalArgumentException("regenerateOnJoin must be a boolean");
@@ -63,6 +63,14 @@ public record RegenerateConfig(
             CoordinateOffsetCore.get().getLogger().info("Provider \"" + providerName + "\": " +
                 "Migrating legacy key persistent to regenerateOnJoin");
             regenerateOnJoin = !persistent;
+        } else {
+            // v5 and below compatibility - providers with no key at all were implicitly non-persistent
+            if (CoordinateOffsetCore.get().getConfig().getConfigVersion() != null
+                && CoordinateOffsetCore.get().getConfig().getConfigVersion() <= 5) {
+                regenerateOnJoin = true; // persistent=false
+            } else {
+                regenerateOnJoin = false; // in new configs, if the key gets deleted, restore without changing behavior
+            }
         }
 
         String persistenceKeyOverride = null;

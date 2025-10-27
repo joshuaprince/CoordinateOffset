@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.config;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Configuration interface for CoordinateOffset. Provides access to various settings configured in the CoordinateOffset
@@ -14,6 +15,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface CoordinateOffsetConfig {
+    @Nullable Integer getConfigVersion();
     boolean getFixCollisionBamboo();
     boolean getFixCollisionDripstone();
     boolean getBypassByPermission();
