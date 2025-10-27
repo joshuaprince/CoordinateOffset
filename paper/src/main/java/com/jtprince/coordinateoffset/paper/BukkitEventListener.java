@@ -19,21 +19,17 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.jspecify.annotations.NullMarked;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @NullMarked
 class BukkitEventListener implements Listener {
     private final CoordinateOffsetPaperPlugin plugin;
     private final CoordinateOffsetCore core;
     private final WorldBorderObfuscator worldBorderObfuscator;
-    private boolean isJoinEventFiredBeforeFirstPlayPacket;
 
     BukkitEventListener(CoordinateOffsetPaperPlugin plugin, CoordinateOffsetCore core, WorldBorderObfuscator worldBorderObfuscator) {
         this.plugin = plugin;
@@ -42,20 +38,7 @@ class BukkitEventListener implements Listener {
     }
 
     public void registerListeners() {
-        /*
-         * In 1.21.9 Paper deprecated PlayerSpawnLocationEvent in favor of AsyncPlayerSpawnLocationEvent.
-         * Offsets must be generated before the first PLAY packet. The strategy for generating offsets on join is:
-         *  - 1.21.8 and below: use PlayerSpawnLocationEvent (which always fires before the first PLAY packet)
-         *  - 1.21.9 or above: use PlayerJoinEvent; block Netty thread in OffsetHolder until an offset is generated
-         *  - Unparseable versions: warn and behave as though Minecraft version is 1.21.9 or above
-         */
-        isJoinEventFiredBeforeFirstPlayPacket = is1_21_9OrGreater();
-
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        if (!isJoinEventFiredBeforeFirstPlayPacket) {
-            // Use a separate listener class so 1.21.9+ doesn't listen for PlayerSpawnLocationEvent and show a warning
-            Bukkit.getPluginManager().registerEvents(new OldSpawnLocationListener(), plugin);
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -65,9 +48,6 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        // 1.21.9+ only; use PlayerSpawnLocationEvent instead in 1.21.8 and below
-        if (!isJoinEventFiredBeforeFirstPlayPacket) return;
-
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
         core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             player,
@@ -76,21 +56,6 @@ class BukkitEventListener implements Listener {
             null,
             OffsetProviderContext.ProvideReason.JOIN
         ));
-    }
-
-    private class OldSpawnLocationListener implements Listener {
-        // Only registered in 1.21.8 and below; 1.21.9+ uses PlayerJoinEvent instead
-        @EventHandler(priority = EventPriority.MONITOR)
-        public void onSpawnLocation(PlayerSpawnLocationEvent event) {
-            PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-            core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
-                player,
-                null,
-                new PaperLocation(event.getSpawnLocation()),
-                null,
-                OffsetProviderContext.ProvideReason.JOIN
-            ));
-        }
     }
 
     private final Map<UUID, Location> lastDeathLocation = new HashMap<>();
@@ -189,30 +154,6 @@ class BukkitEventListener implements Listener {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private boolean is1_21_9OrGreater() {
-        String mcVersion = Bukkit.getMinecraftVersion(); // e.g. "1.21.9", could be "1.21.9 Pre-Release 4
-        String warningMessage = "Could not parse Minecraft version \"" + mcVersion +
-            "\". Behaving as though Minecraft version is 1.21.9 or above. If you see bugs, please mention this" +
-            " message to the plugin author.";
-
-        Pattern pattern = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+).*");
-        Matcher m = pattern.matcher(mcVersion);
-        if (!m.matches()) {
-            core.getLogger().warning(warningMessage);
-            return true;
-        }
-        try {
-            int major = Integer.parseInt(m.group(1));
-            int minor = Integer.parseInt(m.group(2));
-            int patch = Integer.parseInt(m.group(3));
-            // true for 1.21.9+, false for 1.21.8 or below
-            return major > 1 || (major == 1 && minor > 21) || (major == 1 && minor == 21 && patch >= 9);
-        } catch (NumberFormatException e) {
-            core.getLogger().warning(warningMessage);
-            return true;
         }
     }
 }

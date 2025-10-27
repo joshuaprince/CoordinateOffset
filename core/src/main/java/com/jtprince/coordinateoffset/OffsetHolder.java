@@ -95,8 +95,8 @@ public class OffsetHolder {
             /*
              * Concurrency hack:
              * Paper *concurrently* (a) calls PlayerJoinEvent and (b) sends a JOIN_GAME packet.
-             * The JOIN_GAME packet needs to be offsetted. But the offset isn't generated until PlayerJoinEvent in
-             * 1.21.9 (PlayerSpawnLocationEvent is deprecated).
+             * The JOIN_GAME packet needs to be offsetted. But the offset isn't generated until PlayerJoinEvent
+             *   (PlayerSpawnLocationEvent is deprecated since 1.21.9).
              * This hack is to block the Netty thread until the joining player gets an offset.
              */
             Object pendingOffsetDataLock = pendingDataLocks.computeIfAbsent(playerUuid, uuid -> new Object());
