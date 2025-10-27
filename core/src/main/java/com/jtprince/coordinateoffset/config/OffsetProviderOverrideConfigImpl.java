@@ -13,7 +13,22 @@ import java.util.UUID;
 @NullMarked
 @Configuration
 public class OffsetProviderOverrideConfigImpl implements OffsetProviderOverrideConfig {
-    private @Nullable String provider;
+    @SuppressWarnings("unused")
+    OffsetProviderOverrideConfigImpl() {} // required by ConfigLib
+
+    public OffsetProviderOverrideConfigImpl(
+        String provider,
+        @Nullable String world,
+        @Nullable String permission,
+        @Nullable String player
+    ) {
+        this.provider = provider;
+        this.world = world;
+        this.permission = permission;
+        this.player = player;
+    }
+
+    private @Nullable String provider; // nullable so that we don't wipe half-configs; validated elsewhere
     @Override
     public OffsetProvider getOffsetProvider() {
         CoordinateOffsetProviderConfig providers = CoordinateOffsetCore.get().getProviderConfig();

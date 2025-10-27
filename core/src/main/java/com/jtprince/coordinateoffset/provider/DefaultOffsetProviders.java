@@ -1,10 +1,12 @@
 package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.config.OffsetProviderOverrideConfigImpl;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.SequencedMap;
 
 @NullMarked
@@ -41,4 +43,10 @@ public class DefaultOffsetProviders {
             e.printStackTrace();
         }
     }
+
+    public static final List<OffsetProviderOverrideConfigImpl> DEFAULT_OVERRIDES = List.of(
+        new OffsetProviderOverrideConfigImpl(CONSTANT_DISABLED.name, "world_the_end", null, null),
+        new OffsetProviderOverrideConfigImpl(ZERO_LOC.name, "world_example",
+            "coordinateoffset.provider.my_custom_permission", "ExamplePlayerName")
+    );
 }
