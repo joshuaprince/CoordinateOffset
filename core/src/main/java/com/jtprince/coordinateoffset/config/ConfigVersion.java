@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 @NullMarked
 public class ConfigVersion {
-    public static final int CURRENT = 5;
+    public static final int CURRENT = 6;
     public static final int ASSUMED_VERSION_IF_MISSING = 4;
 
     /**
