@@ -293,11 +293,20 @@ public class OffsetCommand {
 
         for (Player target : targets) {
             OffsetPlayer player = new PaperOffsetPlayer(target);
+
+            OffsetProvider affectedProvider;
+            CreatedOffset previous = CoordinateOffsetCore.get().getOffsetHolder().getOffset(player);
+            switch (previous.source()) {
+                case CreatedOffset.Source.PermissionBypass ignored -> affectedProvider = null;
+                case CreatedOffset.Source.Provider sp -> affectedProvider = sp.provider();
+                case CreatedOffset.Source.SetCommand sc -> affectedProvider = sc.affectedProvider();
+            }
+
             boolean changed = CoordinateOffsetCore.get().getOffsetHolder().setNextOffset(
                 target.getUniqueId(),
                 new CreatedOffset(
                     offset,
-                    new CreatedOffset.Source.SetCommand(context.getSource().getSender().getName()),
+                    new CreatedOffset.Source.SetCommand(context.getSource().getSender().getName(), affectedProvider),
                     player,
                     player.getLocation().getWorld(),
                     null
@@ -308,10 +317,18 @@ public class OffsetCommand {
                 OffsetSwapHelpers.forceOffsetSwap(target);
             }
 
-            // Inform providers that an offset was set by command (providers may want to update their own storage)
-            for (OffsetProvider p : CoordinateOffsetCore.get().getProviderConfig().getAllOffsetProviderConfigs().values()) {
+            // Inform the provider associated with the player's current offset that an offset was changed by command
+            //  (providers may want to update their own storage)
+            if (affectedProvider != null) {
+                // In case config was reloaded and the provider object changed, get the new provider object to inform
+                OffsetProvider reloadedProvider =
+                    CoordinateOffsetCore.get().getProviderConfig().getAllOffsetProviderConfigs().get(affectedProvider.name);
+                if (reloadedProvider != null) {
+                    affectedProvider = reloadedProvider;
+                };
+
                 try {
-                    p.onOffsetSetByCommand(player, offset);
+                    affectedProvider.onOffsetSetByCommand(player, offset);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -80,8 +80,7 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
 
     @Override
     public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
-        if (CoordinateOffsetCore.get().getConfig().getVerbose()
-            && offsetStore.get(target) != null) {
+        if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
             CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating offset " +
                 "for player \"" + target.getName() + "\" to " + offset);
         }
