@@ -19,7 +19,7 @@ public class DefaultOffsetProviders {
     static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
         "constant",
         new Offset(1024, 1024),
-        true
+        false
     );
 
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
