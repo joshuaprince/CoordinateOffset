@@ -13,13 +13,11 @@ import java.util.SequencedMap;
 public class DefaultOffsetProviders {
     static final ConstantOffsetProvider CONSTANT_DISABLED = new ConstantOffsetProvider(
         "disabled",
-        Offset.ZERO,
-        null
+        Offset.ZERO
     );
     static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
         "constant",
-        new Offset(1024, 1024),
-        false
+        new Offset(1024, 1024)
     );
 
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
