@@ -93,8 +93,15 @@ public abstract class OffsetProvider {
      *
      * @param target The player whose offset is being set.
      * @param offset The offset that was set.
+     * @return A response to the command infra, which may be used to inform the sender of warnings, etc.
      */
-    public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {}
+    public @Nullable SetCommandResponse onOffsetSetByCommand(OffsetPlayer target, Offset offset) { return null; }
+
+    /** Response from an offset provider to the command infra to inform sender of warnings, etc. */
+    public enum SetCommandResponse {
+        /** Print a warning message to the sender that the specified offset will be lost on the next provide. */
+        WARN_OFFSET_NOT_PERSISTENT
+    }
 
     /**
      * Serialize this offset provider.

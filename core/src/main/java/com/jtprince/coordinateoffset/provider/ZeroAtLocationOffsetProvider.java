@@ -77,12 +77,13 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     }
 
     @Override
-    public void onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
+    public @Nullable SetCommandResponse onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
         if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
             CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating offset " +
                 "for " + target.getName() + " to " + offset);
         }
         offsetStore.put(target, offset);
+        return null; // no warnings to the sender
     }
 
     @Override
