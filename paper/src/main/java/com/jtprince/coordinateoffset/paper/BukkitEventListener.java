@@ -20,10 +20,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @NullMarked
 class BukkitEventListener implements Listener {
@@ -67,8 +64,9 @@ class BukkitEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         /*
-         * The Respawn event is fired after using an End exit portal, but users probably expect that portal to trigger
-         * a world change, not a death-based respawn.
+         * Paper fires a Respawn event after using an End exit portal.
+         * (Also a Teleport event, but only when the player hasn't seen the end credits before.)
+         * Users probably expect this to be consistently a world change, not a death-respawn.
          */
         OffsetProviderContext.ProvideReason reason;
         if (event.getRespawnReason() == PlayerRespawnEvent.RespawnReason.END_PORTAL) {
@@ -88,10 +86,28 @@ class BukkitEventListener implements Listener {
         ));
     }
 
+    private static final Set<String> IGNORED_TELEPORT_CAUSES = Set.of(
+        // These don't really feel like teleports and would be surprising if they regenerated offsets.
+        // Defined as strings instead of the enum because values get added and removed between versions.
+        "DISMOUNT",
+        "EXIT_BED",
+        "END_PORTAL", // Handled in PlayerRespawnEvent
+        "UNKNOWN" // Also fired when entering the end portal for some reason, despite END_PORTAL being available
+    );
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         PaperOffsetPlayer offsetPlayer = new PaperOffsetPlayer(event.getPlayer());
         OffsetProviderContext.ProvideReason reason;
+
+        if (IGNORED_TELEPORT_CAUSES.contains(event.getCause().name())) {
+            if (core.isDebugEnabled()) {
+                core.getLogger().info("Ignoring teleport event for " + event.getPlayer().getName() +
+                    " due to ignored cause: " + event.getCause().name());
+            }
+            return;
+        }
+
         if (!event.getFrom().getWorld().equals(event.getTo().getWorld())) {
             reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
         } else {
