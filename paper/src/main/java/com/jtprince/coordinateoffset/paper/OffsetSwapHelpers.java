@@ -1,8 +1,6 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.util.Vector3d;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.OffsetHolder;
@@ -30,16 +28,20 @@ public class OffsetSwapHelpers {
      * @param player Player to swap the offset for.
      */
     public static void forceOffsetSwap(Player player) {
-        List<Chunk> chunksClosestFirst =
-            sendUnloadAllSentChunksPackets(player);
-
         /* Timing of these packets is important. See OffsetChangeSequencePaper.md */
-        var l = player.getLocation();
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
-            new WrapperPlayServerPlayerPositionAndLook(0,
-                new Vector3d(l.x(), l.y(), l.z()),
-                new Vector3d(player.getVelocity().getX(), player.getVelocity().getY(), player.getVelocity().getZ()),
-                l.getYaw(), l.getPitch(), (byte) 0));
+
+        List<Chunk> chunksClosestFirst = sendUnloadAllSentChunksPackets(player);
+
+        /*
+         * This call automatically sends a few useful packets:
+         *  - RESPAWN: Needed to update player's death location (recovery compasses), not otherwise necessary (but
+         *    makes the "Loading terrain" screen appear)
+         *  - PLAYER_POSITION_AND_LOOK: Takes player out of loading screen and puts them at the new coordinates
+         *  - SPAWN_POSITION: Sets the player's compass spawn location
+         * It doesn't send UPDATE_VIEW_POSITION, so we do that ourselves.
+         */
+        player.setPlayerProfile(player.getPlayerProfile());
+
         PacketEvents.getAPI().getPlayerManager().sendPacket(player,
             new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
 

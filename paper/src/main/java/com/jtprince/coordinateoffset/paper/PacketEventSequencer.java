@@ -42,7 +42,6 @@ public class PacketEventSequencer implements Listener {
         return switch (packetType) {
             case
                 PacketType.Play.Server.JOIN_GAME,
-                PacketType.Play.Server.RESPAWN,
                 PacketType.Play.Server.MAP_DATA,
                 PacketType.Play.Server.MAP_CHUNK_BULK,
                 PacketType.Play.Server.CHUNK_BATCH_BEGIN,
@@ -56,6 +55,19 @@ public class PacketEventSequencer implements Listener {
                 PacketType.Play.Server.WORLD_BORDER_WARNING_REACH,
                 PacketType.Play.Server.WORLD_BORDER_WARNING_DELAY -> ""; // Log but no special message
 
+            case PacketType.Play.Server.RESPAWN -> {
+                var w = new WrapperPlayServerRespawn((PacketSendEvent) event);
+                String deathPos = "null";
+                if (w.getLastDeathPosition() != null) {
+                    deathPos = "[" + w.getLastDeathPosition().getWorld().toString() + "," +
+                        w.getLastDeathPosition().getBlockPosition().x + "," +
+                        w.getLastDeathPosition().getBlockPosition().y + "," +
+                        w.getLastDeathPosition().getBlockPosition().z + "]";
+                }
+                yield "dimt=" + w.getDimensionType().getName() + ", dim=" + w.getWorldName().orElse("null") +
+                    ", gm=" + w.getGameMode() + ", pgm=" + w.getPreviousGameMode() +
+                    ", death=" + deathPos + ", keep=" + w.getKeptData();
+            }
             case PacketType.Play.Server.SPAWN_POSITION -> {
                 var w = new WrapperPlayServerSpawnPosition((PacketSendEvent) event);
                 yield "dim=" + w.getDimension() + ", x=" + w.getPosition().x + ", y=" + w.getPosition().y + ", z=" + w.getPosition().z;
