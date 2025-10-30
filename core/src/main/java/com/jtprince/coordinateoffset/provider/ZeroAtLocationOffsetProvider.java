@@ -110,6 +110,6 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
 
     @Override
     public String getMetricsDetails() {
-        return "Reset " + regenerateConfig.getMetricsCharacterString();
+        return "Regenerate on " + regenerateConfig.getMetricsCharacterString();
     }
 }

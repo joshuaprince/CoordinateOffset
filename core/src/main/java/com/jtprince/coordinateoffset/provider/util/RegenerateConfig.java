@@ -137,7 +137,7 @@ public record RegenerateConfig(
     }
 
     /**
-     * Example metrics strings: "DWT", "Dxx", "xxx"
+     * Example metrics strings: "JDWT", "JxWx", "xxxx"
      */
     public String getMetricsCharacterString() {
         @SuppressWarnings("StringBufferReplaceableByString")
