@@ -37,7 +37,7 @@ public class OffsetCreator {
             return new CreatedOffset(
                 Offset.ZERO,
                 new CreatedOffset.Source.PermissionBypass(CoordinateOffsetPermission.BYPASS),
-                context.player(), context.playerLocation().getWorld(), context.reason());
+                context);
         }
 
         // Priority 0: Geyser bypass
@@ -52,7 +52,7 @@ public class OffsetCreator {
                 return new CreatedOffset(
                     Offset.ZERO,
                     new CreatedOffset.Source.BedrockBypass(),
-                    context.player(), context.playerLocation().getWorld(), context.reason());
+                    context);
             }
         } catch (Exception ignored) {}
 
@@ -81,6 +81,6 @@ public class OffsetCreator {
         return new CreatedOffset(
             offset,
             new CreatedOffset.Source.Provider(provider, providerIsOverride),
-            context.player(), context.playerLocation().getWorld(), context.reason());
+            context);
     }
 }

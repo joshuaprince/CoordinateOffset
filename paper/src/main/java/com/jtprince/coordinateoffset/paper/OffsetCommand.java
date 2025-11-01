@@ -315,9 +315,10 @@ public class OffsetCommand {
                 new CreatedOffset(
                     offset,
                     new CreatedOffset.Source.SetCommand(context.getSource().getSender().getName(), affectedProvider),
-                    player,
-                    player.getLocation().getWorld(),
-                    null
+                    new OffsetProviderContext(
+                        player, player.getLocation(), player.getLocation(), previous.offset(),
+                        OffsetProviderContext.ProvideReason.COMMAND_SET
+                    )
                 )
             );
 
