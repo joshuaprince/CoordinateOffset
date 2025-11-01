@@ -130,12 +130,12 @@ public class OffsetHolder {
      * when the "position" packet occurs.</p>
      *
      * @param context Offset generation context, containing the player and world that should have an offset regenerated.
-     * @return true if the player's offset changed, false if the player's offset was unchanged.
+     * @return Result containing the new offset and whether the offset changed.
      */
-    public boolean generateNextOffset(OffsetProviderContext context) {
+    public OffsetChangeResult generateNextOffset(OffsetProviderContext context) {
         CreatedOffset creation = core.getOffsetCreator().createOffset(context);
         if (creation == null) {
-            return false;
+            return new OffsetChangeResult(getOffset(context.player()), false);
         }
         return setNextOffset(context.player().getUuid(), creation);
     }
@@ -151,9 +151,9 @@ public class OffsetHolder {
      *
      * @param playerUuid UUID of the player to set the next offset for.
      * @param newOffset The new offset to set.
-     * @return true if the player's offset changed, false if the player's offset was unchanged.
+     * @return Result containing the new offset and whether the offset changed.
      */
-    public boolean setNextOffset(UUID playerUuid, CreatedOffset newOffset) {
+    public OffsetChangeResult setNextOffset(UUID playerUuid, CreatedOffset newOffset) {
         PlayerOffsetData d = playerOffsetData.compute(playerUuid, (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
                 debugLog("Generate first: " +
@@ -203,9 +203,10 @@ public class OffsetHolder {
 
         if (d.nextOffset != null && !d.nextOffset.offset().equals(d.currentOffset.offset())) {
             newOffset.log();
-            return true;
+            return new OffsetChangeResult(d.nextOffset, true);
+        } else {
+            return new OffsetChangeResult(d.currentOffset, false);
         }
-        return false;
     }
 
     /**

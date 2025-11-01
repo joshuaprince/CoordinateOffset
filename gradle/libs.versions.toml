@@ -7,6 +7,7 @@ paper-apiversion = "1.21.4" # plugin.yml apiVersion
 bstats-bukkit = { group = "org.bstats", name = "bstats-bukkit", version = "3.1.0" }
 configlib-core = { group = "de.exlll", name = "configlib-core", version = "4.6.3" }
 configlib-paper = { group = "de.exlll", name = "configlib-paper", version = "4.6.3" }
+geyser-api = { group = "org.geysermc.geyser", name = "api", version = "2.8.3-SNAPSHOT" }
 jspecify = { group = "org.jspecify", name = "jspecify", version = "1.0.0" }
 morepdt = { group = "com.jeff-media", name = "MorePersistentDataTypes", version = "2.4.0" }
 packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", version.ref = "packetevents" }

@@ -1,4 +1,5 @@
 dependencies {
+    compileOnly(libs.geyser.api)
     compileOnly(libs.jspecify)
     compileOnly(libs.packetevents.api)
 

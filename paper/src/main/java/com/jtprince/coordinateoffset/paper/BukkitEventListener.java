@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset.paper;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.OffsetChangeResult;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
@@ -114,7 +115,7 @@ class BukkitEventListener implements Listener {
             reason = OffsetProviderContext.ProvideReason.TELEPORT;
         }
 
-        boolean changed = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        OffsetChangeResult result = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
             offsetPlayer,
             new PaperLocation(event.getFrom()),
             new PaperLocation(event.getTo()),
@@ -122,7 +123,7 @@ class BukkitEventListener implements Listener {
             reason
         ));
 
-        if (changed && reason == OffsetProviderContext.ProvideReason.TELEPORT) {
+        if (result.offsetChanged() && reason == OffsetProviderContext.ProvideReason.TELEPORT) {
             /*
              * Nearby teleportation workaround:
              * A player teleporting a short distance does not trigger chunk unloads and reloads.

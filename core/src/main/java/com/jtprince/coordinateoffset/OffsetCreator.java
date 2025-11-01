@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.config.OffsetProviderOverrideConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
+import org.geysermc.geyser.api.GeyserApi;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -27,6 +28,9 @@ public class OffsetCreator {
         OffsetProvider provider = null;
         boolean providerIsOverride = false;
 
+        // Note for all Priority 0 checks: Be sure to update /offset commands which check for similar things.
+        //  (e.g. /offset regenerate has a special response for bypasses by permissions or Bedrock)
+
         // Priority 0: Permission-based bypass
         if (core.getConfig().getBypassByPermission() &&
                 context.player().hasPermission(CoordinateOffsetPermission.BYPASS.node)) {
@@ -35,6 +39,22 @@ public class OffsetCreator {
                 new CreatedOffset.Source.PermissionBypass(CoordinateOffsetPermission.BYPASS),
                 context.player(), context.playerLocation().getWorld(), context.reason());
         }
+
+        // Priority 0: Geyser bypass
+        try {
+            if (GeyserApi.api().isBedrockPlayer(context.player().getUuid())) {
+                /* Log a warning only once on join */
+                if (context.reason() == OffsetProviderContext.ProvideReason.JOIN) {
+                    core.getLogger().warning("Coordinate offsets are disabled for Bedrock player " +
+                        context.player().getName() + ". (Give permission coordinateoffset.bypass to disable offsets " +
+                        " and hide this warning)");
+                }
+                return new CreatedOffset(
+                    Offset.ZERO,
+                    new CreatedOffset.Source.BedrockBypass(),
+                    context.player(), context.playerLocation().getWorld(), context.reason());
+            }
+        } catch (Exception ignored) {}
 
         // Priority 1: Config override rule
         //noinspection ConstantValue
