@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.api;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.OffsetData;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
@@ -34,9 +35,21 @@ public interface CoordinateOffsetAPI {
      * @param player A player currently logged in to the server. Use {@link #adaptPlayer(Object)} to convert
      *               a platform-specific instance (such as a Bukkit <code>Player</code>) to an {@link OffsetPlayer}, or
      *               {@link #getPlayer(UUID)} to get a player by their UUID.
-     * @return The coordinate Offset this player sees, or <code>Offset.ZERO</code> if the player has no offset.
+     * @return The coordinate offset this player sees, or <code>Offset.ZERO</code> if the player has no offset.
+     * @see CoordinateOffsetAPI#getOffsetData
      */
     Offset getOffset(OffsetPlayer player);
+
+    /**
+     * Get information about a player's current offset, including the source from where the offset came and the
+     * context from which the offset was generated.
+     *
+     * @param player A player currently logged in to the server. Use {@link #adaptPlayer(Object)} to convert
+     *               a platform-specific instance (such as a Bukkit <code>Player</code>) to an {@link OffsetPlayer}, or
+     *               {@link #getPlayer(UUID)} to get a player by their UUID.
+     * @return A container for all known data about the player's current offset.
+     */
+    OffsetData getOffsetData(OffsetPlayer player);
 
     /**
      * Get an {@link OffsetPlayer} instance for a player currently connected to the server by their UUID.

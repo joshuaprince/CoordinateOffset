@@ -29,9 +29,9 @@ public class OffsetHolder {
      *                   into current.
      */
     private record PlayerOffsetData(
-        CreatedOffset previousOffset,
-        CreatedOffset currentOffset,
-        @Nullable CreatedOffset nextOffset
+        OffsetData previousOffset,
+        OffsetData currentOffset,
+        @Nullable OffsetData nextOffset
     ) {}
     private final ConcurrentHashMap<UUID, PlayerOffsetData> playerOffsetData = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Object> pendingDataLocks = new ConcurrentHashMap<>();
@@ -48,7 +48,7 @@ public class OffsetHolder {
      * @return The player's current offset in the world they are in.
      * @throws NoSuchElementException If the player has no offset data or has not yet received a POSITION packet.
      */
-    public CreatedOffset getOffset(OffsetPlayer player) {
+    public OffsetData getOffset(OffsetPlayer player) {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         if (data == null) {
             throw new NoSuchElementException("Player " + player.getName() + " has no offset data!");
@@ -68,7 +68,7 @@ public class OffsetHolder {
      * @return The player's next offset in the world they will soon be in, or the current offset if the player has no
      *         next offset.
      */
-    public CreatedOffset getNextOffset(OffsetPlayer player) {
+    public OffsetData getNextOffset(OffsetPlayer player) {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         if (data == null) {
             throw new NoSuchElementException("Player " + player.getName() + " has no offset data!");
@@ -145,7 +145,7 @@ public class OffsetHolder {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         OffsetProviderContext context = new OffsetProviderContext(
             player, previousLocation, nextLocation, data == null ? null : data.currentOffset.offset(), reason);
-        CreatedOffset creation = core.getOffsetCreator().createOffset(context);
+        OffsetData creation = core.getOffsetCreator().createOffset(context);
         return setNextOffset(context.player().getUuid(), creation);
     }
 
@@ -162,14 +162,11 @@ public class OffsetHolder {
      * @param newOffset The new offset to set.
      * @return Result containing the new offset and whether the offset changed.
      */
-    public OffsetChangeResult setNextOffset(UUID playerUuid, CreatedOffset newOffset) {
+    public OffsetChangeResult setNextOffset(UUID playerUuid, OffsetData newOffset) {
         PlayerOffsetData d = playerOffsetData.compute(playerUuid, (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
-                debugLog("Generate first: " +
-                    newOffset + ", " +
-                    newOffset + ", " +
-                    null);
-                newOffset.log();
+                debugLog("Generate first: " + newOffset + ", " + newOffset + ", " + null);
+                log(newOffset);
                 return new PlayerOffsetData(
                     newOffset,
                     newOffset,
@@ -183,10 +180,7 @@ public class OffsetHolder {
                  * Just immediately swap in the new offset.
                  * This can happen if the offset source changed compared to what we have in current now.
                  */
-                debugLog("Unchanged offset:" +
-                    existingOffsetData.previousOffset + " , " +
-                    newOffset + ", " +
-                    existingOffsetData.nextOffset);
+                debugLog("Unchanged offset:" + existingOffsetData.previousOffset + " , " + newOffset + ", " + existingOffsetData.nextOffset);
                 return new PlayerOffsetData(
                     existingOffsetData.previousOffset, // Keep previous the same
                     newOffset,  // Immediately swap in to current
@@ -194,10 +188,7 @@ public class OffsetHolder {
                 );
             }
 
-            debugLog("Generate next: " +
-                existingOffsetData.previousOffset + ", " +
-                existingOffsetData.currentOffset + ", " +
-                newOffset);
+            debugLog("Generate next: " + existingOffsetData.previousOffset + ", " + existingOffsetData.currentOffset + ", " + newOffset);
             return new PlayerOffsetData(
                 existingOffsetData.previousOffset, // Keep previous the same
                 existingOffsetData.currentOffset,  // Keep current the same
@@ -211,7 +202,7 @@ public class OffsetHolder {
         }
 
         if (d.nextOffset != null && !d.nextOffset.offset().equals(d.currentOffset.offset())) {
-            newOffset.log();
+            log(d.nextOffset);
             return new OffsetChangeResult(d.nextOffset, true);
         } else {
             return new OffsetChangeResult(d.currentOffset, false);
@@ -254,6 +245,44 @@ public class OffsetHolder {
     public void remove(UUID uuid) {
         playerOffsetData.remove(uuid);
         pendingDataLocks.remove(uuid);
+    }
+
+    private void log(OffsetData offset) {
+        if (!core.getConfig().getVerbose()) return;
+
+        StringBuilder s = new StringBuilder();
+        s.append("Using ");
+        s.append(offset.offset());
+        s.append(" from ");
+        switch (offset.source()) {
+            case OffsetData.Source.PermissionBypass ignored -> s.append("permission bypass");
+            case OffsetData.Source.BedrockBypass ignored -> { return; /* Warning logged in OffsetCreator on Join only */ }
+            case OffsetData.Source.Provider p -> {
+                s.append("provider \"").append(p.provider().name).append("\"");
+                if (p.isOverride()) {
+                    s.append(" (config.yml override)");
+                } else {
+                    s.append(" (default provider)");
+                }
+            }
+            case OffsetData.Source.SetCommand p -> s.append("command by ").append(p.sender());
+        }
+        s.append(" for player ");
+        s.append(offset.context().player().getName());
+        s.append(" in world \"");
+        s.append(offset.context().playerLocation().getWorld().getName());
+        s.append("\"");
+        s.append(switch (offset.context().reason()) {
+            case JOIN -> " (player joined)";
+            case DEATH_RESPAWN -> " (player respawned)";
+            case WORLD_CHANGE -> " (player changed worlds)";
+            case TELEPORT -> " (player teleported)";
+            case COMMAND_REGENERATE -> " (regenerated by command)";
+            case COMMAND_SET -> ""; // already mentioned by source
+            case PLUGIN_REGENERATE -> " (regenerated by external plugin)";
+        });
+
+        core.getLogger().info(s.toString());
     }
 
     private void debugLog(String message) {

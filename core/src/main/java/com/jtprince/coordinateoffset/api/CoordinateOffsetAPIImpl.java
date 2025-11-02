@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.api;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.OffsetData;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
@@ -24,6 +25,11 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
     @Override
     public Offset getOffset(OffsetPlayer player) {
         return core.getOffsetHolder().getOffset(player).offset();
+    }
+
+    @Override
+    public OffsetData getOffsetData(OffsetPlayer player) {
+        return core.getOffsetHolder().getOffset(player);
     }
 
     @Override

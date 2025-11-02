@@ -23,7 +23,7 @@ public class OffsetCreator {
      * @return A new offset to apply (which may be the same as the current offset), or null if the player's offset
      * should remain the same as it is now.
      */
-    CreatedOffset createOffset(OffsetProviderContext context) {
+    OffsetData createOffset(OffsetProviderContext context) {
         OffsetProvider provider = null;
         boolean providerIsOverride = false;
 
@@ -33,10 +33,11 @@ public class OffsetCreator {
         // Priority 0: Permission-based bypass
         if (core.getConfig().getBypassByPermission() &&
                 context.player().hasPermission(CoordinateOffsetPermission.BYPASS.node)) {
-            return new CreatedOffset(
+            return new OffsetData(
                 Offset.ZERO,
-                new CreatedOffset.Source.PermissionBypass(CoordinateOffsetPermission.BYPASS),
-                context);
+                new OffsetData.Source.PermissionBypass(),
+                context
+            );
         }
 
         // Priority 0: Geyser bypass
@@ -48,10 +49,11 @@ public class OffsetCreator {
                         context.player().getName() + ". (Give permission coordinateoffset.bypass to disable offsets " +
                         " and hide this warning)");
                 }
-                return new CreatedOffset(
+                return new OffsetData(
                     Offset.ZERO,
-                    new CreatedOffset.Source.BedrockBypass(),
-                    context);
+                    new OffsetData.Source.BedrockBypass(),
+                    context
+                );
             }
         } catch (Exception ignored) {}
 
@@ -74,9 +76,9 @@ public class OffsetCreator {
 
         // With provider selected, get the offset.
         Offset offset = provider.provideOffset(context);
-        return new CreatedOffset(
+        return new OffsetData(
             offset,
-            new CreatedOffset.Source.Provider(provider, providerIsOverride),
+            new OffsetData.Source.Provider(provider, providerIsOverride),
             context);
     }
 }
