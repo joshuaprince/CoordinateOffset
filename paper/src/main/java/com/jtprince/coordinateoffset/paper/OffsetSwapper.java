@@ -7,8 +7,13 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUp
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.OffsetHolder;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
+import io.papermc.paper.FeatureHooks;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.craftbukkit.CraftChunk;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -153,7 +158,7 @@ public class OffsetSwapper implements Listener {
                     continue;
                 }
 
-                chunk.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+                refreshChunkForPlayer(player, chunk);
                 for (Entity entity : chunk.getEntities()) {
                     if (task.entitiesLeft.contains(entity.getUniqueId())) {
                         player.hideEntity(plugin, entity);
@@ -173,5 +178,24 @@ public class OffsetSwapper implements Listener {
                 chunkRefreshTasks.remove(playerUuid);
             }
         } while (event.getTimeRemaining() > HEADROOM_NS && !chunkRefreshTasks.isEmpty());
+    }
+
+    private int lastTickExceptionPrinted = 0;
+    private void refreshChunkForPlayer(Player player, Chunk chunk) {
+        try {
+            // NMS - only way to refresh a chunk for a single player
+            FeatureHooks.sendChunkRefreshPackets(
+                List.of(((CraftPlayer) player).getHandle()),
+                (LevelChunk) ((CraftChunk) chunk).getHandle(ChunkStatus.FULL)
+            );
+        } catch (Exception e) {
+            // Fall back on API method if NMS fails, API method doesn't take a player filter
+            if (Bukkit.getCurrentTick() - lastTickExceptionPrinted > 10) { // rate-limit printing exceptions
+                new RuntimeException("Failed to refresh " + chunk + " for " + player.getName() +
+                    "; falling back on refreshing chunk for all players", e).printStackTrace();
+                lastTickExceptionPrinted = Bukkit.getCurrentTick();
+            }
+            chunk.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+        }
     }
 }

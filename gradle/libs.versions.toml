@@ -4,6 +4,7 @@ paper-api = "1.21.4-R0.1-SNAPSHOT"
 paper-apiversion = "1.21.4" # plugin.yml apiVersion
 
 [libraries]
+adventure-api = { group = "net.kyori", name = "adventure-api", version = "4.25.0" }
 bstats-bukkit = { group = "org.bstats", name = "bstats-bukkit", version = "3.1.0" }
 configlib-core = { group = "de.exlll", name = "configlib-core", version = "4.6.3" }
 configlib-paper = { group = "de.exlll", name = "configlib-paper", version = "4.6.3" }
@@ -17,4 +18,5 @@ test-junit-platform = { group = "org.junit.platform", name = "junit-platform-lau
 
 [plugins]
 maven-publish = { id = "com.vanniktech.maven.publish", version = "0.34.0" }
+paperweight-userdev = { id = "io.papermc.paperweight.userdev", version = "2.0.0-beta.19" }
 shadow = { id = "com.gradleup.shadow", version = "9.2.2" }

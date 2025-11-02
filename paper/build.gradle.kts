@@ -1,9 +1,10 @@
 plugins {
+    alias(libs.plugins.paperweight.userdev)
     alias(libs.plugins.shadow)
 }
 
 dependencies {
-    shadow(libs.paper.api)
+    paperweight.paperDevBundle(libs.versions.paper.api)
     shadow(libs.packetevents.api)
 
     implementation(project(":api"))
