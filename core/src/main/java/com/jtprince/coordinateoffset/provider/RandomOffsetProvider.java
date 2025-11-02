@@ -35,27 +35,21 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
     }
 
     @Override
-    public @Nullable Offset provideOffset(OffsetProviderContext context) {
+    public Offset provideOffset(OffsetProviderContext context) {
         //noinspection DuplicatedCode (with ZeroAtLocationOffsetProvider)
-        boolean willRegenerate = false;
-        switch (context.reason()) {
-            case JOIN -> { if (regenerateConfig.isRegenOnJoin()) willRegenerate = true; }
-            case DEATH_RESPAWN -> { if (regenerateConfig.isRegenOnDeath()) willRegenerate = true; }
-            case WORLD_CHANGE -> { if (regenerateConfig.isRegenOnWorldChange()) willRegenerate = true; }
-            /* Always regenerate when explicitly called */
-            case COMMAND_REGENERATE, PLUGIN_REGENERATE -> willRegenerate = true;
+        boolean willRegenerate = switch (context.reason()) {
+            case JOIN -> regenerateConfig.isRegenOnJoin();
+            case DEATH_RESPAWN -> regenerateConfig.isRegenOnDeath();
+            case WORLD_CHANGE -> regenerateConfig.isRegenOnWorldChange();
+            case COMMAND_REGENERATE, PLUGIN_REGENERATE -> true; /* Always regenerate when explicitly called */
             case TELEPORT -> {
                 Objects.requireNonNull(context.previousLocation());
                 Double distanceTeleported = context.playerLocation().getDistance(context.previousLocation());
                 Objects.requireNonNull(distanceTeleported);
-                if (regenerateConfig.isRegenOnDistantTeleport(distanceTeleported)) {
-                    willRegenerate = true;
-                } else {
-                    // Special case to avoid log spam: Returning null means "no offset change" with no log message
-                    return null;
-                }
+                yield regenerateConfig.isRegenOnDistantTeleport(distanceTeleported);
             }
-        }
+            case COMMAND_SET -> false; /* Should be unreachable - offset providers are not called for this reason */
+        };
         if (willRegenerate) {
             offsetStore.clear(context.player().getUuid());
         }

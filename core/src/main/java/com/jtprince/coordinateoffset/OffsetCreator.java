@@ -5,7 +5,6 @@ import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.geysermc.geyser.api.GeyserApi;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -24,7 +23,7 @@ public class OffsetCreator {
      * @return A new offset to apply (which may be the same as the current offset), or null if the player's offset
      * should remain the same as it is now.
      */
-    @Nullable CreatedOffset createOffset(OffsetProviderContext context) {
+    CreatedOffset createOffset(OffsetProviderContext context) {
         OffsetProvider provider = null;
         boolean providerIsOverride = false;
 
@@ -75,9 +74,6 @@ public class OffsetCreator {
 
         // With provider selected, get the offset.
         Offset offset = provider.provideOffset(context);
-        if (offset == null) {
-            return null;
-        }
         return new CreatedOffset(
             offset,
             new CreatedOffset.Source.Provider(provider, providerIsOverride),

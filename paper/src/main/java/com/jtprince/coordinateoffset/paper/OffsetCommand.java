@@ -236,13 +236,8 @@ public class OffsetCommand {
         for (Player target : targets) {
             PaperLocation location = new PaperLocation(target.getLocation());
             PaperOffsetPlayer offsetPlayer = new PaperOffsetPlayer(target);
-            OffsetChangeResult result = CoordinateOffsetCore.get().getOffsetHolder().generateNextOffset(new OffsetProviderContext(
-                offsetPlayer,
-                location,
-                location,
-                CoordinateOffsetCore.get().getOffsetHolder().getOffset(offsetPlayer).offset(),
-                OffsetProviderContext.ProvideReason.COMMAND_REGENERATE
-            ));
+            OffsetChangeResult result = CoordinateOffsetCore.get().getOffsetHolder().generateNextOffset(
+                offsetPlayer, location, location, OffsetProviderContext.ProvideReason.COMMAND_REGENERATE);
 
             if (!result.offsetChanged()) {
                 context.getSource().getSender().sendMessage(formatUnchangedOffsetMessage(target, result.getCommandSenderResponse()));

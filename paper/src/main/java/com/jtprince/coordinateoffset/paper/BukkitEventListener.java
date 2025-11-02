@@ -47,13 +47,12 @@ class BukkitEventListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        core.getOffsetHolder().generateNextOffset(
             player,
             null,
             new PaperLocation(event.getPlayer().getLocation()),
-            null,
             OffsetProviderContext.ProvideReason.JOIN
-        ));
+        );
     }
 
     private final Map<UUID, Location> lastDeathLocation = new HashMap<>();
@@ -78,13 +77,12 @@ class BukkitEventListener implements Listener {
 
         Location lastDeathLocation = this.lastDeathLocation.get(event.getPlayer().getUniqueId());
         OffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
-        core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        core.getOffsetHolder().generateNextOffset(
             player,
             lastDeathLocation == null ? null : new PaperLocation(lastDeathLocation),
             new PaperLocation(event.getRespawnLocation()),
-            core.getOffsetHolder().getOffset(player).offset(),
             reason
-        ));
+        );
     }
 
     private static final Set<String> IGNORED_TELEPORT_CAUSES = Set.of(
@@ -115,13 +113,12 @@ class BukkitEventListener implements Listener {
             reason = OffsetProviderContext.ProvideReason.TELEPORT;
         }
 
-        OffsetChangeResult result = core.getOffsetHolder().generateNextOffset(new OffsetProviderContext(
+        OffsetChangeResult result = core.getOffsetHolder().generateNextOffset(
             offsetPlayer,
             new PaperLocation(event.getFrom()),
             new PaperLocation(event.getTo()),
-            core.getOffsetHolder().getOffset(offsetPlayer).offset(),
             reason
-        ));
+        );
 
         if (result.offsetChanged() && reason == OffsetProviderContext.ProvideReason.TELEPORT) {
             /*

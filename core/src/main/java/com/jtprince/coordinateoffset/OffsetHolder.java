@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset;
 
+import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
@@ -129,14 +130,22 @@ public class OffsetHolder {
      * to certain "position" packets. However, generating a <code>nextOffset</code> will set up an offset change for
      * when the "position" packet occurs.</p>
      *
-     * @param context Offset generation context, containing the player and world that should have an offset regenerated.
+     * @param player Player to generate offset for.
+     * @param previousLocation Previous location of the player, or null if the player is joining the server.
+     * @param nextLocation Location the player is about to be.
+     * @param reason Reason for generating a new offset.
      * @return Result containing the new offset and whether the offset changed.
      */
-    public OffsetChangeResult generateNextOffset(OffsetProviderContext context) {
+    public OffsetChangeResult generateNextOffset(
+        OffsetPlayer player,
+        @Nullable OffsetLocation previousLocation,
+        OffsetLocation nextLocation,
+        OffsetProviderContext.ProvideReason reason
+    ) {
+        PlayerOffsetData data = playerOffsetData.get(player.getUuid());
+        OffsetProviderContext context = new OffsetProviderContext(
+            player, previousLocation, nextLocation, data == null ? null : data.currentOffset.offset(), reason);
         CreatedOffset creation = core.getOffsetCreator().createOffset(context);
-        if (creation == null) {
-            return new OffsetChangeResult(getOffset(context.player()), false);
-        }
         return setNextOffset(context.player().getUuid(), creation);
     }
 

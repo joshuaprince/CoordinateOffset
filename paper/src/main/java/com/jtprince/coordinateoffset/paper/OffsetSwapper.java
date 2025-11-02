@@ -6,7 +6,6 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUn
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.OffsetHolder;
-import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import io.papermc.paper.FeatureHooks;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -39,8 +38,7 @@ public class OffsetSwapper implements Listener {
     /**
      * Forcibly swap the player's offset.
      * 
-     * <p>This may be called after {@link OffsetHolder#generateNextOffset(OffsetProviderContext)} to apply an offset
-     * change immediately.</p>
+     * <p>This may be called after {@link OffsetHolder#generateNextOffset} to apply an offset change immediately.</p>
      *
      * <p>This must only be called on the main server thread.</p>
      *
