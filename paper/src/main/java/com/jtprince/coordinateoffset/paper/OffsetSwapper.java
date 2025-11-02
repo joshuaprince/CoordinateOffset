@@ -1,0 +1,177 @@
+package com.jtprince.coordinateoffset.paper;
+
+import com.destroystokyo.paper.event.server.ServerTickEndEvent;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.OffsetHolder;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.jspecify.annotations.NullMarked;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Logic to immediately swap a player's offset and simulate a teleport.
+ */
+@NullMarked
+public class OffsetSwapper implements Listener {
+    private final CoordinateOffsetPaperPlugin plugin;
+    public OffsetSwapper(CoordinateOffsetPaperPlugin plugin) {
+        this.plugin = plugin;
+    }
+    public void initialize() {
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+    }
+
+    /**
+     * Forcibly swap the player's offset.
+     * 
+     * <p>This may be called after {@link OffsetHolder#generateNextOffset(OffsetProviderContext)} to apply an offset
+     * change immediately.</p>
+     *
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * @param player Player to swap the offset for.
+     */
+    public void forceOffsetSwap(Player player) {
+        /* Timing of these packets is important. See OffsetChangeSequencePaper.md */
+
+        List<Chunk> chunksClosestFirst = sendUnloadAllSentChunksPackets(player);
+
+        /*
+         * This call automatically sends a few useful packets:
+         *  - RESPAWN: Needed to update player's death location (recovery compasses), not otherwise necessary (but
+         *    makes the "Loading terrain" screen appear)
+         *  - PLAYER_POSITION_AND_LOOK: Takes player out of loading screen and puts them at the new coordinates
+         *  - SPAWN_POSITION: Sets the player's compass spawn location
+         * It doesn't send UPDATE_VIEW_POSITION, so we do that ourselves.
+         */
+        player.setPlayerProfile(player.getPlayerProfile());
+
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+            new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
+
+        refreshChunksAndEntities(player, chunksClosestFirst);
+    }
+
+    /**
+     * Get a list of chunks that the player has been sent, sorted by ascending distance from the player's current chunk.
+     *
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * @param player Player to query.
+     * @return List of chunks sorted by distance from the player's current chunk.
+     */
+    public List<Chunk> getSentChunksClosestFirst(Player player) {
+        int cx = player.getChunk().getX();
+        int cz = player.getChunk().getZ();
+        //noinspection UnstableApiUsage
+        return player.getSentChunks().stream()
+            .sorted(Comparator.comparing(c ->
+                ((c.getX() - cx) * (c.getX() - cx) + (c.getZ() - cz) * (c.getZ() - cz))))
+            .toList();
+    }
+
+    /**
+     * Send packets to tell the client to unload all chunks that the player has been sent.
+     *
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * @param player Player to send packets to.
+     * @return List of chunks that were unloaded, in ascending distance from the player's current chunk.
+     */
+    public List<Chunk> sendUnloadAllSentChunksPackets(Player player) {
+        List<Chunk> chunksClosestFirst = getSentChunksClosestFirst(player);
+        for (Chunk chunk : chunksClosestFirst.reversed()) { // Unload furthest chunks first
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player,
+                new WrapperPlayServerUnloadChunk(chunk.getX(), chunk.getZ()));
+        }
+        return chunksClosestFirst;
+    }
+
+    /**
+     * Forcibly resend all loaded chunks and entities to a player. This function returns immediately, and the refresh
+     * sequence may take place over the course of multiple ticks.
+     *
+     * <p>This must only be called on the main server thread.</p>
+     *
+     * @param player Player to resend chunks and entities to.
+     * @param chunks Chunks to resend.
+     */
+    public void refreshChunksAndEntities(Player player, List<Chunk> chunks) {
+        // Replace any existing task for this player - no harm letting GC get the old one
+        chunkRefreshTasks.put(player.getUniqueId(), new ChunkRefreshTask(
+            Bukkit.getCurrentTick(),
+            player.getWorld().getUID(),
+            new ArrayDeque<>(chunks),
+            player.getWorld().getEntities().stream()
+                .filter(e -> e.getTrackedBy().contains(player))
+                .map(Entity::getUniqueId)
+                .collect(Collectors.toSet())
+        ));
+    }
+
+    /*
+     * The following code is for spreading chunk refreshes out over multiple ticks and only refreshing chunks when
+     * there is extra time between ticks. This prevents chunk refreshes from slowing down the TPS.
+     */
+    private static final long HEADROOM_NS = 2_000_000L; // save 2ms out of 50ms tick target
+    private record ChunkRefreshTask(int startTick, UUID world, Queue<Chunk> chunksLeft, Set<UUID> entitiesLeft) {}
+    private final Map<UUID /* player */, ChunkRefreshTask> chunkRefreshTasks = new HashMap<>();
+    @EventHandler
+    public void onTickEnd(ServerTickEndEvent event) {
+        Queue<UUID> toRemove = new ArrayDeque<>();
+        // do/while to guarantee 1 chunk refresh per tick (forward progress)
+        do {
+            // One chunk per player per outer while loop iteration - ensure we check the tick time frequently
+            for (UUID playerUuid : chunkRefreshTasks.keySet()) {
+                Player player = Bukkit.getPlayer(playerUuid);
+                ChunkRefreshTask task = chunkRefreshTasks.get(playerUuid);
+                if (player == null) {
+                    toRemove.add(playerUuid);
+                    continue;
+                }
+                Chunk chunk = task.chunksLeft().poll();
+                if (chunk == null) {
+                    // If we run out of chunks, be sure any entities that weren't refreshed yet are refreshed.
+                    // Not sure this is possible, but just to be safe.
+                    for (UUID entityId : task.entitiesLeft()) {
+                        Entity entity = Bukkit.getEntity(entityId);
+                        if (entity == null) continue;
+                        player.hideEntity(plugin, entity);
+                        player.showEntity(plugin, entity);
+                    }
+                    toRemove.add(playerUuid);
+                    continue;
+                }
+
+                chunk.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
+                for (Entity entity : chunk.getEntities()) {
+                    if (task.entitiesLeft.contains(entity.getUniqueId())) {
+                        player.hideEntity(plugin, entity);
+                        player.showEntity(plugin, entity);
+                        task.entitiesLeft.remove(entity.getUniqueId());
+                    }
+                }
+            }
+
+            while (!toRemove.isEmpty()) {
+                UUID playerUuid = toRemove.remove();
+                if (CoordinateOffsetCore.get().isDebugEnabled()) {
+                    CoordinateOffsetCore.get().getLogger().info("Chunks refreshed in " +
+                        (Bukkit.getCurrentTick() - chunkRefreshTasks.get(playerUuid).startTick) +
+                        " ticks for " + playerUuid);
+                }
+                chunkRefreshTasks.remove(playerUuid);
+            }
+        } while (event.getTimeRemaining() > HEADROOM_NS && !chunkRefreshTasks.isEmpty());
+    }
+}

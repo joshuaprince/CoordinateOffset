@@ -249,7 +249,7 @@ public class OffsetCommand {
                 continue;
             }
 
-            OffsetSwapHelpers.forceOffsetSwap(target);
+            plugin.getOffsetSwapper().forceOffsetSwap(target);
             successfulTargets.add(target);
         }
 
@@ -327,7 +327,7 @@ public class OffsetCommand {
                 continue;
             }
 
-            OffsetSwapHelpers.forceOffsetSwap(target);
+            plugin.getOffsetSwapper().forceOffsetSwap(target);
 
             // Inform the provider associated with the player's current offset that an offset was changed by command
             //  (providers may want to update their own storage)
