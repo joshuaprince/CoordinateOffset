@@ -1,5 +1,5 @@
 plugins {
-    id("com.vanniktech.maven.publish")
+    alias(libs.plugins.maven.publish)
     idea
 }
 

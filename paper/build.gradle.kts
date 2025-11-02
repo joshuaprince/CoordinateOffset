@@ -1,5 +1,5 @@
 plugins {
-    id("com.gradleup.shadow")
+    alias(libs.plugins.shadow)
 }
 
 dependencies {

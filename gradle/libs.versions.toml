@@ -14,3 +14,7 @@ packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", 
 paper-api = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper-api" }
 test-junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version = "5.11.4" }
 test-junit-platform = { group = "org.junit.platform", name = "junit-platform-launcher" }
+
+[plugins]
+maven-publish = { id = "com.vanniktech.maven.publish", version = "0.34.0" }
+shadow = { id = "com.gradleup.shadow", version = "9.2.2" }
