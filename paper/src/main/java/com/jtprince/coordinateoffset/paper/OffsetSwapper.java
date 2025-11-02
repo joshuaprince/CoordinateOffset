@@ -158,13 +158,16 @@ public class OffsetSwapper implements Listener {
                     continue;
                 }
 
-                refreshChunkForPlayer(player, chunk);
+                if (player.isChunkSent(chunk)) {
+                    refreshChunkForPlayer(player, chunk);
+                }
+
                 for (Entity entity : chunk.getEntities()) {
-                    if (task.entitiesLeft.contains(entity.getUniqueId())) {
+                    if (task.entitiesLeft.contains(entity.getUniqueId()) && entity.getTrackedBy().contains(player)) {
                         player.hideEntity(plugin, entity);
                         player.showEntity(plugin, entity);
-                        task.entitiesLeft.remove(entity.getUniqueId());
                     }
+                    task.entitiesLeft.remove(entity.getUniqueId());
                 }
             }
 
