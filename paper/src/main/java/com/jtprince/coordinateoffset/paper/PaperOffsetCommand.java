@@ -1,7 +1,6 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.*;
-import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.command.OffsetCommandSender;
 import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
@@ -47,9 +46,11 @@ public class PaperOffsetCommand {
     );
 
     private final CoordinateOffsetPaperPlugin plugin;
+    private final CoordinateOffsetCore core;
 
-    public PaperOffsetCommand(CoordinateOffsetPaperPlugin plugin) {
+    public PaperOffsetCommand(CoordinateOffsetPaperPlugin plugin, CoordinateOffsetCore core) {
         this.plugin = plugin;
+        this.core = core;
     }
 
     public void registerCommands() {
@@ -115,7 +116,7 @@ public class PaperOffsetCommand {
 
     private int reload(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        boolean success = CoordinateOffsetCore.get().reloadConfig();
+        boolean success = core.reloadConfig();
         if (success) {
             sender.sendMessage(Component.text("CoordinateOffset configuration reloaded from file.").color(NamedTextColor.GREEN));
         } else {
@@ -136,7 +137,7 @@ public class PaperOffsetCommand {
             return 0;
         }
 
-        OffsetData offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player));
+        OffsetData offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(player));
 
         if (offset.offset().equals(Offset.ZERO)) {
             context.getSource().getSender().sendMessage(Component
@@ -164,7 +165,7 @@ public class PaperOffsetCommand {
         if (target == null) {
             return 0;
         }
-        OffsetData offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(target));
+        OffsetData offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(target));
 
         context.getSource().getSender().sendMessage(Component.empty()
             .append(formatPlayerName(target))
@@ -239,7 +240,7 @@ public class PaperOffsetCommand {
         for (Player target : targets) {
             PaperLocation location = new PaperLocation(target.getLocation());
             PaperOffsetPlayer offsetPlayer = new PaperOffsetPlayer(target);
-            OffsetChange result = CoordinateOffsetCore.get().getOffsetHolder().generateNextOffset(
+            OffsetChange result = core.getOffsetHolder().generateNextOffset(
                 offsetPlayer, location, location, OffsetProviderContext.ProvideReason.COMMAND_REGENERATE);
 
             if (!result.offsetChanged()) {
@@ -247,7 +248,7 @@ public class PaperOffsetCommand {
                 continue;
             }
 
-            plugin.getOffsetSwapper().forceOffsetSwap(target);
+            core.getAdapter().getOffsetSwapper().forceOffsetSwap(offsetPlayer);
             successfulTargets.add(target);
         }
 
@@ -296,53 +297,13 @@ public class PaperOffsetCommand {
             targets.stream().map(PaperOffsetPlayer::new).toList(),
             offset
         );
-
-        List<Player> successfulTargets = new ArrayList<>();
-        for (OffsetPlayer player : offsetSetCommand.getTargets()) {
-            Player target = (Player) player.getPlatformPlayerObject();
-
-            OffsetChange result = CoordinateOffsetCore.get().getOffsetHolder().setNextOffsetByCommand(
-                player, player.getLocation(), offset, offsetSetCommand);
-            if (!result.offsetChanged()) {
-                context.getSource().getSender().sendMessage(formatUnchangedOffsetMessage(target, result.getCommandSenderResponse()));
-                continue;
-            }
-
-            plugin.getOffsetSwapper().forceOffsetSwap(target);
-
-            if (OffsetFactory.canBypassByPermission(player)) {
-                offsetSetCommand.getCommandSender().sendMessage(Component.empty()
-                    .color(NamedTextColor.GRAY)
-                    .decorate(TextDecoration.ITALIC)
-                    .append(Component.text("  Warning: offset for "))
-                    .append(formatPlayerName(target))
-                    .append(Component.text(" is not persistent (player has offset bypass permission)."))
-                );
-            } else if (offsetSetCommand.getOffsetIsNotPersistentForProvider(player) != null) {
-                offsetSetCommand.getCommandSender().sendMessage(Component.empty()
-                    .color(NamedTextColor.GRAY)
-                    .decorate(TextDecoration.ITALIC)
-                    .append(Component.text("  Warning: offset for "))
-                    .append(formatPlayerName(target))
-                    .append(Component.text(" is not persistent (offset provider does not store offsets)."))
-                );
-            }
-
-            successfulTargets.add(target);
-        }
-
-        if (!successfulTargets.isEmpty()) {
-            context.getSource().getSender().sendMessage(Component.text("Set coordinate offset for ")
-                .color(NamedTextColor.GRAY)
-                .append(formatPlayerNames(successfulTargets))
-                .append(Component.text(" to "))
-                .append(formatOffset(offset))
-                .append(Component.text("."))
-            );
-        }
-
-        return Command.SINGLE_SUCCESS;
+        return switch (core.getCommandExecutor().execute(offsetSetCommand)) {
+            case SUCCESS -> Command.SINGLE_SUCCESS;
+            case FAIL -> 0;
+        };
     }
+
+    /* TODO DELETE EVERYTHING BELOW THIS LINE */
 
     private Component formatOffset(Offset offset) {
         return Component.text("[x=")

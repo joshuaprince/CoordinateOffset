@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset;
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPI;
 import com.jtprince.coordinateoffset.api.CoordinateOffsetAPIImpl;
+import com.jtprince.coordinateoffset.command.OffsetCommandExecutor;
 import com.jtprince.coordinateoffset.config.ConfigHolder;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
@@ -21,8 +22,9 @@ public class CoordinateOffsetCore {
     private final CoordinateOffsetAdapter adapter;
 
     private final ConfigHolder configHolder;
-    private final OffsetProviderClassRegistry registry;
+    private final OffsetProviderClassRegistry providerClassRegistry;
     private final OffsetHolder offsetHolder;
+    private final OffsetCommandExecutor commandExecutor;
 
     private final boolean isDebugEnabled;
     private boolean completedLoading = false;
@@ -31,8 +33,9 @@ public class CoordinateOffsetCore {
         isDebugEnabled = System.getProperty("coordinateoffset.debug", "false").equalsIgnoreCase("true");
         this.adapter = adapter;
         this.configHolder = new ConfigHolder(this);
-        this.registry = new OffsetProviderClassRegistry();
+        this.providerClassRegistry = new OffsetProviderClassRegistry();
         this.offsetHolder = new OffsetHolder(this);
+        this.commandExecutor = new OffsetCommandExecutor(this);
     }
 
     public static CoordinateOffsetCore bootstrap(CoordinateOffsetAdapter adapter) {
@@ -87,7 +90,7 @@ public class CoordinateOffsetCore {
     }
 
     public OffsetProviderClassRegistry getProviderRegistry() {
-        return registry;
+        return providerClassRegistry;
     }
 
     public CoordinateOffsetConfig getConfig() {
@@ -96,6 +99,10 @@ public class CoordinateOffsetCore {
 
     public CoordinateOffsetProviderConfig getProviderConfig() {
         return configHolder.getProviderConfig();
+    }
+
+    public OffsetCommandExecutor getCommandExecutor() {
+        return commandExecutor;
     }
 
     public boolean reloadConfig() {

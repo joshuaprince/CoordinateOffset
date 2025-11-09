@@ -1,11 +1,13 @@
-package com.jtprince.coordinateoffset.paper;
+package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUnloadChunk;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerUpdateViewPosition;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.OffsetHolder;
+import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.adapter.OffsetSwapper;
+import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
 import io.papermc.paper.FeatureHooks;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -26,25 +28,18 @@ import java.util.stream.Collectors;
  * Logic to immediately swap a player's offset and simulate a teleport.
  */
 @NullMarked
-public class OffsetSwapper implements Listener {
+public class PaperOffsetSwapper implements OffsetSwapper, Listener {
     private final CoordinateOffsetPaperPlugin plugin;
-    public OffsetSwapper(CoordinateOffsetPaperPlugin plugin) {
+    public PaperOffsetSwapper(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
     }
     public void initialize() {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    /**
-     * Forcibly swap the player's offset.
-     * 
-     * <p>This may be called after {@link OffsetHolder#generateNextOffset} to apply an offset change immediately.</p>
-     *
-     * <p>This must only be called on the main server thread.</p>
-     *
-     * @param player Player to swap the offset for.
-     */
-    public void forceOffsetSwap(Player player) {
+    @Override
+    public void forceOffsetSwap(OffsetPlayer offsetPlayer) {
+        Player player = (Player) offsetPlayer.getPlatformPlayerObject();
         /* Timing of these packets is important. See OffsetChangeSequencePaper.md */
 
         List<Chunk> chunksClosestFirst = sendUnloadAllSentChunksPackets(player);

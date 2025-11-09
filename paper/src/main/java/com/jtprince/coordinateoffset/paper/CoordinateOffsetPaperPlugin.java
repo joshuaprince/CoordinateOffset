@@ -22,7 +22,6 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
     private @Nullable WorldBorderObfuscator worldBorderObfuscator;
     private @Nullable PacketOffsetAdapter packetOffsetAdapter;
     private @Nullable CollisionFix collisionFix;
-    private @Nullable OffsetSwapper offsetSwapper;
 
     @Override
     public void onEnable() {
@@ -35,13 +34,10 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
         new BukkitEventListener(this, core, worldBorderObfuscator).registerListeners();
 
-        new PaperOffsetCommand(this).registerCommands();
+        new PaperOffsetCommand(this, core).registerCommands();
 
         packetOffsetAdapter = new PacketOffsetAdapter(this);
         packetOffsetAdapter.registerAdapters();
-
-        offsetSwapper = new OffsetSwapper(this);
-        offsetSwapper.initialize();
 
         if (core.isDebugEnabled()) {
             new PacketEventSequencer(this).install();
@@ -93,10 +89,5 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
     @Nullable WorldBorderObfuscator getWorldBorderObfuscator() {
         return worldBorderObfuscator;
-    }
-
-    OffsetSwapper getOffsetSwapper() {
-        assert offsetSwapper != null;
-        return offsetSwapper;
     }
 }

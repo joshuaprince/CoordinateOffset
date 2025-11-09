@@ -164,14 +164,12 @@ public class OffsetHolder {
      *
      * @param player Player to set offset for.
      * @param playerLocation Location the player currently is. Assumed real location is not changing upon a command.
-     * @param newOffset New offset to set.
-     * @param setCommand Command that triggered the offset change.
+     * @param setCommand Command that triggered the offset change, containing the new offset.
      * @return Result containing the new offset and whether the offset changed.
      */
     public OffsetChange setNextOffsetByCommand(
         OffsetPlayer player,
         OffsetLocation playerLocation,
-        Offset newOffset,
         OffsetSetCommand setCommand
     ) {
         PlayerOffsetData playerCache = playerOffsetData.get(player.getUuid());
@@ -196,7 +194,7 @@ public class OffsetHolder {
         }
 
         OffsetData creation = offsetFactory.createSpecificOffset(
-            newOffset, new OffsetData.Source.SetCommand(setCommand, affectedProvider), context);
+            setCommand.getOffset(), new OffsetData.Source.SetCommand(setCommand, affectedProvider), context);
         return setNextOffset(player.getUuid(), creation);
     }
 

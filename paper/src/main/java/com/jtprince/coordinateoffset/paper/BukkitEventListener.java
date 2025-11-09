@@ -7,6 +7,7 @@ import com.jtprince.coordinateoffset.OffsetChange;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
+import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetSwapper;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.bukkit.Bukkit;
@@ -131,7 +132,8 @@ class BukkitEventListener implements Listener {
             double tpDistanceSq = event.getFrom().distanceSquared(event.getTo());
             if (tpDistanceSq < viewDistanceBlocks * viewDistanceBlocks) {
                 List<Chunk> chunksClosestFirst =
-                    plugin.getOffsetSwapper().sendUnloadAllSentChunksPackets(event.getPlayer());
+                    ((PaperOffsetSwapper) core.getAdapter().getOffsetSwapper())
+                        .sendUnloadAllSentChunksPackets(event.getPlayer());
 
                 UUID playerId = event.getPlayer().getUniqueId();
                 Bukkit.getScheduler().runTaskLater(plugin, () -> { // on the next tick (post teleport)
@@ -143,7 +145,8 @@ class BukkitEventListener implements Listener {
                     PacketEvents.getAPI().getPlayerManager().sendPacket(player,
                         new WrapperPlayServerUpdateViewPosition(player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ()));
 
-                    plugin.getOffsetSwapper().refreshChunksAndEntities(player, chunksClosestFirst);
+                    ((PaperOffsetSwapper) core.getAdapter().getOffsetSwapper())
+                        .refreshChunksAndEntities(player, chunksClosestFirst);
                 }, 1L);
             }
         }

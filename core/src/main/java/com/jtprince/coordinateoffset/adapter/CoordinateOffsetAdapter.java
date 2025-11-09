@@ -23,6 +23,11 @@ public interface CoordinateOffsetAdapter {
     OffsetPersistenceAdapter getPersistenceAdapter();
 
     /**
+     * Get a platform interface into applying immediate offset changes.
+     */
+    OffsetSwapper getOffsetSwapper();
+
+    /**
      * Initiate internal shutdown of CoordinateOffset due to an error. Should not be called as part of server shutdown.
      */
     void shutdown();

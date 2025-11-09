@@ -1,9 +1,6 @@
 package com.jtprince.coordinateoffset.paper.adapter;
 
 import com.jtprince.coordinateoffset.adapter.CoordinateOffsetAdapter;
-import com.jtprince.coordinateoffset.adapter.OffsetLocation;
-import com.jtprince.coordinateoffset.adapter.OffsetPersistenceAdapter;
-import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,10 +16,13 @@ import java.util.logging.Logger;
 public class PaperAdapter implements CoordinateOffsetAdapter {
     private final CoordinateOffsetPaperPlugin plugin;
     private final PaperPlayerOffsetPersistence offsetPersistence;
+    private final PaperOffsetSwapper offsetSwapper;
 
     public PaperAdapter(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
         offsetPersistence = new PaperPlayerOffsetPersistence(plugin);
+        offsetSwapper = new PaperOffsetSwapper(plugin);
+        offsetSwapper.initialize();
     }
 
     @Override
@@ -36,7 +36,7 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public @Nullable OffsetPlayer getPlayer(UUID playerUuid) {
+    public @Nullable PaperOffsetPlayer getPlayer(UUID playerUuid) {
         Player bukkitPlayer = Bukkit.getPlayer(playerUuid);
         if (bukkitPlayer == null) {
             return null;
@@ -45,7 +45,7 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public OffsetPlayer adaptPlayer(Object platformPlayerObject) throws ClassCastException {
+    public PaperOffsetPlayer adaptPlayer(Object platformPlayerObject) throws ClassCastException {
         if (!(platformPlayerObject instanceof Player bukkitPlayer)) {
             throw new ClassCastException("Object \"" + platformPlayerObject + "\" of class " +
                 platformPlayerObject.getClass().getName() + " is not a valid Bukkit Player.");
@@ -54,7 +54,7 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public OffsetLocation adaptLocation(Object platformLocationObject) throws ClassCastException {
+    public PaperLocation adaptLocation(Object platformLocationObject) throws ClassCastException {
         if (!(platformLocationObject instanceof Location bukkitLocation)) {
             throw new ClassCastException("Object \"" + platformLocationObject + "\" of class " +
                 platformLocationObject.getClass().getName() + " is not a valid Bukkit Location.");
@@ -63,8 +63,13 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public OffsetPersistenceAdapter getPersistenceAdapter() {
+    public PaperPlayerOffsetPersistence getPersistenceAdapter() {
         return offsetPersistence;
+    }
+
+    @Override
+    public PaperOffsetSwapper getOffsetSwapper() {
+        return offsetSwapper;
     }
 
     @Override
