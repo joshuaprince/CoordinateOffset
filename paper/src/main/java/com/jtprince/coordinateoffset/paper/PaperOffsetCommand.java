@@ -2,6 +2,8 @@ package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.*;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.command.OffsetCommandSender;
+import com.jtprince.coordinateoffset.command.OffsetSetCommandImpl;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
@@ -32,7 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
-public class OffsetCommand {
+public class PaperOffsetCommand {
     /** Players with any of these permissions can see and the root /offset command. */
     private static final Set<CoordinateOffsetPermission> ROOT_COMMAND_PERMS = Set.of(
         CoordinateOffsetPermission.QUERY_SELF,
@@ -46,7 +48,7 @@ public class OffsetCommand {
 
     private final CoordinateOffsetPaperPlugin plugin;
 
-    public OffsetCommand(CoordinateOffsetPaperPlugin plugin) {
+    public PaperOffsetCommand(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -207,7 +209,8 @@ public class OffsetCommand {
             }
             case OffsetData.Source.SetCommand s -> {
                 provider.append(Component.text("This offset was set by a command sent by "));
-                provider.append(Component.text(s.sender()).color(PLAYER_NAME_COLOR).decoration(TextDecoration.ITALIC, false));
+                provider.append(Component.text(s.command().getCommandSender().name())
+                    .color(PLAYER_NAME_COLOR).decoration(TextDecoration.ITALIC, false));
                 provider.append(Component.text("."));
             }
         }
@@ -236,7 +239,7 @@ public class OffsetCommand {
         for (Player target : targets) {
             PaperLocation location = new PaperLocation(target.getLocation());
             PaperOffsetPlayer offsetPlayer = new PaperOffsetPlayer(target);
-            OffsetChangeResult result = CoordinateOffsetCore.get().getOffsetHolder().generateNextOffset(
+            OffsetChange result = CoordinateOffsetCore.get().getOffsetHolder().generateNextOffset(
                 offsetPlayer, location, location, OffsetProviderContext.ProvideReason.COMMAND_REGENERATE);
 
             if (!result.offsetChanged()) {
@@ -288,35 +291,18 @@ public class OffsetCommand {
             return 0;
         }
 
+        OffsetSetCommandImpl offsetSetCommand = new OffsetSetCommandImpl(
+            new OffsetCommandSender(context.getSource().getSender(), context.getSource().getSender().getName()),
+            targets.stream().map(PaperOffsetPlayer::new).toList(),
+            offset
+        );
+
         List<Player> successfulTargets = new ArrayList<>();
-        for (Player target : targets) {
-            OffsetPlayer player = new PaperOffsetPlayer(target);
+        for (OffsetPlayer player : offsetSetCommand.getTargets()) {
+            Player target = (Player) player.getPlatformPlayerObject();
 
-            boolean warnNotPersistentPermBypass = false;
-            OffsetProvider affectedProvider;
-            OffsetData previous = CoordinateOffsetCore.get().getOffsetHolder().getOffset(player);
-            switch (previous.source()) {
-                case OffsetData.Source.PermissionBypass ignored -> {
-                    affectedProvider = null;
-                    warnNotPersistentPermBypass = true;
-                }
-                case OffsetData.Source.BedrockBypass ignored -> affectedProvider = null;
-                case OffsetData.Source.Provider sp -> affectedProvider = sp.provider();
-                case OffsetData.Source.SetCommand sc -> affectedProvider = sc.affectedProvider();
-            }
-
-            OffsetChangeResult result = CoordinateOffsetCore.get().getOffsetHolder().setNextOffset(
-                target.getUniqueId(),
-                new OffsetData(
-                    offset,
-                    new OffsetData.Source.SetCommand(context.getSource().getSender().getName(), affectedProvider),
-                    new OffsetProviderContext(
-                        player, player.getLocation(), player.getLocation(), previous.offset(),
-                        OffsetProviderContext.ProvideReason.COMMAND_SET
-                    )
-                )
-            );
-
+            OffsetChange result = CoordinateOffsetCore.get().getOffsetHolder().setNextOffsetByCommand(
+                player, player.getLocation(), offset, offsetSetCommand);
             if (!result.offsetChanged()) {
                 context.getSource().getSender().sendMessage(formatUnchangedOffsetMessage(target, result.getCommandSenderResponse()));
                 continue;
@@ -324,39 +310,22 @@ public class OffsetCommand {
 
             plugin.getOffsetSwapper().forceOffsetSwap(target);
 
-            // Inform the provider associated with the player's current offset that an offset was changed by command
-            //  (providers may want to update their own storage)
-            if (affectedProvider != null) {
-                // In case config was reloaded and the provider object changed, get the new provider object to inform
-                OffsetProvider reloadedProvider =
-                    CoordinateOffsetCore.get().getProviderConfig().getAllOffsetProviderConfigs().get(affectedProvider.name);
-                if (reloadedProvider != null) {
-                    affectedProvider = reloadedProvider;
-                }
-
-                OffsetProvider.SetCommandResponse resp = null;
-                try {
-                    resp = affectedProvider.onOffsetSetByCommand(player, offset);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                switch (resp) {
-                    case WARN_OFFSET_NOT_PERSISTENT -> context.getSource().getSender().sendMessage(Component.empty()
-                        .color(NamedTextColor.GRAY)
-                        .decorate(TextDecoration.ITALIC)
-                        .append(Component.text("  Warning: offset for "))
-                        .append(formatPlayerName(target))
-                        .append(Component.text(" is not persistent.")));
-                    case null -> {}
-                }
-            }
-            if (warnNotPersistentPermBypass) {
-                context.getSource().getSender().sendMessage(Component.empty()
+            if (OffsetFactory.canBypassByPermission(player)) {
+                offsetSetCommand.getCommandSender().sendMessage(Component.empty()
                     .color(NamedTextColor.GRAY)
                     .decorate(TextDecoration.ITALIC)
                     .append(Component.text("  Warning: offset for "))
                     .append(formatPlayerName(target))
-                    .append(Component.text(" is not persistent (player has offset bypass permission).")));
+                    .append(Component.text(" is not persistent (player has offset bypass permission)."))
+                );
+            } else if (offsetSetCommand.getNotPersistentForProvider(player) != null) {
+                offsetSetCommand.getCommandSender().sendMessage(Component.empty()
+                    .color(NamedTextColor.GRAY)
+                    .decorate(TextDecoration.ITALIC)
+                    .append(Component.text("  Warning: offset for "))
+                    .append(formatPlayerName(target))
+                    .append(Component.text(" is not persistent (offset provider does not store offsets)."))
+                );
             }
 
             successfulTargets.add(target);
@@ -416,7 +385,7 @@ public class OffsetCommand {
 
     private Component formatUnchangedOffsetMessage(Player target, @Nullable String message) {
         return Component.empty()
-            .color(NamedTextColor.RED)
+            .color(message == null ? NamedTextColor.YELLOW : NamedTextColor.RED)
             .decorate(TextDecoration.ITALIC)
             .append(Component.text("Coordinate offset unchanged for "))
             .append(formatPlayerName(target))

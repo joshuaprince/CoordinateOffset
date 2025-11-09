@@ -35,7 +35,7 @@ public final class CoordinateOffsetPaperPlugin extends JavaPlugin {
 
         new BukkitEventListener(this, core, worldBorderObfuscator).registerListeners();
 
-        new OffsetCommand(this).registerCommands();
+        new PaperOffsetCommand(this).registerCommands();
 
         packetOffsetAdapter = new PacketOffsetAdapter(this);
         packetOffsetAdapter.registerAdapters();

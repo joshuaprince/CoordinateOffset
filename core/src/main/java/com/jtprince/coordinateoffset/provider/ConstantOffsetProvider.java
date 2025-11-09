@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import org.jspecify.annotations.NullMarked;
 
@@ -28,8 +29,8 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
     }
 
     @Override
-    public SetCommandResponse onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
-        return SetCommandResponse.WARN_OFFSET_NOT_PERSISTENT;
+    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
+        command.warnOffsetNotPersistentInProvider(this, target);
     }
 
     @Override

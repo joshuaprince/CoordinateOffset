@@ -2,6 +2,8 @@ package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.command.OffsetSetCommandImpl;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -14,8 +16,10 @@ import java.util.concurrent.TimeoutException;
 @NullMarked
 public class OffsetHolder {
     private final CoordinateOffsetCore core;
+    private final OffsetFactory offsetFactory;
     OffsetHolder(CoordinateOffsetCore core) {
         this.core = core;
+        this.offsetFactory = new OffsetFactory(core);
     }
 
     /**
@@ -136,7 +140,7 @@ public class OffsetHolder {
      * @param reason Reason for generating a new offset.
      * @return Result containing the new offset and whether the offset changed.
      */
-    public OffsetChangeResult generateNextOffset(
+    public OffsetChange generateNextOffset(
         OffsetPlayer player,
         @Nullable OffsetLocation previousLocation,
         OffsetLocation nextLocation,
@@ -145,12 +149,12 @@ public class OffsetHolder {
         PlayerOffsetData data = playerOffsetData.get(player.getUuid());
         OffsetProviderContext context = new OffsetProviderContext(
             player, previousLocation, nextLocation, data == null ? null : data.currentOffset.offset(), reason);
-        OffsetData creation = core.getOffsetCreator().createOffset(context);
+        OffsetData creation = offsetFactory.createOffset(context);
         return setNextOffset(context.player().getUuid(), creation);
     }
 
     /**
-     * Set a player's next offset to a specific offset.
+     * Set a player's next offset to a specific offset based on an incoming command.
      *
      * <p>This must only be called on the main server thread.</p>
      *
@@ -158,11 +162,45 @@ public class OffsetHolder {
      * to certain "position" packets. However, generating a <code>nextOffset</code> will set up an offset change for
      * when the "position" packet occurs.</p>
      *
-     * @param playerUuid UUID of the player to set the next offset for.
-     * @param newOffset The new offset to set.
+     * @param player Player to set offset for.
+     * @param playerLocation Location the player currently is. Assumed real location is not changing upon a command.
+     * @param newOffset New offset to set.
+     * @param setCommand Command that triggered the offset change.
      * @return Result containing the new offset and whether the offset changed.
      */
-    public OffsetChangeResult setNextOffset(UUID playerUuid, OffsetData newOffset) {
+    public OffsetChange setNextOffsetByCommand(
+        OffsetPlayer player,
+        OffsetLocation playerLocation,
+        Offset newOffset,
+        OffsetSetCommandImpl setCommand
+    ) {
+        PlayerOffsetData playerCache = playerOffsetData.get(player.getUuid());
+        OffsetData currentOffsetData = (playerCache == null ? null : playerCache.currentOffset);
+        Offset currentOffset = (currentOffsetData == null ? null : currentOffsetData.offset());
+
+        // The player's context is whatever their current status is when the command is run.
+        // The previous and current locations are the same since the player isn't teleporting.
+        OffsetProviderContext context = new OffsetProviderContext(
+            player, playerLocation, playerLocation, currentOffset,
+            OffsetProviderContext.ProvideReason.COMMAND_SET);
+
+        // Inform current provider that the offset is being set by a command
+        OffsetProvider affectedProvider = getAffectedProvider(currentOffsetData);
+        if (affectedProvider != null) {
+            try {
+                affectedProvider.onOffsetSetByCommand(setCommand, player);
+            } catch (Exception e) {
+                new RuntimeException("Error informing affected offset provider " + affectedProvider.name +
+                    " of offset set by command.", e).printStackTrace();
+            }
+        }
+
+        OffsetData creation = offsetFactory.createSpecificOffset(
+            newOffset, new OffsetData.Source.SetCommand(setCommand, affectedProvider), context);
+        return setNextOffset(player.getUuid(), creation);
+    }
+
+    private OffsetChange setNextOffset(UUID playerUuid, OffsetData newOffset) {
         PlayerOffsetData d = playerOffsetData.compute(playerUuid, (uuid, existingOffsetData) -> {
             if (existingOffsetData == null) {
                 debugLog("Generate first: " + newOffset + ", " + newOffset + ", " + null);
@@ -201,12 +239,15 @@ public class OffsetHolder {
             pendingOffsetDataLock.notifyAll();
         }
 
-        if (d.nextOffset != null && !d.nextOffset.offset().equals(d.currentOffset.offset())) {
-            log(d.nextOffset);
-            return new OffsetChangeResult(d.nextOffset, true);
-        } else {
-            return new OffsetChangeResult(d.currentOffset, false);
+        OffsetChange offsetChange = new OffsetChange(
+            d.currentOffset,
+            (d.nextOffset == null ? d.currentOffset : d.nextOffset)
+        );
+        if (offsetChange.offsetChanged()) {
+            log(offsetChange.newOffsetData());
         }
+
+        return offsetChange;
     }
 
     /**
@@ -265,7 +306,7 @@ public class OffsetHolder {
                     s.append(" (default provider)");
                 }
             }
-            case OffsetData.Source.SetCommand p -> s.append("command by ").append(p.sender());
+            case OffsetData.Source.SetCommand p -> s.append("command by ").append(p.command().getCommandSender());
         }
         s.append(" for player ");
         s.append(offset.context().player().getName());
@@ -289,5 +330,28 @@ public class OffsetHolder {
         if (core.isDebugEnabled()) {
             core.getLogger().info("[Debug] " + message);
         }
+    }
+
+    /**
+     * Determine which offset provider should be informed of the offset change initiated by a command.
+     */
+    private @Nullable OffsetProvider getAffectedProvider(@Nullable OffsetData currentOffset) {
+        if (currentOffset == null) return null;
+        OffsetProvider affectedProvider = switch (currentOffset.source()) {
+            case OffsetData.Source.BedrockBypass ignored -> null;
+            case OffsetData.Source.PermissionBypass ignored -> null;
+            case OffsetData.Source.Provider provider -> provider.provider();
+            case OffsetData.Source.SetCommand setCommand -> setCommand.affectedProvider();
+        };
+        if (affectedProvider == null) return null;
+
+        // In case config was reloaded and the provider object changed, get the new provider object to inform
+        OffsetProvider reloadedProvider =
+            core.getProviderConfig().getAllOffsetProviderConfigs().get(affectedProvider.name);
+        if (reloadedProvider != null) {
+            return reloadedProvider;
+        }
+
+        return affectedProvider;
     }
 }

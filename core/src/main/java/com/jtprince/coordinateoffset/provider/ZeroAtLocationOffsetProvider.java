@@ -3,11 +3,11 @@ package com.jtprince.coordinateoffset.provider;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -71,14 +71,14 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
     }
 
     @Override
-    public @Nullable SetCommandResponse onOffsetSetByCommand(OffsetPlayer target, Offset offset) {
+    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
         if (CoordinateOffsetCore.get().getConfig().getVerbose()) {
             CoordinateOffsetCore.get().getLogger().info("Provider \"" + name + "\": Updating offset " +
-                "for " + target.getName() + " to " + offset);
+                "for " + target.getName() + " to " + command.getOffset());
         }
-        offsetStore.put(target, offset);
-        return null; // no warnings to the sender
+        offsetStore.put(target, command.getOffset());
     }
+
 
     @Override
     public SequencedMap<String, ?> serialize() {

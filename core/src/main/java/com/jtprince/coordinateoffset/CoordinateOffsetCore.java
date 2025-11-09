@@ -22,7 +22,6 @@ public class CoordinateOffsetCore {
 
     private final ConfigHolder configHolder;
     private final OffsetProviderClassRegistry registry;
-    private final OffsetCreator offsetCreator;
     private final OffsetHolder offsetHolder;
 
     private final boolean isDebugEnabled;
@@ -33,7 +32,6 @@ public class CoordinateOffsetCore {
         this.adapter = adapter;
         this.configHolder = new ConfigHolder(this);
         this.registry = new OffsetProviderClassRegistry();
-        this.offsetCreator = new OffsetCreator(this);
         this.offsetHolder = new OffsetHolder(this);
     }
 
@@ -106,10 +104,6 @@ public class CoordinateOffsetCore {
 
     public Logger getLogger() {
         return adapter.getLogger();
-    }
-
-    OffsetCreator getOffsetCreator() {
-        return offsetCreator;
     }
 
     public OffsetHolder getOffsetHolder() {
