@@ -1,12 +1,11 @@
 package com.jtprince.coordinateoffset.paper;
 
-import com.jtprince.coordinateoffset.*;
-import com.jtprince.coordinateoffset.command.OffsetCommandSender;
-import com.jtprince.coordinateoffset.command.OffsetSetCommand;
-import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
+import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.command.*;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
-import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -19,18 +18,12 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class PaperOffsetCommand {
@@ -115,14 +108,7 @@ public class PaperOffsetCommand {
     }
 
     private int reload(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = context.getSource().getSender();
-        boolean success = core.reloadConfig();
-        if (success) {
-            sender.sendMessage(Component.text("CoordinateOffset configuration reloaded from file.").color(NamedTextColor.GREEN));
-        } else {
-            sender.sendMessage(Component.text("Failed to reload CoordinateOffset configuration from file. Check the console for details.").color(NamedTextColor.RED));
-        }
-        return Command.SINGLE_SUCCESS;
+        return toResult(core.getCommandExecutor().execute(new OffsetReloadCommand(toSender(context.getSource().getSender()))));
     }
 
     private int querySelf(CommandContext<CommandSourceStack> context) {
@@ -137,26 +123,13 @@ public class PaperOffsetCommand {
             return 0;
         }
 
-        OffsetData offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(player));
-
-        if (offset.offset().equals(Offset.ZERO)) {
-            context.getSource().getSender().sendMessage(Component
-                .text("You have no coordinate offset applied. The coordinates you see are the real coordinates of the world.")
-                .color(NamedTextColor.GREEN));
-        } else {
-            context.getSource().getSender().sendMessage(Component.text("Your coordinate offset is: ")
-                .append(formatOffset(offset.offset()))
-                .color(NamedTextColor.GRAY));
-            context.getSource().getSender().sendMessage(Component.text("Your real coordinates are: ")
-                .append(formatLocation(player.getLocation()))
-                .color(NamedTextColor.GRAY));
-        }
-
-        if (context.getSource().getSender().hasPermission(CoordinateOffsetPermission.QUERY_VERBOSE.node)) {
-            context.getSource().getSender().sendMessage(getQueryProviderMessage(offset));
-        }
-
-        return Command.SINGLE_SUCCESS;
+        boolean isVerbose = context.getSource().getSender().hasPermission(CoordinateOffsetPermission.QUERY_VERBOSE.node);
+        OffsetQueryCommand offsetQueryCommand = new OffsetQueryCommand(
+            toSender(context.getSource().getSender()),
+            new PaperOffsetPlayer(player),
+            isVerbose
+        );
+        return toResult(core.getCommandExecutor().execute(offsetQueryCommand));
     }
 
     private int queryOther(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -165,57 +138,14 @@ public class PaperOffsetCommand {
         if (target == null) {
             return 0;
         }
-        OffsetData offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(target));
 
-        context.getSource().getSender().sendMessage(Component.empty()
-            .append(formatPlayerName(target))
-            .append(Component.text("'s coordinate offset is: "))
-            .append(formatOffset(offset.offset()))
-            .color(NamedTextColor.GRAY));
-        context.getSource().getSender().sendMessage(Component.empty()
-            .append(formatPlayerName(target))
-            .append(Component.text("'s real coordinates are: "))
-            .append(formatLocation(target.getLocation()))
-            .color(NamedTextColor.GRAY));
-
-        if (context.getSource().getSender().hasPermission(CoordinateOffsetPermission.QUERY_VERBOSE.node)) {
-            context.getSource().getSender().sendMessage(getQueryProviderMessage(offset));
-        }
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private Component getQueryProviderMessage(OffsetData offset) {
-        var provider = Component.text();
-        provider.append(Component.text("  "));
-        provider.color(NamedTextColor.GRAY);
-        provider.decorate(TextDecoration.ITALIC);
-        switch (offset.source()) {
-            case OffsetData.Source.PermissionBypass b -> {
-                provider.append(Component.text("No active offset due to permission bypass.")
-                    .decoration(TextDecoration.ITALIC, true));
-            }
-            case OffsetData.Source.BedrockBypass ignored -> {
-                provider.append(Component.text("Coordinate offsets are not supported for Bedrock players.")
-                    .decoration(TextDecoration.ITALIC, true));
-            }
-            case OffsetData.Source.Provider p -> {
-                provider.append(Component.text("This offset was generated by provider "));
-                provider.append(Component.text("\"" + p.provider().name + "\"").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
-                if (p.isOverride()) {
-                    provider.append(Component.text(" as part of an offset provider override rule."));
-                } else {
-                    provider.append(Component.text(", the default offset provider."));
-                }
-            }
-            case OffsetData.Source.SetCommand s -> {
-                provider.append(Component.text("This offset was set by a command sent by "));
-                provider.append(Component.text(s.command().getCommandSender().name())
-                    .color(PLAYER_NAME_COLOR).decoration(TextDecoration.ITALIC, false));
-                provider.append(Component.text("."));
-            }
-        }
-        return provider.build();
+        boolean isVerbose = context.getSource().getSender().hasPermission(CoordinateOffsetPermission.QUERY_VERBOSE.node);
+        OffsetQueryCommand offsetQueryCommand = new OffsetQueryCommand(
+            toSender(context.getSource().getSender()),
+            new PaperOffsetPlayer(target),
+            isVerbose
+        );
+        return toResult(core.getCommandExecutor().execute(offsetQueryCommand));
     }
 
     private int regenerate(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -236,31 +166,11 @@ public class PaperOffsetCommand {
             return 0;
         }
 
-        List<Player> successfulTargets = new ArrayList<>();
-        for (Player target : targets) {
-            PaperLocation location = new PaperLocation(target.getLocation());
-            PaperOffsetPlayer offsetPlayer = new PaperOffsetPlayer(target);
-            OffsetChange result = core.getOffsetHolder().generateNextOffset(
-                offsetPlayer, location, location, OffsetProviderContext.ProvideReason.COMMAND_REGENERATE);
-
-            if (!result.offsetChanged()) {
-                context.getSource().getSender().sendMessage(formatUnchangedOffsetMessage(target, result.getCommandSenderResponse()));
-                continue;
-            }
-
-            core.getAdapter().getOffsetSwapper().forceOffsetSwap(offsetPlayer);
-            successfulTargets.add(target);
-        }
-
-        if (!successfulTargets.isEmpty()) {
-            context.getSource().getSender().sendMessage(Component.text("Regenerated coordinate offset for ")
-                .color(NamedTextColor.GRAY)
-                .append(formatPlayerNames(successfulTargets))
-                .append(Component.text("."))
-            );
-        }
-
-        return Command.SINGLE_SUCCESS;
+        OffsetRegenerateCommand offsetRegenerateCommand = new OffsetRegenerateCommand(
+            toSender(context.getSource().getSender()),
+            targets.stream().map(PaperOffsetPlayer::new).toList()
+        );
+        return toResult(core.getCommandExecutor().execute(offsetRegenerateCommand));
     }
 
     private int set(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -293,64 +203,22 @@ public class PaperOffsetCommand {
         }
 
         OffsetSetCommand offsetSetCommand = new OffsetSetCommand(
-            new OffsetCommandSender(context.getSource().getSender(), context.getSource().getSender().getName()),
+            toSender(context.getSource().getSender()),
             targets.stream().map(PaperOffsetPlayer::new).toList(),
             offset
         );
-        return switch (core.getCommandExecutor().execute(offsetSetCommand)) {
+        return toResult(core.getCommandExecutor().execute(offsetSetCommand));
+    }
+
+    private static OffsetCommandSender toSender(CommandSender sender) {
+        return new OffsetCommandSender(sender, sender.getName(), sender instanceof Player ? new PaperOffsetPlayer((Player) sender) : null);
+    }
+
+    private static int toResult(OffsetCommandExecutor.Result result) {
+        return switch (result) {
             case SUCCESS -> Command.SINGLE_SUCCESS;
             case FAIL -> 0;
         };
-    }
-
-    /* TODO DELETE EVERYTHING BELOW THIS LINE */
-
-    private Component formatOffset(Offset offset) {
-        return Component.text("[x=")
-            .append(Component.text(offset.x()).color(NamedTextColor.YELLOW))
-            .append(Component.text(", z="))
-            .append(Component.text(offset.z()).color(NamedTextColor.YELLOW))
-            .append(Component.text("]"))
-            .color(NamedTextColor.DARK_AQUA);
-    }
-
-    private Component formatLocation(Location location) {
-        return Component.text("[x=")
-            .append(Component.text((int) location.getX()).color(NamedTextColor.GOLD))
-            .append(Component.text(", y="))
-            .append(Component.text((int) location.getY()).color(NamedTextColor.GOLD))
-            .append(Component.text(", z="))
-            .append(Component.text((int) location.getZ()).color(NamedTextColor.GOLD))
-            .append(Component.text("]"))
-            .color(NamedTextColor.LIGHT_PURPLE);
-    }
-
-    private static final TextColor PLAYER_NAME_COLOR = TextColor.color(0x18a9ff);
-    private Component formatPlayerName(Player player) {
-        return Component.text(player.getName())
-            .color(PLAYER_NAME_COLOR)
-            .hoverEvent(Component.text(player.getUniqueId().toString()));
-    }
-
-    private Component formatPlayerNames(List<Player> players) {
-        if (players.size() == 1) {
-            return formatPlayerName(players.getFirst());
-        } else {
-            return Component.text(players.size() + " players")
-                .color(TextColor.color(0x18a9ff))
-                .hoverEvent(Component.text(players.stream()
-                    .map(Player::getName)
-                    .collect(Collectors.joining(", "))));
-        }
-    }
-
-    private Component formatUnchangedOffsetMessage(Player target, @Nullable String message) {
-        return Component.empty()
-            .color(message == null ? NamedTextColor.YELLOW : NamedTextColor.RED)
-            .decorate(TextDecoration.ITALIC)
-            .append(Component.text("Coordinate offset unchanged for "))
-            .append(formatPlayerName(target))
-            .append(message != null ? (Component.text(": " + message)) : Component.text("."));
     }
 
     private boolean pluginEnabled() {
