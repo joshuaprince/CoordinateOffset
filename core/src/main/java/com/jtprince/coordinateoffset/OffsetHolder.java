@@ -2,7 +2,7 @@ package com.jtprince.coordinateoffset;
 
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import com.jtprince.coordinateoffset.command.OffsetSetCommandImpl;
+import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
@@ -172,7 +172,7 @@ public class OffsetHolder {
         OffsetPlayer player,
         OffsetLocation playerLocation,
         Offset newOffset,
-        OffsetSetCommandImpl setCommand
+        OffsetSetCommand setCommand
     ) {
         PlayerOffsetData playerCache = playerOffsetData.get(player.getUuid());
         OffsetData currentOffsetData = (playerCache == null ? null : playerCache.currentOffset);

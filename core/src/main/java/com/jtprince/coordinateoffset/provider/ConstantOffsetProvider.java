@@ -30,7 +30,7 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
 
     @Override
     public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
-        command.warnOffsetNotPersistentInProvider(this, target);
+        command.warnOffsetIsNotPersistentInProvider(this, target);
     }
 
     @Override

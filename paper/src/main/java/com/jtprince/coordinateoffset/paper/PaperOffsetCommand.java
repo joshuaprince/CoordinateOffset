@@ -3,7 +3,7 @@ package com.jtprince.coordinateoffset.paper;
 import com.jtprince.coordinateoffset.*;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.command.OffsetCommandSender;
-import com.jtprince.coordinateoffset.command.OffsetSetCommandImpl;
+import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import com.jtprince.coordinateoffset.paper.adapter.PaperLocation;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
@@ -291,7 +291,7 @@ public class PaperOffsetCommand {
             return 0;
         }
 
-        OffsetSetCommandImpl offsetSetCommand = new OffsetSetCommandImpl(
+        OffsetSetCommand offsetSetCommand = new OffsetSetCommand(
             new OffsetCommandSender(context.getSource().getSender(), context.getSource().getSender().getName()),
             targets.stream().map(PaperOffsetPlayer::new).toList(),
             offset
@@ -318,7 +318,7 @@ public class PaperOffsetCommand {
                     .append(formatPlayerName(target))
                     .append(Component.text(" is not persistent (player has offset bypass permission)."))
                 );
-            } else if (offsetSetCommand.getNotPersistentForProvider(player) != null) {
+            } else if (offsetSetCommand.getOffsetIsNotPersistentForProvider(player) != null) {
                 offsetSetCommand.getCommandSender().sendMessage(Component.empty()
                     .color(NamedTextColor.GRAY)
                     .decorate(TextDecoration.ITALIC)
