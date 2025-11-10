@@ -117,7 +117,11 @@ public class OffsetFactory {
                 }
                 return true;
             }
-        } catch (Exception ignored) {}
+        } catch (NoClassDefFoundError ignored) {
+            // Geyser not loaded - not an error
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
         return false;
     }
 }
