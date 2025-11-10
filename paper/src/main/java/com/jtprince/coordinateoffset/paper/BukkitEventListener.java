@@ -10,6 +10,8 @@ import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetSwapper;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
+import io.canvasmc.canvas.event.EntityPortalAsyncEvent;
+import io.canvasmc.canvas.event.EntityTeleportAsyncEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -136,7 +138,7 @@ class BukkitEventListener implements Listener {
                         .sendUnloadAllSentChunksPackets(event.getPlayer());
 
                 UUID playerId = event.getPlayer().getUniqueId();
-                Bukkit.getScheduler().runTaskLater(plugin, () -> { // on the next tick (post teleport)
+                event.getPlayer().getScheduler().run(plugin, t -> { // on the next tick (post teleport)
                     Player player = Bukkit.getPlayer(playerId);
                     if (player == null) return;
 
@@ -147,11 +149,77 @@ class BukkitEventListener implements Listener {
 
                     ((PaperOffsetSwapper) core.getAdapter().getOffsetSwapper())
                         .refreshChunksAndEntities(player, chunksClosestFirst);
-                }, 1L);
+                }, () -> {});
             }
         }
 
         worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getTo());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCanvasPlayerTeleport(EntityTeleportAsyncEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+
+        if (IGNORED_TELEPORT_CAUSES.contains(event.getCause().name())) {
+            if (core.isDebugEnabled()) {
+                core.getLogger().info("Ignoring teleport event for " + player.getName() +
+                    " due to ignored cause: " + event.getCause().name());
+            }
+            return;
+        }
+
+        OffsetChange result = core.getOffsetHolder().generateNextOffset(
+            new PaperOffsetPlayer(player),
+            new PaperLocation(event.getFrom()),
+            new PaperLocation(event.getTo()),
+            OffsetProviderContext.ProvideReason.TELEPORT
+        );
+
+        // TODO: This does not work at all on Canvas yet. Threading warnings everywhere
+        if (result.offsetChanged()) {
+            /*
+             * Nearby teleportation workaround:
+             * A player teleporting a short distance does not trigger chunk unloads and reloads.
+             * But if their offset changed, the client sees a much longer teleport distance.
+             * Work around this by forcibly resending all chunks that overlap before and after the teleport.
+             */
+            int viewDistanceChunks = Math.max(
+                player.getViewDistance(),
+                player.getSendViewDistance()
+            ) + 2; // extra buffer to be safe
+            double viewDistanceBlocks = (double) viewDistanceChunks * 16;
+            double tpDistanceSq = event.getFrom().distanceSquared(event.getTo());
+            if (tpDistanceSq < viewDistanceBlocks * viewDistanceBlocks) {
+                List<Chunk> chunksClosestFirst =
+                    ((PaperOffsetSwapper) core.getAdapter().getOffsetSwapper())
+                        .sendUnloadAllSentChunksPackets(player);
+
+                UUID playerId = player.getUniqueId();
+                player.getScheduler().run(plugin, t -> { // on the next tick (post teleport)
+                    Player playerNextTick = Bukkit.getPlayer(playerId);
+                    if (playerNextTick == null) return;
+
+                    // View position packet only seems necessary when teleporting within a chunk; otherwise the
+                    // teleport itself sends a correct view position packet. Just always send one for now (no harm).
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(playerNextTick,
+                        new WrapperPlayServerUpdateViewPosition(playerNextTick.getLocation().getChunk().getX(), playerNextTick.getLocation().getChunk().getZ()));
+
+                    ((PaperOffsetSwapper) core.getAdapter().getOffsetSwapper())
+                        .refreshChunksAndEntities(playerNextTick, chunksClosestFirst);
+                }, () -> {});
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCanvasPlayerPortal(EntityPortalAsyncEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        core.getOffsetHolder().generateNextOffset(
+            new PaperOffsetPlayer(player),
+            new PaperLocation(player.getLocation()),
+            new PaperLocation(event.getTo().getSpawnLocation()), // TODO can't get actual location in this event
+            OffsetProviderContext.ProvideReason.WORLD_CHANGE
+        );
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

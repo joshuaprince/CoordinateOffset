@@ -33,7 +33,7 @@ class PacketOffsetAdapter {
         this.logger = plugin.getLogger();
 
         this.partialStacktraceLogger = new PartialStacktraceLogger(logger);
-        Bukkit.getServer().getScheduler().runTaskTimer(coPlugin, () -> {
+        Bukkit.getServer().getGlobalRegionScheduler().runAtFixedRate(coPlugin, t -> {
             this.partialStacktraceLogger.flushRateLimits(stacktraceRateLimitMs);
         }, stacktraceRateLimitMs / 50, stacktraceRateLimitMs / 50);
     }
@@ -92,7 +92,8 @@ class PacketOffsetAdapter {
                         event.setCancelled(true); // Causes the player to disconnect with a network error
                         return;
                     }
-                } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
+                } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN ||
+                           event.getPacketType() == PacketType.Play.Server.UPDATE_VIEW_POSITION) {
                     offset = core.getOffsetHolder().getNextOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
                 } else {
                     offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
@@ -132,6 +133,9 @@ class PacketOffsetAdapter {
              * an offset is generated). Only PLAY packets contain coordinates that need to be offset.
              */
             if (event.getPlayer() == null || !(event.getPacketType() instanceof PacketType.Play.Client)) return;
+
+            // TODO for canvas - not sure why, this packet gets sent before offset is generated on Canvas only
+            if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) return;
 
             try {
                 Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();

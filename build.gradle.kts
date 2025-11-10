@@ -4,6 +4,7 @@ plugins {
 
 allprojects {
     repositories {
+        maven("https://maven.canvasmc.io/snapshots") // Canvas
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://repo.codemc.org/repository/maven-snapshots/") // PacketEvents

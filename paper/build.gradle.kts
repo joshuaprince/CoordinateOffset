@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    paperweight.paperDevBundle(libs.versions.paper.api)
+    paperweight.devBundle("io.canvasmc.canvas", libs.versions.canvas.get())
     shadow(libs.packetevents.api)
 
     implementation(project(":api"))
@@ -13,7 +13,6 @@ dependencies {
     implementation(libs.configlib.paper)
     implementation(libs.morepdt)
 
-    testImplementation(libs.paper.api)
     testImplementation(libs.test.junit.jupiter)
     testRuntimeOnly(libs.test.junit.platform)
 }

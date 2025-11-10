@@ -7,6 +7,10 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientTeleportConfirm;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
+import io.canvasmc.canvas.event.EntityPortalAsyncEvent;
+import io.canvasmc.canvas.event.EntityPostPortalAsyncEvent;
+import io.canvasmc.canvas.event.EntityPostTeleportAsyncEvent;
+import io.canvasmc.canvas.event.EntityTeleportAsyncEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -35,7 +39,11 @@ public class PacketEventSequencer implements Listener {
         PlayerRespawnEvent.class,
         PlayerTeleportEvent.class,
         PlayerChangedWorldEvent.class,
-        PlayerPostRespawnEvent.class
+        PlayerPostRespawnEvent.class,
+        EntityPortalAsyncEvent.class,
+        EntityPostPortalAsyncEvent.class,
+        EntityTeleportAsyncEvent.class,
+        EntityPostTeleportAsyncEvent.class
     );
 
     private @Nullable String isPacketLogged(PacketTypeCommon packetType, ProtocolPacketEvent event) {
