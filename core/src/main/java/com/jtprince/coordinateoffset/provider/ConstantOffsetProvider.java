@@ -1,31 +1,28 @@
 package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.command.OffsetSetCommand;
-import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.SequencedMap;
 
 @NullMarked
 public final class ConstantOffsetProvider extends CoreOffsetProvider {
-    final Offset offset;
+    private final @Nullable ScalableOffset offset;
 
-    ConstantOffsetProvider(String name, Offset offset) {
+    ConstantOffsetProvider(String name, @Nullable ScalableOffset offset) {
         super(name);
         this.offset = offset;
     }
 
     @Override
     public Offset provideOffset(OffsetProviderContext context) {
-        return CoordinateScaleUtils.scaleVerbosely(
-            offset,
-            context.playerLocation().getWorld(),
-            this,
-            "constant"
-        );
+        return Objects.requireNonNullElse(offset, Offset.ZERO);
     }
 
     @Override
@@ -36,8 +33,13 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
     @Override
     public SequencedMap<String, ?> serialize() {
         SequencedMap<String, Object> map = new LinkedHashMap<>();
-        map.put("offsetX", (long) offset.x());
-        map.put("offsetZ", (long) offset.z());
+        if (offset == null) {
+            map.put("offsetX", (long) 0);
+            map.put("offsetZ", (long) 0);
+        } else {
+            map.put("offsetX", (long) offset.x());
+            map.put("offsetZ", (long) offset.z());
+        }
         return map;
     }
 
@@ -65,10 +67,11 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
                 "\": offsetZ value " + offsetZ + " is too large! (Max 30M)");
         }
 
-        return new ConstantOffsetProvider(
-            config.getUserDefinedProviderName(),
-            new Offset(offsetX, offsetZ)
-        );
+        if (offsetX == 0 && offsetZ == 0) {
+            return new ConstantOffsetProvider(config.getUserDefinedProviderName(), null);
+        } else {
+            return new ConstantOffsetProvider(config.getUserDefinedProviderName(), Offset.scalable(offsetX, offsetZ));
+        }
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.OffsetterRegistry;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
@@ -77,7 +77,7 @@ class PacketOffsetAdapter {
                     core.getOffsetHolder().swapInNextOffset(new PaperOffsetPlayer(event.getPlayer()));
                 }
 
-                Offset offset;
+                FixedOffset offset;
                 if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
                     /*
                      * Join packets contain coordinates, but happen concurrently with offset generation (1.21.9+ only).
@@ -100,7 +100,7 @@ class PacketOffsetAdapter {
                 }
 
                 // Short-circuit when no offset is applied
-                if (offset.equals(Offset.ZERO)) return;
+                if (offset.isZero()) return;
 
                 // Debug packets are hard to offset. Obfuscate them for anyone with a nonzero offset.
                 if (core.getConfig().getObfuscateDebugPropertySubscriptions()) {
@@ -138,8 +138,8 @@ class PacketOffsetAdapter {
             if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) return;
 
             try {
-                Offset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
-                if (offset.equals(Offset.ZERO)) return;
+                FixedOffset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
+                if (offset.isZero()) return;
 
                 OffsetterRegistry.attemptToUnOffset(event, offset);
             } catch (Exception e) {

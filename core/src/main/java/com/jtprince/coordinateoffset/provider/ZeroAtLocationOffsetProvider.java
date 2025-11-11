@@ -2,9 +2,9 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.command.OffsetSetCommand;
-import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import org.jspecify.annotations.NullMarked;
@@ -42,16 +42,15 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
                 Objects.requireNonNull(distanceTeleported);
                 yield regenerateConfig.isRegenOnDistantTeleport(distanceTeleported);
             }
-            case COMMAND_SET -> false; /* Should be unreachable - offset providers are not called for this reason */
+            case COMMAND_SET, PLUGIN_SET -> false; /* Should be unreachable - offset providers are not called for this reason */
         };
         if (willRegenerate) {
             offsetStore.clear(context.player().getUuid());
         }
 
         // Check if the provider already has an offset calculated that was not cleared for a regenerate
-        Offset offset = offsetStore.get(context.player());
+        ScalableOffset offset = offsetStore.get(context.player());
         double coordinateScale = context.playerLocation().getWorld().getCoordinateScale(); // 8 for nether e.g.
-        boolean isReusedOffset = true;
         if (offset == null) {
             // Generate a new offset if we don't already have one for this player
             offset = Offset.align(
@@ -59,15 +58,9 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
                 (int) (context.playerLocation().getZ() * coordinateScale)
             );
             offsetStore.put(context.player(), offset);
-            isReusedOffset = false;
         }
 
-        return CoordinateScaleUtils.scaleVerbosely(
-            offset,
-            context.playerLocation().getWorld(),
-            this,
-            isReusedOffset ? "stored" : "new"
-        );
+        return offset;
     }
 
     @Override

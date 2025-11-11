@@ -3,7 +3,7 @@ package com.jtprince.coordinateoffset.offsetter.server;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDebugEvent;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -14,7 +14,7 @@ public class OffsetterServerDebugEvent extends PacketOffsetter<WrapperPlayServer
     }
 
     @Override
-    public void offset(WrapperPlayServerDebugEvent packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerDebugEvent packet, FixedOffset offset, User user) {
         // TODO: Drill into DebugSubscription.Event and offset any positions found there.
         // Currently disabled entirely by default.
     }

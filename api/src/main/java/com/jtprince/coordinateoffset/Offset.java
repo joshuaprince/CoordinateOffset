@@ -1,131 +1,160 @@
 package com.jtprince.coordinateoffset;
 
-import com.jtprince.coordinateoffset.adapter.OffsetLocation;
-import com.jtprince.coordinateoffset.api.CoordinateOffset;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.Random;
-
 /**
- * Represents the amount by which a player's clientside X and Z coordinates will appear shifted compared to their real
+ * An offset is the amount by which a player's clientside X and Z coordinates will appear shifted compared to their real
  * position in a world.
  *
  * <p>Offsets are <b>subtracted</b> from real coordinates. An offset of <code>(16, 16)</code> would result in a player
  * seeing themselves at <code>(0, 0)</code> when they are standing at <code>(16, 16)</code> in the Overworld, and
  * seeing themselves standing at <code>(-16, -16)</code> when they are standing at the real origin.</p>
  *
- * @param x Offset amount for the X coordinate. Must be a multiple of 16 to align with chunk boundaries.
- * @param z Offset amount for the Z coordinate. Must be a multiple of 16 to align with chunk boundaries.
+ * There are two types of offsets: {@link FixedOffset} and {@link ScalableOffset}. The difference relates to how they
+ * handle coordinate scaling for some worlds, such as the nether. To apply an offset that is absolute in any coordinate
+ * space, use a {@link FixedOffset}. To apply an offset that automatically scales to match the coordinate scale of the
+ * world, use a {@link ScalableOffset}. If unsure, {@link ScalableOffset} is generally preferred so that you don't have
+ * to worry about world alignment.
  */
 @NullMarked
-public record Offset (int x, int z) {
+public sealed interface Offset permits FixedOffset, ScalableOffset {
     /**
-     * The "zero" or identity Offset, which results in no transformation from real-world coordinates.
-     */
-    public static final Offset ZERO = new Offset(0, 0);
-
-    /**
-     * Argument for the {@code toChunksPower} parameter of {@link #align(int, int, int)} that results in an Overworld
-     * offset that will cleanly translate to a Nether offset.
-     */
-    public static final int ALIGN_OVERWORLD = 3;
-
-    public Offset {
-        if (x % 16 != 0) {
-            throw new IllegalArgumentException("Offset x=" + x + " is not chunk-aligned! (must be a multiple of 16)");
-        }
-        if (z % 16 != 0) {
-            throw new IllegalArgumentException("Offset z=" + z + " is not chunk-aligned! (must be a multiple of 16)");
-        }
-    }
-
-    /**
-     * Get a random Offset, with X and Z in the range <code>(-bound, bound)</code>.
+     * Create a new fixed offset with the given components.
      *
-     * @param bound Maximum absolute value of each offset component.
-     * @return A new Offset with values that are multiples of 128 blocks.
+     * <p>Fixed offsets are absolute in any coordinate space. For example, a fixed offset of <code>(800, 800)</code>
+     * will <i>always</i> subtract 800 from the player's coordinates. This may break coordinate-based alignment between
+     * nether portals <b>and make it possible to reverse-engineer offsets</b> through clever use of nether portals.</p>
+     *
+     * <p>{@link ScalableOffset} is recommended for most use cases. {@link FixedOffset} is only recommended if vanilla
+     * nether portal travel is disabled, or if the offset provider is manually performing coordinate scaling.</p>
+     *
+     * @param x X offset value in blocks. Will be subtracted from the player's real X coordinate.
+     * @param z Z offset value in blocks. Will be subtracted from the player's real Z coordinate.
+     * @return A new FixedOffset.
      */
-    public static Offset random(int bound) {
-        Random random = new Random();
-        return align(random.nextInt(-bound, bound), random.nextInt(-bound, bound), ALIGN_OVERWORLD);
+    static FixedOffset fixed(int x, int z) {
+        return new FixedOffset(x, z);
     }
 
     /**
-     * Get a new Offset closest to the specified offset that is aligned to chunk borders.
+     * Create a new scalable offset with the given components.
      *
-     * <p>Offsets MUST be aligned with chunk borders, meaning each component is divisible by 16.</p>
-     * @param x X offset
-     * @param z Z offset
-     * @param toChunksPower Value used to perform extra alignment with chunks. The input x/z will be rounded to the
-     *                      nearest <code>2^toChunksPower</code> chunks. This is useful for making Nether translations
-     *                      predictable: we want Overworld offsets to still align to chunk boundaries even after
-     *                      dividing them by 8. Therefore, we would use {@value ALIGN_OVERWORLD} as the value here when
-     *                      aligning the Overworld offset (since 2^3 == 8).
-     * @return A new Offset.
+     * <p>A scalable offset is scaled based on the coordinate system of the world the offset is applied in. For example,
+     * a scalable offset of <code>(800, 800)</code> may subtract 800 blocks from the player's coordinates in the
+     * overworld and subtract 100 blocks in the nether.</p>
+     *
+     * <p>This is the ideal method of applying offsets because it ensures that coordinates still align across worlds.
+     * Players expect that entering a nether portal they see at <code>(-4000, 4000)</code> will bring them to
+     * <code>(-500, 500)</code> in the nether.</p>
+     *
+     * @param x X offset value in blocks. Will be scaled based on world, then subtracted from the player's real X
+     *          coordinate.
+     * @param z Z offset value in blocks. Will be scaled based on world, then subtracted from the player's real Z
+     *          coordinate.
+     * @return A new ScalableOffset.
      */
-    public static Offset align(int x, int z, int toChunksPower) {
-        int shift = toChunksPower + 4;
-
-        // Add half of the divisor so that the output is rounded instead of just floored
-        x += 1 << (shift - 1);
-        z += 1 << (shift - 1);
-
-        return new Offset(x >> shift << shift, z >> shift << shift);
-    }
-
-    public static Offset align(int x, int z) {
-        return Offset.align(x, z, 0);
-    }
-
-    public int chunkX() {
-        return x >> 4;
-    }
-
-    public int chunkZ() {
-        return z >> 4;
+    static ScalableOffset scalable(int x, int z) {
+        return new ScalableOffset(x, z);
     }
 
     /**
-     * Get a new Offset with the components of this offset scaled by a power of two.
-     *
-     * @param rightShiftAmount The amount to right-shift this Offset's components. A negative value will make the offset
-     *                         larger (e.g. -3 would multiply the components by 8). A positive value will make the
-     *                         offset smaller (e.g. 5 would divide the components by 32).
-     * @return A new Offset aligned to 1 chunk.
+     * The "zero" or identity offset. This offset results in no transformation from real-world coordinates.
      */
-    @Pure
-    public Offset scale(int rightShiftAmount) {
-        if (rightShiftAmount <= 0) {
-            return new Offset(x << -rightShiftAmount, z << -rightShiftAmount);
-        } else {
-            // When scaling the offset down, ensure that the new offset is also divisible by 16.
-            return Offset.align(x >> rightShiftAmount, z >> rightShiftAmount);
-        }
+    FixedOffset ZERO = new FixedOffset(0, 0);
+
+    /**
+     * Align offset components to the nearest 8 chunks. This number is selected because the default nether has a
+     * coordinate scale of 1/8th of the overworld, so aligning an overworld offset to the nearest 8 chunks guarantees
+     * that it will divide evenly to create an offset in the nether.
+     */
+    int ALIGN_DEFAULT_OVERWORLD = 3;
+
+    /**
+     * Align offset components to the nearest 8 chunks and create a new {@link ScalableOffset}.
+     *
+     * <p>Offset components must be multiples of 16 to align to 1 chunk. This function rounds each component to the
+     * nearest multiple of 16*8 because the default nether's coordinate scale is 1/8th of the overworld. Using multiples
+     * of 8 chunks ensures that the resulting offset in the overworld will divide evenly to create an offset in the
+     * nether.</p>
+     *
+     * @param x X offset value in blocks. Will be scaled based on world, then subtracted from the player's real X
+     *          coordinate.
+     * @param z Z offset value in blocks. Will be scaled based on world, then subtracted from the player's real Z
+     *          coordinate.
+     * @return A new ScalableOffset with provided X and Z components rounded to the nearest multiple of 8*16.
+     */
+    static ScalableOffset align(int x, int z) {
+        return Offset.align(x, z, ALIGN_DEFAULT_OVERWORLD);
     }
 
     /**
-     * Get a new Offset with the components of this offset <b>multiplied</b> by an arbitrary number and rounded.
+     * Align offset components to the nearest 2^N chunks and create a new {@link ScalableOffset}.
      *
-     * @deprecated Ambiguous scaling direction. Use {@link #scaleDownBy(double)} instead.
-     * @param scaleFactor The factor to multiply this offset by.
-     * @return A new Offset aligned to 1 chunk.
+     * <p>Offset components must be multiples of 16 to align to 1 chunk. For minimal rounding, use
+     * <code>toChunksPower=0</code>. For ideal behavior, round to a number of chunks such that the resulting offset in
+     * each world will evenly divide into offsets in other worlds. For a default set of vanilla Minecraft worlds,
+     * {@link Offset#ALIGN_DEFAULT_OVERWORLD} aligns offsets to 8 chunks since the nether's coordinate scale is 1/8th
+     * of the overworld.</p>
+     *
+     * @param x X offset value in blocks. Will be scaled based on world, then subtracted from the player's real X
+     *          coordinate.
+     * @param z Z offset value in blocks. Will be scaled based on world, then subtracted from the player's real Z
+     *          coordinate.
+     * @param toChunksPower Power of 2 to round each component to. For example, <code>toChunksPower=3</code> will round
+     *                      each component to the nearest <code>(2^3)=8</code> chunks (128 blocks).
+     * @return A new ScalableOffset with provided X and Z components rounded to the nearest multiple of
+     *         <code>16*(2^p)</code>.
      */
-    @Deprecated
-    @Pure
-    public Offset scaleByDouble(double scaleFactor) {
-        return Offset.align((int) Math.round(x * scaleFactor), (int) Math.round(z * scaleFactor));
+    static ScalableOffset align(int x, int z, int toChunksPower) {
+        return new ScalableOffset(alignComponent(x, toChunksPower), alignComponent(z, toChunksPower));
     }
 
     /**
-     * Get a new Offset with the components of this offset <b>divided</b> by an arbitrary number and rounded.
+     * Create a new random {@link ScalableOffset} with components between negative and positive values of the given
+     * bound.
      *
-     * @param scaleFactor The factor to divide this offset by.
-     * @return A new Offset aligned to 1 chunk.
+     * @param bound Maximum absolute value of the generated offset's X and Z components.
+     * @return A new ScalableOffset with components divisible by 128 blocks (to ensure vanilla overworld/nether
+     *         alignment; see {@link Offset#ALIGN_DEFAULT_OVERWORLD})
      */
-    @Pure
-    public Offset scaleDownBy(double scaleFactor) {
-        return Offset.align((int) Math.round(x / scaleFactor), (int) Math.round(z / scaleFactor));
+    static ScalableOffset random(int bound) {
+        return random(bound, ALIGN_DEFAULT_OVERWORLD);
+    }
+
+    /**
+     * Create a new random {@link ScalableOffset} with components between negative and positive values of the given
+     * bound.
+     *
+     * <p>Components are rounded to the nearest multiple of 2^N chunks</p>. For minimal rounding, use
+     * <code>toChunksPower=0</code>. For ideal behavior, round to a number of chunks such that the resulting offset in
+     * each world will evenly divide into offsets in other worlds. For a default set of vanilla Minecraft worlds,
+     * {@link Offset#ALIGN_DEFAULT_OVERWORLD} aligns offsets to 8 chunks since the nether's coordinate scale is 1/8th
+     * of the overworld.</p>
+     *
+     * @param bound Maximum absolute value of the generated offset's X and Z components.
+     * @param alignToChunksPower Power of 2 to round each component to. For example, <code>toChunksPower=3</code> will
+     *                           round each component to the nearest <code>(2^3)=8</code> chunks (128 blocks).
+     * @return A new ScalableOffset with components divisible by 128 blocks (to ensure vanilla overworld/nether
+     *         alignment; see {@link Offset#ALIGN_DEFAULT_OVERWORLD})
+     */
+    static ScalableOffset random(int bound, int alignToChunksPower) {
+        return new ScalableOffset(
+            alignComponent(ScalableOffset.RANDOM.nextInt(bound), alignToChunksPower),
+            alignComponent(ScalableOffset.RANDOM.nextInt(bound), alignToChunksPower)
+        );
+    }
+
+    /**
+     * Align a single component (X- or Z-value) to the nearest multiple of 16*2^N chunks.
+     *
+     * @param component X- or Z-value to align.
+     * @param alignToChunksPower Power of 2 to round the component to. For example, <code>toChunksPower=3</code> will
+     *                           round each component to the nearest <code>(2^3)=8</code> chunks (128 blocks).
+     * @return The aligned component.
+     */
+    static int alignComponent(int component, int alignToChunksPower) {
+        return Math.round((float) component / (1 << alignToChunksPower + 4)) * (1 << alignToChunksPower + 4);
     }
 
     /**
@@ -133,61 +162,10 @@ public record Offset (int x, int z) {
      * @return A new Offset.
      */
     @Pure
-    public Offset negate() {
-        return new Offset(-x, -z);
-    }
+    Offset negate();
 
     /**
-     * Apply this offset to a location.
-     *
-     * @param location Location to apply the offset to. This may either be a {@link OffsetLocation} or a
-     *                 platform-specific location object, such as a Bukkit Location.
-     * @return A new Location object with the offset applied and all other data (including type) matching the original.
-     * @param <T> Either {@link OffsetLocation} or a platform-specific location object.
-     * @throws ClassCastException if the provided object is not of an acceptable type for the running platform.
+     * Check if both components of this offset are zero, resulting in no coordinate offset.
      */
-    @Pure
-    public <T> T apply(T location) throws ClassCastException {
-        OffsetLocation l;
-        if (location instanceof OffsetLocation) {
-            l = (OffsetLocation) location;
-        } else {
-            l = CoordinateOffset.api().adaptLocation(location);
-        }
-
-        OffsetLocation applied = l.apply(this);
-
-        if (location instanceof OffsetLocation) {
-            return (T) applied;
-        } else {
-            return (T) applied.getPlatformLocationObject();
-        }
-    }
-
-    /**
-     * Unapply this offset from a location.
-     *
-     * @param location Location to unapply the offset from. This may either be a {@link OffsetLocation} or a
-     *                 platform-specific location object, such as a Bukkit Location.
-     * @return A new Location object with the offset unapplied and all other data (including type) matching the original.
-     * @param <T> Either {@link OffsetLocation} or a platform-specific location object.
-     * @throws ClassCastException if the provided object is not of an acceptable type for the running platform.
-     */
-    @Pure
-    public <T> T unapply(T location) throws ClassCastException {
-        OffsetLocation l;
-        if (location instanceof OffsetLocation) {
-            l = (OffsetLocation) location;
-        } else {
-            l = CoordinateOffset.api().adaptLocation(location);
-        }
-
-        OffsetLocation unapplied = l.unapply(this);
-
-        if (location instanceof OffsetLocation) {
-            return (T) unapplied;
-        } else {
-            return (T) unapplied.getPlatformLocationObject();
-        }
-    }
+    boolean isZero();
 }

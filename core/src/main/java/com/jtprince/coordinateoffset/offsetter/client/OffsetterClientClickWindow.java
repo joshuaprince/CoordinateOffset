@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -19,7 +19,7 @@ public class OffsetterClientClickWindow extends PacketOffsetter<WrapperPlayClien
     }
 
     @Override
-    public void offset(WrapperPlayClientClickWindow packet, Offset offset, User user) {
+    public void offset(WrapperPlayClientClickWindow packet, FixedOffset offset, User user) {
         if (packet.getSlots().isPresent()) {
             Map<Integer, ItemStack> clientItems = packet.getSlots().get();
             Map<Integer, ItemStack> serverItems = clientItems.entrySet().stream()

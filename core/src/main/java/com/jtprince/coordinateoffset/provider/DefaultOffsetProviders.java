@@ -13,11 +13,11 @@ import java.util.SequencedMap;
 public class DefaultOffsetProviders {
     static final ConstantOffsetProvider CONSTANT_DISABLED = new ConstantOffsetProvider(
         "disabled",
-        Offset.ZERO
+        null
     );
     static final ConstantOffsetProvider CONSTANT_1024 = new ConstantOffsetProvider(
         "constant",
-        new Offset(1024, 1024)
+        Offset.scalable(1024, 1024)
     );
 
     static final RandomOffsetProvider RANDOM = new RandomOffsetProvider(
@@ -31,6 +31,11 @@ public class DefaultOffsetProviders {
         new RegenerateConfig(false, false, false, false, RegenerateConfig.DEFAULT_MINIMUM_TELEPORT_DISTANCE, null)
     );
 
+    static final PermissionOffsetProvider PERMISSION = new PermissionOffsetProvider(
+        "permission",
+        "coordinateoffset.offset"
+    );
+
     public static SequencedMap<String, OffsetProvider> PROVIDERS = new LinkedHashMap<>();
     static {
         try {
@@ -39,6 +44,7 @@ public class DefaultOffsetProviders {
             PROVIDERS.put(RANDOM.name, RANDOM);
             PROVIDERS.put(RANDOM.name, RANDOM);
             PROVIDERS.put(ZERO_LOC.name, ZERO_LOC);
+            PROVIDERS.put(PERMISSION.name, PERMISSION);
         } catch (Exception e) {
             e.printStackTrace();
         }

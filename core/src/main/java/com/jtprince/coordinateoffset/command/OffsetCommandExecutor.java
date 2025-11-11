@@ -1,15 +1,17 @@
 package com.jtprince.coordinateoffset.command;
 
-import com.jtprince.coordinateoffset.*;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.OffsetChange;
+import com.jtprince.coordinateoffset.OffsetData;
+import com.jtprince.coordinateoffset.OffsetFactory;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
+import com.jtprince.coordinateoffset.config.MessagesConfig;
+import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,72 +32,72 @@ public class OffsetCommandExecutor {
     public Result execute(OffsetReloadCommand command) {
         boolean success = core.reloadConfig();
         if (success) {
-            command.getCommandSender().sendMessage(
-                Component.text("CoordinateOffset configuration reloaded from file.")
-                    .color(NamedTextColor.GREEN));
+            core.getMessages().reload.success.send(command.getCommandSender());
             return Result.SUCCESS;
         } else {
-            command.getCommandSender().sendMessage(
-                Component.text("Failed to reload CoordinateOffset configuration from file. Check the console for details.")
-                    .color(NamedTextColor.RED));
+            core.getMessages().reload.fail.send(command.getCommandSender());
             return Result.FAIL;
         }
     }
 
     public Result execute(OffsetQueryCommand command) {
         OffsetData offset = core.getOffsetHolder().getOffset(command.getTarget());
+        OffsetLocation location = command.getTarget().getLocation();
 
-        Component targetName;
+        MessagesConfig.Query.C msgs;
         if (command.getCommandSender().isPlayer(command.getTarget())) {
-            targetName = Component.text("Your");
+            if (offset.offset().isZero()) {
+                msgs = core.getMessages().query.selfNoOffset;
+            } else {
+                msgs = core.getMessages().query.self;
+            }
         } else {
-            targetName = Component.empty()
-                .append(formatPlayerName(command.getTarget()))
-                .append(Component.text("'s"));
+            msgs = core.getMessages().query.other;
         }
 
-        command.getCommandSender().sendMessage(Component.empty()
-            .append(targetName)
-            .append(Component.text(" coordinate offset is: "))
-            .append(formatOffset(offset.offset()))
-            .color(NamedTextColor.GRAY));
-        command.getCommandSender().sendMessage(Component.empty()
-            .append(targetName)
-            .append(Component.text(" real coordinates are: "))
-            .append(formatLocation(command.getTarget().getLocation()))
-            .color(NamedTextColor.GRAY));
+        msgs.offset().send(command.getCommandSender(), // "Your/T's coordinate offset is: [x=, z=]"
+            Placeholder.component("target", Component.text(command.getTarget().getName())),
+            Placeholder.component("x", Component.text(offset.offset().x())),
+            Placeholder.component("z", Component.text(offset.offset().z()))
+        );
+        msgs.coordinates().send(command.getCommandSender(), // "Your/T's real coordinates are: [x=, y=, z=]"
+            Placeholder.component("target", Component.text(command.getTarget().getName())),
+            Placeholder.component("x", Component.text((int) location.getX())),
+            Placeholder.component("y", Component.text((int) location.getY())),
+            Placeholder.component("z", Component.text((int) location.getZ()))
+        );
 
         if (command.isVerbose()) {
-            var provider = Component.text();
-            provider.append(Component.text("  "));
-            provider.color(NamedTextColor.GRAY);
-            provider.decorate(TextDecoration.ITALIC);
             switch (offset.source()) {
-                case OffsetData.Source.PermissionBypass b -> {
-                    provider.append(Component.text("No active offset due to permission bypass.")
-                        .decoration(TextDecoration.ITALIC, true));
+                case OffsetData.Source.PermissionBypass ignored -> {
+                    // "No active offset due to permission bypass"
+                    core.getMessages().query.verbose.zeroByPermission.send(command.getCommandSender());
                 }
                 case OffsetData.Source.BedrockBypass ignored -> {
-                    provider.append(Component.text("Coordinate offsets are not supported for Bedrock players.")
-                        .decoration(TextDecoration.ITALIC, true));
+                    // "Coordinate offsets are not supported for Bedrock players"
+                    core.getMessages().query.verbose.zeroByBedrock.send(command.getCommandSender());
                 }
-                case OffsetData.Source.Provider p -> {
-                    provider.append(Component.text("This offset was generated by provider "));
-                    provider.append(Component.text("\"" + p.provider().name + "\"").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
-                    if (p.isOverride()) {
-                        provider.append(Component.text(" as part of an offset provider override rule."));
+                case OffsetData.Source.Provider provider -> {
+                    if (provider.isOverride()) {
+                        // "This offset was generated by provider P, the default offset provider"
+                        core.getMessages().query.verbose.generatedByProviderOverride.send(command.getCommandSender(),
+                            Placeholder.component("provider", Component.text(provider.provider().name)));
                     } else {
-                        provider.append(Component.text(", the default offset provider."));
+                        // "This offset was generated by provider P as part of an offset provider override rule"
+                        core.getMessages().query.verbose.generatedByProviderDefault.send(command.getCommandSender(),
+                            Placeholder.component("provider", Component.text(provider.provider().name)));
                     }
                 }
-                case OffsetData.Source.SetCommand s -> {
-                    provider.append(Component.text("This offset was set by a command sent by "));
-                    provider.append(Component.text(s.command().getCommandSender().name())
-                        .color(PLAYER_NAME_COLOR).decoration(TextDecoration.ITALIC, false));
-                    provider.append(Component.text("."));
+                case OffsetData.Source.SetCommand setCommand -> {
+                    // "This offset was set by a command sent by S"
+                    core.getMessages().query.verbose.generatedByCommand.send(command.getCommandSender(),
+                        Placeholder.component("sender", Component.text(setCommand.command().getCommandSender().name())));
+                }
+                case OffsetData.Source.PluginSet ignored -> {
+                    // "This offset was set by an external plugin"
+                    core.getMessages().query.verbose.generatedByPlugin.send(command.getCommandSender());
                 }
             }
-            command.getCommandSender().sendMessage(provider.build());
         }
 
         return Result.SUCCESS;
@@ -108,7 +110,15 @@ public class OffsetCommandExecutor {
                 target, target.getLocation(), target.getLocation(), OffsetProviderContext.ProvideReason.COMMAND_REGENERATE);
 
             if (!result.offsetChanged()) {
-                command.getCommandSender().sendMessage(formatUnchangedOffsetMessage(target, result.getCommandSenderResponse()));
+                MessagesConfig.Message msg = switch (result.newOffsetData().source()) {
+                    case OffsetData.Source.BedrockBypass ignored -> core.getMessages().regenerate.unchangedBedrock;
+                    case OffsetData.Source.PermissionBypass ignored -> core.getMessages().regenerate.unchangedPermission;
+                    case OffsetData.Source.Provider ignored -> core.getMessages().regenerate.unchanged;
+                    case OffsetData.Source.SetCommand ignored -> core.getMessages().regenerate.unchanged;
+                    case OffsetData.Source.PluginSet ignored -> core.getMessages().regenerate.unchanged;
+                };
+                msg.send(command.getCommandSender(),
+                    Placeholder.component("target", Component.text(target.getName())));
                 continue;
             }
 
@@ -116,12 +126,17 @@ public class OffsetCommandExecutor {
             successfulTargets.add(target);
         }
 
-        if (!successfulTargets.isEmpty()) {
-            command.getCommandSender().sendMessage(Component.text("Regenerated coordinate offset for ")
-                .color(NamedTextColor.GRAY)
-                .append(formatPlayerNames(successfulTargets))
-                .append(Component.text("."))
-            );
+        if (successfulTargets.size() == 1) {
+            // "Regenerated coordinate offset for T"
+            core.getMessages().regenerate.successSingle.send(command.getCommandSender(),
+                Placeholder.component("target", Component.text(successfulTargets.getFirst().getName())));
+        } else if (successfulTargets.size() > 1) {
+            // "Regenerated coordinate offset for N players", hover to get player list
+            core.getMessages().regenerate.successMultiple.send(command.getCommandSender(),
+                Placeholder.component("count", Component.text(successfulTargets.size())),
+                Placeholder.component("targets", Component.text(successfulTargets.stream()
+                    .map(OffsetPlayer::getName)
+                    .collect(Collectors.joining(", ")))));
         }
 
         return successfulTargets.isEmpty() ? Result.FAIL : Result.SUCCESS;
@@ -130,94 +145,63 @@ public class OffsetCommandExecutor {
     public Result execute(OffsetSetCommand command) {
         List<OffsetPlayer> successfulTargets = new ArrayList<>();
         for (OffsetPlayer target : command.getTargets()) {
-            OffsetChange result = core.getOffsetHolder().setNextOffsetByCommand(target, target.getLocation(), command);
+            OffsetChange result = core.getOffsetHolder().setNextOffsetByCommand(target, command);
+
+            Double warnScaling = command.getWarnScaling(target);
+            if (warnScaling != null && warnScaling != 1.0) {
+                core.getMessages().set.warningCoordinateScaling.send(command.getCommandSender(),
+                    Placeholder.component("target", Component.text(target.getName())),
+                    Placeholder.component("scaling", Component.text(warnScaling)),
+                    Placeholder.component("world", Component.text(target.getLocation().getWorld().getName())));
+            }
+
             if (!result.offsetChanged()) {
-                command.getCommandSender().sendMessage(formatUnchangedOffsetMessage(target, result.getCommandSenderResponse()));
+                MessagesConfig.Message msg = switch (result.newOffsetData().source()) {
+                    case OffsetData.Source.BedrockBypass ignored -> core.getMessages().set.unchangedBedrock;
+                    case OffsetData.Source.PermissionBypass ignored -> core.getMessages().set.unchanged;
+                    case OffsetData.Source.Provider ignored -> core.getMessages().set.unchanged;
+                    case OffsetData.Source.SetCommand ignored -> core.getMessages().set.unchanged;
+                    case OffsetData.Source.PluginSet ignored -> core.getMessages().set.unchanged;
+                };
+                msg.send(command.getCommandSender(),
+                    Placeholder.component("target", Component.text(target.getName())));
                 continue;
             }
 
             core.getAdapter().getOffsetSwapper().forceOffsetSwap(target);
 
+            OffsetProvider notPersistentProvider = command.getOffsetIsNotPersistentForProvider(target);
             if (OffsetFactory.canBypassByPermission(target)) {
-                command.getCommandSender().sendMessage(Component.empty()
-                    .color(NamedTextColor.GRAY)
-                    .decorate(TextDecoration.ITALIC)
-                    .append(Component.text("  Warning: offset for "))
-                    .append(formatPlayerName(target))
-                    .append(Component.text(" is not persistent (player has offset bypass permission)."))
-                );
-            } else if (command.getOffsetIsNotPersistentForProvider(target) != null) {
-                command.getCommandSender().sendMessage(Component.empty()
-                    .color(NamedTextColor.GRAY)
-                    .decorate(TextDecoration.ITALIC)
-                    .append(Component.text("  Warning: offset for "))
-                    .append(formatPlayerName(target))
-                    .append(Component.text(" is not persistent (offset provider does not store offsets)."))
-                );
+                // "Warning: offset for T is not persistent (player has offset bypass permission)"
+                core.getMessages().set.warningNotPersistentByPermission.send(command.getCommandSender(),
+                    Placeholder.component("target", Component.text(target.getName())));
+            } else if (notPersistentProvider != null) {
+                // "Warning: offset for T is not persistent (offset provider P does not store offsets)"
+                core.getMessages().set.warningNotPersistentByProvider.send(command.getCommandSender(),
+                    Placeholder.component("target", Component.text(target.getName())),
+                    Placeholder.component("provider", Component.text(notPersistentProvider.name)));
             }
 
             successfulTargets.add(target);
         }
 
-        if (!successfulTargets.isEmpty()) {
-            command.getCommandSender().sendMessage(Component.text("Set coordinate offset for ")
-                .color(NamedTextColor.GRAY)
-                .append(formatPlayerNames(successfulTargets))
-                .append(Component.text(" to "))
-                .append(formatOffset(command.getOffset()))
-                .append(Component.text("."))
-            );
+        if (successfulTargets.size() == 1) {
+            // "Set coordinate offset for T to [x=, z=]"
+            core.getMessages().set.successSingle.send(command.getCommandSender(),
+                Placeholder.component("target", Component.text(successfulTargets.getFirst().getName())),
+                Placeholder.component("x", Component.text(command.getOffset().x())),
+                Placeholder.component("z", Component.text(command.getOffset().z())));
+        } else if (successfulTargets.size() > 1) {
+            // "Set coordinate offset for N players to [x=, z=]", hover to get player list
+            core.getMessages().set.successMultiple.send(command.getCommandSender(),
+                Placeholder.component("count", Component.text(successfulTargets.size())),
+                Placeholder.component("targets", Component.text(successfulTargets.stream()
+                    .map(OffsetPlayer::getName)
+                    .collect(Collectors.joining(", ")))),
+                Placeholder.component("x", Component.text(command.getOffset().x())),
+                Placeholder.component("z", Component.text(command.getOffset().z())));
         }
 
         return successfulTargets.isEmpty() ? Result.FAIL : Result.SUCCESS;
-    }
-
-    private Component formatOffset(Offset offset) {
-        return Component.text("[x=")
-            .append(Component.text(offset.x()).color(NamedTextColor.YELLOW))
-            .append(Component.text(", z="))
-            .append(Component.text(offset.z()).color(NamedTextColor.YELLOW))
-            .append(Component.text("]"))
-            .color(NamedTextColor.DARK_AQUA);
-    }
-
-    private Component formatLocation(OffsetLocation location) {
-        return Component.text("[x=")
-            .append(Component.text((int) location.getX()).color(NamedTextColor.GOLD))
-            .append(Component.text(", y="))
-            .append(Component.text((int) location.getY()).color(NamedTextColor.GOLD))
-            .append(Component.text(", z="))
-            .append(Component.text((int) location.getZ()).color(NamedTextColor.GOLD))
-            .append(Component.text("]"))
-            .color(NamedTextColor.LIGHT_PURPLE);
-    }
-
-    private static final TextColor PLAYER_NAME_COLOR = TextColor.color(0x18a9ff);
-
-    private Component formatPlayerName(OffsetPlayer player) {
-        return Component.text(player.getName())
-            .color(PLAYER_NAME_COLOR)
-            .hoverEvent(Component.text(player.getUuid().toString()));
-    }
-
-    private Component formatPlayerNames(List<? extends OffsetPlayer> players) {
-        if (players.size() == 1) {
-            return formatPlayerName(players.getFirst());
-        } else {
-            return Component.text(players.size() + " players")
-                .color(TextColor.color(0x18a9ff))
-                .hoverEvent(Component.text(players.stream()
-                    .map(OffsetPlayer::getName)
-                    .collect(Collectors.joining(", "))));
-        }
-    }
-
-    private Component formatUnchangedOffsetMessage(OffsetPlayer target, @Nullable String message) {
-        return Component.empty()
-            .color(message == null ? NamedTextColor.YELLOW : NamedTextColor.RED)
-            .decorate(TextDecoration.ITALIC)
-            .append(Component.text("Coordinate offset unchanged for "))
-            .append(formatPlayerName(target))
-            .append(message != null ? (Component.text(": " + message)) : Component.text("."));
     }
 }

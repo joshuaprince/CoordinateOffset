@@ -31,11 +31,11 @@ public class ExampleOffsetProvider extends OffsetProvider {
          */
 
         // If the player will be in any Nether dimension, return an Offset of 2000 blocks in each direction.
-        // Always check the world provided in the context instead of Player#getWorld. The offset might be for
-        //   a world the player is not in yet.
+        // Never use Player#getWorld in an offset provider, use context#playerLocation#getWorld instead. The offset
+        //   might be used in a world the player is not in yet.
         World world = (World) context.playerLocation().getWorld();
         if (world.getEnvironment() == World.Environment.NETHER) {
-            return new Offset(2000, 2000);
+            return Offset.scalable(16000, 16000); // scalable: will be scaled down by 8 for the nether to make (2000, 2000)
         }
 
         // If the player has permission "example.offset.randomized", return a random Offset.

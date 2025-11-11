@@ -3,7 +3,7 @@ package com.jtprince.coordinateoffset.offsetter.client;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientTestInstanceBlockAction;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -14,7 +14,7 @@ public class OffsetterClientTestInstanceBlockAction extends PacketOffsetter<Wrap
     }
 
     @Override
-    public void offset(WrapperPlayClientTestInstanceBlockAction packet, Offset offset, User user) {
+    public void offset(WrapperPlayClientTestInstanceBlockAction packet, FixedOffset offset, User user) {
         packet.setPosition(unapply(packet.getPosition(), offset));
     }
 }

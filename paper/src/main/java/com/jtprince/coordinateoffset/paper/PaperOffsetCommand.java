@@ -3,6 +3,7 @@ package com.jtprince.coordinateoffset.paper;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.CoordinateOffsetPermission;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.command.*;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
@@ -17,7 +18,6 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -194,13 +194,11 @@ public class PaperOffsetCommand {
         int x = IntegerArgumentType.getInteger(context, "x");
         int z = IntegerArgumentType.getInteger(context, "z");
 
-        Offset offset;
-        try {
-            offset = new Offset(x, z);
-        } catch (IllegalArgumentException e) {
-            context.getSource().getSender().sendMessage(Component.text("Invalid offset: " + e.getMessage()).color(NamedTextColor.RED));
-            return 0;
+        if (x % 16 != 0 || z % 16 != 0) {
+            core.getMessages().set.warningNotMultipleOf16.send(context.getSource().getSender());
         }
+
+        ScalableOffset offset = Offset.scalable(x, z);
 
         OffsetSetCommand offsetSetCommand = new OffsetSetCommand(
             toSender(context.getSource().getSender()),

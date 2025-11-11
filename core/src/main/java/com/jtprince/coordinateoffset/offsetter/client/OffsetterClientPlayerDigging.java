@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -29,7 +29,7 @@ public class OffsetterClientPlayerDigging extends PacketOffsetter<WrapperPlayCli
     }
 
     @Override
-    public void offset(WrapperPlayClientPlayerDigging packet, Offset offset, User user) {
+    public void offset(WrapperPlayClientPlayerDigging packet, FixedOffset offset, User user) {
         if (!ACTIONS_WITH_ZERO_POSITION.contains(packet.getAction())) {
             packet.setBlockPosition(unapply(packet.getBlockPosition(), offset));
         }

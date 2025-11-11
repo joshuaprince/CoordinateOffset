@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.provider.util;
 
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPersistenceAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.jspecify.annotations.NullMarked;
@@ -22,11 +22,11 @@ public class ProviderOffsetStore {
         this.persistenceKey = new OffsetPersistenceAdapter.Key(providerName, persistenceKeyOverride);
     }
 
-    public @Nullable Offset get(OffsetPlayer player) {
+    public @Nullable ScalableOffset get(OffsetPlayer player) {
         return adapter.get(player, persistenceKey);
     }
 
-    public void put(OffsetPlayer player, Offset offset) {
+    public void put(OffsetPlayer player, ScalableOffset offset) {
         adapter.put(player, persistenceKey, offset);
     }
 

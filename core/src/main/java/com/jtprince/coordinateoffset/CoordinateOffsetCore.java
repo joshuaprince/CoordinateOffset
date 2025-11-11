@@ -7,7 +7,9 @@ import com.jtprince.coordinateoffset.command.OffsetCommandExecutor;
 import com.jtprince.coordinateoffset.config.ConfigHolder;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
+import com.jtprince.coordinateoffset.config.MessagesConfig;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
+import com.jtprince.coordinateoffset.provider.PermissionOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import org.jspecify.annotations.NullMarked;
@@ -45,6 +47,7 @@ public class CoordinateOffsetCore {
         CoordinateOffsetCore core = new CoordinateOffsetCore(adapter);
         singleton = core;
 
+        core.configHolder.loadMessagesConfig();
         core.configHolder.loadBaseConfig();
 
         CoordinateOffsetAPI api = new CoordinateOffsetAPIImpl(core);
@@ -54,6 +57,7 @@ public class CoordinateOffsetCore {
         core.getProviderRegistry().registerProviderClass("ConstantOffsetProvider", true, ConstantOffsetProvider::deserialize);
         core.getProviderRegistry().registerProviderClass("RandomOffsetProvider", true, RandomOffsetProvider::deserialize);
         core.getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", true, ZeroAtLocationOffsetProvider::deserialize);
+        core.getProviderRegistry().registerProviderClass("PermissionOffsetProvider", true, PermissionOffsetProvider::deserialize);
 
         return core;
     }
@@ -99,6 +103,10 @@ public class CoordinateOffsetCore {
 
     public CoordinateOffsetProviderConfig getProviderConfig() {
         return configHolder.getProviderConfig();
+    }
+
+    public MessagesConfig getMessages() {
+        return configHolder.getMessagesConfig();
     }
 
     public OffsetCommandExecutor getCommandExecutor() {

@@ -1,14 +1,13 @@
 package com.jtprince.coordinateoffset.api;
 
-import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.Offset;
-import com.jtprince.coordinateoffset.OffsetData;
+import com.jtprince.coordinateoffset.*;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderConfig;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -23,13 +22,36 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
     }
 
     @Override
-    public Offset getOffset(OffsetPlayer player) {
+    public FixedOffset getOffset(OffsetPlayer player) {
         return core.getOffsetHolder().getOffset(player).offset();
     }
 
     @Override
     public OffsetData getOffsetData(OffsetPlayer player) {
         return core.getOffsetHolder().getOffset(player);
+    }
+
+    @Override
+    public OffsetChange regenerateOffset(OffsetPlayer player) {
+        CoordinateOffsetCore.get().getAdapter().assertMainThread("regenerateOffset"); // throws IllegalStateException
+
+        OffsetChange result = core.getOffsetHolder().generateNextOffset(
+            player, player.getLocation(), player.getLocation(), OffsetProviderContext.ProvideReason.PLUGIN_REGENERATE);
+        if (result.offsetChanged()) {
+            core.getAdapter().getOffsetSwapper().forceOffsetSwap(player);
+        }
+        return result;
+    }
+
+    @Override
+    public OffsetChange setOffset(OffsetPlayer player, Offset offset) {
+        CoordinateOffsetCore.get().getAdapter().assertMainThread("setOffset"); // throws IllegalStateException
+
+        OffsetChange result = core.getOffsetHolder().setNextOffsetByPlugin(player, offset);
+        if (result.offsetChanged()) {
+            core.getAdapter().getOffsetSwapper().forceOffsetSwap(player);
+        }
+        return result;
     }
 
     @Override

@@ -3,8 +3,10 @@ package com.jtprince.coordinateoffset.paper.adapter;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jspecify.annotations.NullMarked;
 
+import java.util.Set;
 import java.util.UUID;
 
 @NullMarked
@@ -31,6 +33,14 @@ public class PaperOffsetPlayer implements OffsetPlayer {
     @Override
     public boolean hasPermission(String permission) {
         return player.hasPermission(permission);
+    }
+
+    @Override
+    public Set<String> getAllPermissions() {
+        return player.getEffectivePermissions().stream()
+            .filter(PermissionAttachmentInfo::getValue) // only "true" permissions
+            .map(PermissionAttachmentInfo::getPermission)
+            .collect(java.util.stream.Collectors.toSet());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.adapter;
 
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -8,8 +8,8 @@ import java.util.UUID;
 
 @NullMarked
 public interface OffsetPersistenceAdapter {
-    @Nullable Offset get(OffsetPlayer player, Key persistenceKey);
-    void put(OffsetPlayer player, Key persistenceKey, Offset offset);
+    @Nullable ScalableOffset get(OffsetPlayer player, Key persistenceKey);
+    void put(OffsetPlayer player, Key persistenceKey, ScalableOffset offset);
     void clear(UUID playerUuid, Key persistenceKey);
 
     /**

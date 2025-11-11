@@ -2,7 +2,7 @@ package com.jtprince.coordinateoffset.provider;
 
 public abstract sealed class CoreOffsetProvider
     extends OffsetProvider
-    permits ConstantOffsetProvider, RandomOffsetProvider, ZeroAtLocationOffsetProvider {
+    permits ConstantOffsetProvider, PermissionOffsetProvider, RandomOffsetProvider, ZeroAtLocationOffsetProvider {
 
     public CoreOffsetProvider(String userDefinedProviderName) {
         super(userDefinedProviderName);

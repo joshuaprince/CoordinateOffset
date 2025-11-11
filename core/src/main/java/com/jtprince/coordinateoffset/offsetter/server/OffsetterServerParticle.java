@@ -8,7 +8,7 @@ import com.github.retrooper.packetevents.protocol.particle.data.ParticleVibratio
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerParticle;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -19,7 +19,7 @@ public class OffsetterServerParticle extends PacketOffsetter<WrapperPlayServerPa
     }
 
     @Override
-    public void offset(WrapperPlayServerParticle packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerParticle packet, FixedOffset offset, User user) {
         packet.setPosition(apply(packet.getPosition(), offset));
 
         if (packet.getParticle().getData() instanceof ParticleVibrationData vibrationData) {

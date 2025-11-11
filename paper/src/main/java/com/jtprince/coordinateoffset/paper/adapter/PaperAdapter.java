@@ -26,8 +26,8 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public Path getConfigPath() {
-        return plugin.getDataFolder().toPath().resolve("config.yml");
+    public Path getConfigDir() {
+        return plugin.getDataFolder().toPath();
     }
 
     @Override
@@ -70,6 +70,13 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     @Override
     public PaperOffsetSwapper getOffsetSwapper() {
         return offsetSwapper;
+    }
+
+    @Override
+    public void assertMainThread(String methodName) throws IllegalStateException {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("Method \"" + methodName + "\" must be called on the main server thread.");
+        }
     }
 
     @Override

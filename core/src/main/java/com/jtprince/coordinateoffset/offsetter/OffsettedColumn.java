@@ -7,7 +7,7 @@ import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.protocol.world.chunk.HeightmapType;
 import com.github.retrooper.packetevents.protocol.world.chunk.TileEntity;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
@@ -19,12 +19,12 @@ import java.util.Map;
 @NullMarked
 public class OffsettedColumn extends Column {
     private final Column inner;
-    private final Offset offset;
+    private final FixedOffset offset;
     private final User user;
 
     private static final BaseChunk[] emptyChunkList = {};
 
-    public OffsettedColumn(Column column, Offset offset, User user) {
+    public OffsettedColumn(Column column, FixedOffset offset, User user) {
         super(0, 0, false, emptyChunkList, null);
         this.inner = column;
         this.offset = offset;

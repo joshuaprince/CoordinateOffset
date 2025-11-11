@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.client.*;
 import com.jtprince.coordinateoffset.offsetter.server.*;
 import org.jspecify.annotations.NullMarked;
@@ -101,7 +101,7 @@ public class OffsetterRegistry {
         }
     }
 
-    public static void attemptToOffset(PacketSendEvent event, Offset offset) {
+    public static void attemptToOffset(PacketSendEvent event, FixedOffset offset) {
         PacketOffsetter associatedOffsetter = byPacketType.get(event.getPacketType());
         if (associatedOffsetter == null) return;
 
@@ -113,7 +113,7 @@ public class OffsetterRegistry {
         }
     }
 
-    public static void attemptToUnOffset(PacketReceiveEvent event, Offset offset) {
+    public static void attemptToUnOffset(PacketReceiveEvent event, FixedOffset offset) {
         PacketOffsetter associatedOffsetter = byPacketType.get(event.getPacketType());
         if (associatedOffsetter == null) return;
 
