@@ -9,6 +9,7 @@ import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.config.MessagesConfig;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
+import com.jtprince.coordinateoffset.provider.PermissionOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
 import org.jspecify.annotations.NullMarked;
@@ -56,6 +57,7 @@ public class CoordinateOffsetCore {
         core.getProviderRegistry().registerProviderClass("ConstantOffsetProvider", true, ConstantOffsetProvider::deserialize);
         core.getProviderRegistry().registerProviderClass("RandomOffsetProvider", true, RandomOffsetProvider::deserialize);
         core.getProviderRegistry().registerProviderClass("ZeroAtLocationOffsetProvider", true, ZeroAtLocationOffsetProvider::deserialize);
+        core.getProviderRegistry().registerProviderClass("PermissionOffsetProvider", true, PermissionOffsetProvider::deserialize);
 
         return core;
     }

@@ -34,8 +34,8 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
     public SequencedMap<String, ?> serialize() {
         SequencedMap<String, Object> map = new LinkedHashMap<>();
         if (offset == null) {
-            map.put("offsetX", 0);
-            map.put("offsetZ", 0);
+            map.put("offsetX", (long) 0);
+            map.put("offsetZ", (long) 0);
         } else {
             map.put("offsetX", (long) offset.x());
             map.put("offsetZ", (long) offset.z());
