@@ -159,6 +159,7 @@ class BukkitEventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCanvasPlayerTeleport(EntityTeleportAsyncEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
+        OffsetProviderContext.ProvideReason reason;
 
         if (IGNORED_TELEPORT_CAUSES.contains(event.getCause().name())) {
             if (core.isDebugEnabled()) {
@@ -168,15 +169,21 @@ class BukkitEventListener implements Listener {
             return;
         }
 
+        if (!event.getFrom().getWorld().equals(event.getTo().getWorld())) {
+            reason = OffsetProviderContext.ProvideReason.WORLD_CHANGE;
+        } else {
+            reason = OffsetProviderContext.ProvideReason.TELEPORT;
+        }
+
         OffsetChange result = core.getOffsetHolder().generateNextOffset(
             new PaperOffsetPlayer(player),
             new PaperLocation(event.getFrom()),
             new PaperLocation(event.getTo()),
-            OffsetProviderContext.ProvideReason.TELEPORT
+            reason
         );
 
         // TODO: This does not work at all on Canvas yet. Threading warnings everywhere
-        if (result.offsetChanged()) {
+        if (result.offsetChanged() && reason == OffsetProviderContext.ProvideReason.TELEPORT) {
             /*
              * Nearby teleportation workaround:
              * A player teleporting a short distance does not trigger chunk unloads and reloads.
