@@ -59,7 +59,8 @@ public class MessagesConfig {
         public Message successMultiple = new Message("<gray>Set coordinate offset for <#18a9ff><hover:show_text:'<#18a9ff><targets>'><count> players</hover></#18a9ff> to <dark_aqua>[x=<yellow><x></yellow>, z=<yellow><z></yellow>]</dark_aqua>.");
         public Message warningNotPersistentByPermission = new Message("<#CAD19F>Warning: offset for <#18a9ff><target></#18a9ff> is not persistent (player has offset bypass permission).");
         public Message warningNotPersistentByProvider = new Message("<#CAD19F>Warning: offset for <#18a9ff><target></#18a9ff> is not persistent (offset provider \"<provider>\" does not store offsets).");
-        public Message invalidNotMultipleOf16 = new Message("<#F09090>Invalid offset: <component>=<red><value></red> is not a multiple of 16.");
+        public Message warningNotMultipleOf16 = new Message("<#CAD19F>Offset components will be rounded to the nearest multiple of 16.");
+        public Message warningCoordinateScaling = new Message("<#CAD19F>Offset for <#18a9ff><target></#18a9ff> will be scaled down by <gold><scaling></gold> to match the coordinate scale of world <#33A14F><world></#33A14F>.");
         public Message unchanged = new Message("<#CAD19F>Coordinate offset unchanged for <#18a9ff><target></#18a9ff>.");
         public Message unchangedBedrock = new Message("<#F09090>Coordinate offset unchanged for <#18a9ff><target></#18a9ff> (offsets are not supported for Bedrock players).");
     }

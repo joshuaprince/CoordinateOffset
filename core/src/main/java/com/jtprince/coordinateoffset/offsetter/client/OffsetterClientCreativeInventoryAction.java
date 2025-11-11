@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -15,7 +15,7 @@ public class OffsetterClientCreativeInventoryAction extends PacketOffsetter<Wrap
     }
 
     @Override
-    public void offset(WrapperPlayClientCreativeInventoryAction packet, Offset offset, User user) {
+    public void offset(WrapperPlayClientCreativeInventoryAction packet, FixedOffset offset, User user) {
         ItemStack modifiedItemStack = unapplyItemStack(packet.getItemStack(), offset);
         if (modifiedItemStack != null) {
             packet.setItemStack(modifiedItemStack);

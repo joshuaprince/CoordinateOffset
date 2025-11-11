@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockEntityData;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -17,7 +17,7 @@ public class OffsetterServerBlockEntityData extends PacketOffsetter<WrapperPlayS
     }
 
     @Override
-    public void offset(WrapperPlayServerBlockEntityData packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerBlockEntityData packet, FixedOffset offset, User user) {
         packet.setPosition(apply(packet.getPosition(), offset));
 
         // TBD: I'm not sure which tile entity these are used for, but I'm keeping them from upstream just in case.

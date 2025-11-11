@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -19,7 +19,7 @@ public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlaySe
     }
 
     @Override
-    public void offset(WrapperPlayServerEntityMetadata packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerEntityMetadata packet, FixedOffset offset, User user) {
         for (EntityData data : packet.getEntityMetadata()) {
             Object value = data.getValue();
             if (value == null) continue;
@@ -33,7 +33,7 @@ public class OffsetterServerEntityMetadata extends PacketOffsetter<WrapperPlaySe
         }
     }
 
-    private static Object applyOffsetToEntityMeta(Object object, Offset offset) {
+    private static Object applyOffsetToEntityMeta(Object object, FixedOffset offset) {
         /*
          * Warning: Beware of adding Vector3d/Vector3f here as they are also used in display entity translation and
          * scale values (and probably other ones that should not be offsetted)

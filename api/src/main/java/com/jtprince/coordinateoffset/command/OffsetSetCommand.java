@@ -1,14 +1,12 @@
 package com.jtprince.coordinateoffset.command;
 
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Container for data and response methods for "/offset set" commands.
@@ -17,12 +15,13 @@ import java.util.Set;
 public class OffsetSetCommand implements OffsetCommand {
     private final OffsetCommandSender commandSender;
     private final List<OffsetPlayer> targets;
-    private final Offset offset;
+    private final ScalableOffset offset;
 
     private @Nullable OffsetProvider notPersistentForProvider = null;
     private final Set<OffsetPlayer> notPersistentInProviderTargets = new HashSet<>();
+    private final Map<OffsetPlayer, Double> scalingForTargets = new HashMap<>();
 
-    public OffsetSetCommand(OffsetCommandSender commandSender, List<? extends OffsetPlayer> targets, Offset offset) {
+    public OffsetSetCommand(OffsetCommandSender commandSender, List<? extends OffsetPlayer> targets, ScalableOffset offset) {
         this.commandSender = commandSender;
         this.targets = List.copyOf(targets);
         this.offset = offset;
@@ -43,7 +42,7 @@ public class OffsetSetCommand implements OffsetCommand {
     /**
      * Get the offset that was specified in the command.
      */
-    public Offset getOffset() {
+    public ScalableOffset getOffset() {
         return offset;
     }
 
@@ -72,5 +71,26 @@ public class OffsetSetCommand implements OffsetCommand {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Print a warning message to the sender that the specified offset will be scaled by the specified factor since the
+     * targeted player is in a world with a non-unit scaling factor.
+     *
+     * @param target Player whose offset will be scaled.
+     * @param scalingFactor The scaling factor (divisor) that will be applied to the offset.
+     */
+    public void warnScaling(OffsetPlayer target, double scalingFactor) {
+        scalingForTargets.put(target, scalingFactor);
+    }
+
+    /**
+     * Retrieve the scaling factor that will be applied to the offset for the specified player.
+     *
+     * @param target Player whose offset scaling factor is being retrieved.
+     * @return The scaling factor (divisor) that will be applied to the offset, or null if no scaling warning is set.
+     */
+    public @Nullable Double getWarnScaling(OffsetPlayer target) {
+        return scalingForTargets.get(target);
     }
 }

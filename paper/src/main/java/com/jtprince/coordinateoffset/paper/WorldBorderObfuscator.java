@@ -7,7 +7,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWo
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderSize;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayWorldBorderLerpSize;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.paper.adapter.PaperOffsetPlayer;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -91,7 +91,7 @@ class WorldBorderObfuscator {
     }
 
     void translate(PacketSendEvent packet, Player player) {
-        Offset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player)).offset();
+        FixedOffset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player)).offset();
 
         /*
          * For reasons I cannot fathom, the Minecraft protocol applies the world's coordinate scaling to the world

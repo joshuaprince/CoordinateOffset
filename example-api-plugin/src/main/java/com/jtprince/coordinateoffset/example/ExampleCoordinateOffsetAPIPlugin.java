@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.example;
 
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetChange;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
@@ -58,7 +59,7 @@ public class ExampleCoordinateOffsetAPIPlugin extends JavaPlugin implements List
         if (api == null) return;
 
         OffsetPlayer player = api.adaptPlayer(event.getPlayer()); // Adapt the Bukkit player to CO's generic type
-        Offset offset = api.getOffset(player);
+        FixedOffset offset = api.getOffset(player);
 
         Location realBlockLocation = event.getBlock().getLocation();
         Location playerBlockLocation = offset.apply(realBlockLocation); // Apply the offset to the block's location

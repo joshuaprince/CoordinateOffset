@@ -65,12 +65,10 @@ public class OffsetFactory {
             provider = core.getProviderConfig().getDefaultOffsetProviderConfig();
         }
 
-        // With provider selected, get the offset.
+        // With provider selected, get the offset and scale it if needed.
         Offset offset = provider.provideOffset(context);
-        return new OffsetData(
-            offset,
-            new OffsetData.Source.Provider(provider, providerIsOverride),
-            context);
+        FixedOffset fixed = fixOffsetVerbosely(offset, new OffsetData.Source.Provider(provider, providerIsOverride), context);
+        return new OffsetData(fixed, new OffsetData.Source.Provider(provider, providerIsOverride), context);
     }
 
     /**
@@ -91,7 +89,33 @@ public class OffsetFactory {
             );
         }
 
-        return new OffsetData(offset, source, context);
+        FixedOffset fixed = fixOffsetVerbosely(offset, source, context);
+        return new OffsetData(fixed, source, context);
+    }
+
+    private FixedOffset fixOffsetVerbosely(Offset offset, OffsetData.Source source, OffsetProviderContext context) {
+        return switch (offset) {
+            case FixedOffset f -> f;
+            case ScalableOffset s -> {
+                double scale = context.playerLocation().getWorld().getCoordinateScale();
+
+                if (offset.isZero() || scale == 1.0 || !core.getConfig().getVerbose()) yield s.scaleDownBy(scale);
+
+                String prefix = switch (source) {
+                    case OffsetData.Source.SetCommand cmd -> {
+                        cmd.command().warnScaling(context.player(), scale);
+                        yield "Command from " + cmd.command().getCommandSender().name() + ": ";
+                    }
+                    case OffsetData.Source.Provider provider -> "Provider \"" + provider.provider().name + "\": ";
+                    case OffsetData.Source.BedrockBypass ignored -> "";
+                    case OffsetData.Source.PermissionBypass ignored -> "";
+                    case OffsetData.Source.PluginSet ignored -> "";
+                };
+                core.getLogger().info(prefix + "Scaling offset " + s + " by " + scale + " to match coordinate scale of world \"" + context.playerLocation().getWorld().getName() + "\"");
+
+                yield s.scaleDownBy(scale);
+            }
+        };
     }
 
     /**

@@ -4,6 +4,7 @@ import com.jeff_media.morepersistentdatatypes.DataType;
 import com.jeff_media.morepersistentdatatypes.datatypes.GenericDataType;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPersistenceAdapter;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.paper.CoordinateOffsetPaperPlugin;
@@ -23,8 +24,8 @@ import java.util.UUID;
 
 @NullMarked
 public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
-    private static final PersistentDataType<int[], Offset> PDT_OFFSET =
-        new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), Offset.class,
+    private static final PersistentDataType<int[], ScalableOffset> PDT_OFFSET =
+        new GenericDataType<>(DataType.INTEGER_ARRAY.getPrimitiveType(), ScalableOffset.class,
             PaperPlayerOffsetPersistence::fromPdt, PaperPlayerOffsetPersistence::toPdt);
 
     private final CoordinateOffsetPaperPlugin plugin;
@@ -33,7 +34,7 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
     }
 
     @Override
-    public @Nullable Offset get(OffsetPlayer player, Key persistenceKey) {
+    public @Nullable ScalableOffset get(OffsetPlayer player, Key persistenceKey) {
         if (!(player instanceof PaperOffsetPlayer paperPlayer)) {
             throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
         }
@@ -43,7 +44,7 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
             return pdc.get(persistenceKeyToBukkitKey(persistenceKey), PDT_OFFSET);
         } else {
             // Check for old offset data to migrate
-            Offset recovered = preV6.recover(paperPlayer.getPlayer(), persistenceKey);
+            ScalableOffset recovered = preV6.recover(paperPlayer.getPlayer(), persistenceKey);
             if (recovered != null) {
                 put(paperPlayer, persistenceKey, recovered);
             }
@@ -52,7 +53,7 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
     }
 
     @Override
-    public void put(OffsetPlayer player, Key persistenceKey, Offset offset) {
+    public void put(OffsetPlayer player, Key persistenceKey, ScalableOffset offset) {
         if (!(player instanceof PaperOffsetPlayer paperPlayer)) {
             throw new IllegalArgumentException("Player must be an instance of PaperOffsetPlayer");
         }
@@ -73,11 +74,11 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
         preV6.clearOldPersistence(player, persistenceKey);
     }
 
-    private static Offset fromPdt(int[] arr) {
-        return new Offset(arr[0], arr[1]);
+    private static ScalableOffset fromPdt(int[] arr) {
+        return Offset.scalable(arr[0], arr[1]);
     }
 
-    private static int[] toPdt(Offset offset) {
+    private static int[] toPdt(ScalableOffset offset) {
         return new int[] { offset.x(), offset.z() };
     }
 
@@ -88,16 +89,16 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
 
     private final PreV6 preV6 = new PreV6();
     private class PreV6 {
-        private static final PersistentDataType<PersistentDataContainer, Map<String, Offset>> PDT_WORLD_OFFSET_CONTAINER =
+        private static final PersistentDataType<PersistentDataContainer, Map<String, ScalableOffset>> PDT_WORLD_OFFSET_CONTAINER =
             DataType.asMap(DataType.STRING, PDT_OFFSET);
         private static final String OLD_KEY_PREFIX = "random-persistence.";
         private static final String MIGRATED_KEY_SUFFIX = ".old-migrated-v6";
 
-        @Nullable Offset recover(Player player, Key persistenceKey) {
+        @Nullable ScalableOffset recover(Player player, Key persistenceKey) {
             try {
                 String key = null;
                 NamespacedKey fullKey = null;
-                Map<String /* world name */, Offset> foundData = null;
+                Map<String /* world name */, ScalableOffset> foundData = null;
 
                 // 1: look for old persistence from user override key (if override is set)
                 if (persistenceKey.persistenceKeyOverride() != null) {
@@ -117,7 +118,7 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
 
                 if (foundData == null) return null; // No data to recover.
 
-                Offset offset = find(player, foundData);
+                ScalableOffset offset = find(player, foundData);
                 if (offset != null) {
                     // Found a valid offset, archive the old data for visibility that it's old
                     NamespacedKey oldKey = new NamespacedKey(plugin, key + MIGRATED_KEY_SUFFIX);
@@ -133,7 +134,7 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
             }
         }
 
-        private @Nullable Offset find(Player player, Map<String /* world name */, Offset> map) {
+        private @Nullable ScalableOffset find(Player player, Map<String /* world name */, ScalableOffset> map) {
             /* Attempt 1: Find the currently loaded world with scaling of 1 that's in this data */
             for (World w : Bukkit.getWorlds()) {
                 if (w.getCoordinateScale() == 1 && map.containsKey(w.getName())) {
@@ -146,17 +147,21 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
                 if (map.containsKey(w.getName())) {
                     // Need to scale UP here. Example: the player only has an old offset of 160 in the nether; they
                     //  should get a new overworld offset of (160 * 8)
-                    Offset o = map.get(w.getName()).scaleDownBy(1 / w.getCoordinateScale());
+                    ScalableOffset saved = map.get(w.getName());
+                    ScalableOffset scaledUp = Offset.scalable(
+                        (int) (saved.x() * w.getCoordinateScale()),
+                        (int) (saved.z() * w.getCoordinateScale())
+                    );
                     CoordinateOffsetCore.get().getLogger().warning("Migrating old format of a persistent random offset for "
                         + player.getName() + " from world " + w.getName() + " - this may not be accurate (scaling it by "
-                        + w.getCoordinateScale() + " to make " + o + "). Manually change this with /offset set if this is "
+                        + w.getCoordinateScale() + " to make " + scaledUp + "). Manually change this with /offset set if this is "
                         + "not what you want.");
-                    return o;
+                    return scaledUp;
                 }
             }
 
             /* Attempt 3: Just take any offset, not good... */
-            for (Map.Entry<String, Offset> entry : map.entrySet()) {
+            for (Map.Entry<String, ScalableOffset> entry : map.entrySet()) {
                 CoordinateOffsetCore.get().getLogger().warning("Migrating old format of a persistent random offset for "
                     + player.getName() + " from world " + entry.getKey() + " - this is almost certainly inaccurate. "
                     + "Taking " + entry.getValue() + ". Manually change this with /offset set if this is not what you want.");

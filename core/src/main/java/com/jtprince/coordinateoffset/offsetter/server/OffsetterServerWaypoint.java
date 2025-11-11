@@ -5,7 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.waypoint.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWaypoint;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -16,7 +16,7 @@ public class OffsetterServerWaypoint extends PacketOffsetter<WrapperPlayServerWa
     }
 
     @Override
-    public void offset(WrapperPlayServerWaypoint packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerWaypoint packet, FixedOffset offset, User user) {
         TrackedWaypoint waypoint = packet.getWaypoint();
 
         WaypointInfo oldInfo = waypoint.getInfo();

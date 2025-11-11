@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -15,7 +15,7 @@ public class OffsetterServerPlayerPositionAndLook extends PacketOffsetter<Wrappe
     }
 
     @Override
-    public void offset(WrapperPlayServerPlayerPositionAndLook packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerPlayerPositionAndLook packet, FixedOffset offset, User user) {
         if (!packet.isRelativeFlag(RelativeFlag.X)) {
             packet.setX(applyX(packet.getX(), offset));
         }

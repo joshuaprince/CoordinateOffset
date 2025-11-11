@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.adapter;
 
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -36,7 +36,7 @@ public interface OffsetLocation {
      * @return A new {@code OffsetLocation} with the offset applied and all other data matching the original.
      */
     @Pure
-    OffsetLocation apply(Offset offset);
+    OffsetLocation apply(FixedOffset offset);
 
     /**
      * Reverses the application of the given offset from this location, effectively restoring the "real" coordinates
@@ -46,7 +46,7 @@ public interface OffsetLocation {
      * @return A new {@code OffsetLocation} with the offset unapplied and all other data matching the original.
      */
     @Pure
-    OffsetLocation unapply(Offset offset);
+    OffsetLocation unapply(FixedOffset offset);
 
     /**
      * Get the distance between two locations.

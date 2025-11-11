@@ -2,9 +2,9 @@ package com.jtprince.coordinateoffset.provider;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.ScalableOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.command.OffsetSetCommand;
-import com.jtprince.coordinateoffset.provider.util.CoordinateScaleUtils;
 import com.jtprince.coordinateoffset.provider.util.ProviderOffsetStore;
 import com.jtprince.coordinateoffset.provider.util.RegenerateConfig;
 import org.jspecify.annotations.NullMarked;
@@ -55,21 +55,14 @@ public final class RandomOffsetProvider extends CoreOffsetProvider {
         }
 
         // Check if the provider already has an offset calculated that was not cleared for a regenerate
-        Offset offset = offsetStore.get(context.player());
-        boolean isReusedOffset = true;
+        ScalableOffset offset = offsetStore.get(context.player());
         if (offset == null) {
             // Generate a new offset if we don't already have one for this player
             offset = Offset.random(randomBound);
             offsetStore.put(context.player(), offset);
-            isReusedOffset = false;
         }
 
-        return CoordinateScaleUtils.scaleVerbosely(
-            offset,
-            context.playerLocation().getWorld(),
-            this,
-            isReusedOffset ? "stored" : "new"
-        );
+        return offset;
     }
 
     @Override

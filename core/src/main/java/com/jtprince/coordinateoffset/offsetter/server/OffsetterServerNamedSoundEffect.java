@@ -2,7 +2,7 @@ package com.jtprince.coordinateoffset.offsetter.server;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import com.jtprince.coordinateoffset.offsetter.wrapper.WrapperPlayServerNamedSoundEffect;
 import org.jspecify.annotations.NullMarked;
@@ -15,7 +15,7 @@ public class OffsetterServerNamedSoundEffect extends PacketOffsetter<WrapperPlay
     }
 
     @Override
-    public void offset(WrapperPlayServerNamedSoundEffect packet, Offset offset, User user) {
+    public void offset(WrapperPlayServerNamedSoundEffect packet, FixedOffset offset, User user) {
         packet.setEffectPosition(applyTimes8(packet.getEffectPosition(), offset));
     }
 }

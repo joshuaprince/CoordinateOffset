@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public record OffsetData(
-    Offset offset,
+    FixedOffset offset,
     Source source,
     OffsetProviderContext context
 ) {

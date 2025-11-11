@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.api;
 
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.OffsetChange;
 import com.jtprince.coordinateoffset.OffsetData;
@@ -41,7 +42,7 @@ public interface CoordinateOffsetAPI {
      * @return The coordinate offset this player sees, or <code>Offset.ZERO</code> if the player has no offset.
      * @see CoordinateOffsetAPI#getOffsetData
      */
-    Offset getOffset(OffsetPlayer player);
+    FixedOffset getOffset(OffsetPlayer player);
 
     /**
      * Get information about a player's current offset, including the source from where the offset came and the

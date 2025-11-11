@@ -1,6 +1,6 @@
 package com.jtprince.coordinateoffset.paper.adapter;
 
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetWorld;
 import org.bukkit.Location;
@@ -36,12 +36,12 @@ public class PaperLocation implements OffsetLocation {
     }
 
     @Override
-    public OffsetLocation apply(Offset offset) {
+    public OffsetLocation apply(FixedOffset offset) {
         return new PaperLocation(location.clone().subtract(offset.x(), 0, offset.z()));
     }
 
     @Override
-    public OffsetLocation unapply(Offset offset) {
+    public OffsetLocation unapply(FixedOffset offset) {
         return new PaperLocation(location.clone().add(offset.x(), 0, offset.z()));
     }
 

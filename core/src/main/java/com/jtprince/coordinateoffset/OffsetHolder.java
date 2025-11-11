@@ -94,7 +94,7 @@ public class OffsetHolder {
      * @return The player's offset in the world they will soon be in.
      * @throws TimeoutException If the player's offset has not yet been generated and the timeout has been reached.
      */
-    public Offset waitForJoiningOffset(UUID playerUuid, int timeoutMillis) throws TimeoutException {
+    public FixedOffset waitForJoiningOffset(UUID playerUuid, int timeoutMillis) throws TimeoutException {
         PlayerOffsetData data = playerOffsetData.get(playerUuid);
         if (data == null && timeoutMillis > 0) {
             /*
@@ -317,7 +317,7 @@ public class OffsetHolder {
         if (!core.getConfig().getVerbose()) return;
 
         StringBuilder s = new StringBuilder();
-        s.append("Using ");
+        s.append("Using offset ");
         s.append(offset.offset());
         s.append(" from ");
         switch (offset.source()) {

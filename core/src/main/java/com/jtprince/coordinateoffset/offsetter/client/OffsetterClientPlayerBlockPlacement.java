@@ -3,7 +3,7 @@ package com.jtprince.coordinateoffset.offsetter.client;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
-import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.PacketOffsetter;
 import org.jspecify.annotations.NullMarked;
 
@@ -14,7 +14,7 @@ public class OffsetterClientPlayerBlockPlacement extends PacketOffsetter<Wrapper
     }
 
     @Override
-    public void offset(WrapperPlayClientPlayerBlockPlacement packet, Offset offset, User user) {
+    public void offset(WrapperPlayClientPlayerBlockPlacement packet, FixedOffset offset, User user) {
         packet.setBlockPosition(unapply(packet.getBlockPosition(), offset));
     }
 }

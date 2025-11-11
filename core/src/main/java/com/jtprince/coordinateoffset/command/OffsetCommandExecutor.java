@@ -1,6 +1,9 @@
 package com.jtprince.coordinateoffset.command;
 
-import com.jtprince.coordinateoffset.*;
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.OffsetChange;
+import com.jtprince.coordinateoffset.OffsetData;
+import com.jtprince.coordinateoffset.OffsetFactory;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
 import com.jtprince.coordinateoffset.config.MessagesConfig;
@@ -43,7 +46,7 @@ public class OffsetCommandExecutor {
 
         MessagesConfig.Query.C msgs;
         if (command.getCommandSender().isPlayer(command.getTarget())) {
-            if (offset.offset().equals(Offset.ZERO)) {
+            if (offset.offset().isZero()) {
                 msgs = core.getMessages().query.selfNoOffset;
             } else {
                 msgs = core.getMessages().query.self;
@@ -143,6 +146,15 @@ public class OffsetCommandExecutor {
         List<OffsetPlayer> successfulTargets = new ArrayList<>();
         for (OffsetPlayer target : command.getTargets()) {
             OffsetChange result = core.getOffsetHolder().setNextOffsetByCommand(target, command);
+
+            Double warnScaling = command.getWarnScaling(target);
+            if (warnScaling != null && warnScaling != 1.0) {
+                core.getMessages().set.warningCoordinateScaling.send(command.getCommandSender(),
+                    Placeholder.component("target", Component.text(target.getName())),
+                    Placeholder.component("scaling", Component.text(warnScaling)),
+                    Placeholder.component("world", Component.text(target.getLocation().getWorld().getName())));
+            }
+
             if (!result.offsetChanged()) {
                 MessagesConfig.Message msg = switch (result.newOffsetData().source()) {
                     case OffsetData.Source.BedrockBypass ignored -> core.getMessages().set.unchangedBedrock;
