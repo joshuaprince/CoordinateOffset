@@ -41,13 +41,13 @@ public class TestOffset {
 
     @Test
     void testScale() {
-        Assertions.assertEquals(new Offset(64, -128), new Offset(16, -32).scale(-2));
-        Assertions.assertEquals(new Offset(-48, -128), new Offset(-48, -128).scale(0));
+        Assertions.assertEquals(new Offset(64, -128), new Offset(16, -32).scaleDownBy(0.25));
+        Assertions.assertEquals(new Offset(-48, -128), new Offset(-48, -128).scaleDownBy(1.0));
 
         // Clean scaling (dividing inputs by 8 still results in a multiple of 16)
-        Assertions.assertEquals(new Offset(96, -176), new Offset(768, -1408).scale(3));
+        Assertions.assertEquals(new Offset(96, -176), new Offset(768, -1408).scaleDownBy(8.0));
         // Truncated scaling (dividing inputs by 8 does NOT result in a multiple of 16, so they must be aligned)
-        Assertions.assertEquals(new Offset(-48, 16), new Offset(-432, 144).scale(3));
-        Assertions.assertEquals(new Offset(-64, 32), new Offset(-464, 192).scale(3));
+        Assertions.assertEquals(new Offset(-48, 16), new Offset(-432, 144).scaleDownBy(8.0));
+        Assertions.assertEquals(new Offset(-64, 32), new Offset(-464, 192).scaleDownBy(8.0));
     }
 }

@@ -87,37 +87,6 @@ public record Offset (int x, int z) {
     }
 
     /**
-     * Get a new Offset with the components of this offset scaled by a power of two.
-     *
-     * @param rightShiftAmount The amount to right-shift this Offset's components. A negative value will make the offset
-     *                         larger (e.g. -3 would multiply the components by 8). A positive value will make the
-     *                         offset smaller (e.g. 5 would divide the components by 32).
-     * @return A new Offset aligned to 1 chunk.
-     */
-    @Pure
-    public Offset scale(int rightShiftAmount) {
-        if (rightShiftAmount <= 0) {
-            return new Offset(x << -rightShiftAmount, z << -rightShiftAmount);
-        } else {
-            // When scaling the offset down, ensure that the new offset is also divisible by 16.
-            return Offset.align(x >> rightShiftAmount, z >> rightShiftAmount);
-        }
-    }
-
-    /**
-     * Get a new Offset with the components of this offset <b>multiplied</b> by an arbitrary number and rounded.
-     *
-     * @deprecated Ambiguous scaling direction. Use {@link #scaleDownBy(double)} instead.
-     * @param scaleFactor The factor to multiply this offset by.
-     * @return A new Offset aligned to 1 chunk.
-     */
-    @Deprecated
-    @Pure
-    public Offset scaleByDouble(double scaleFactor) {
-        return Offset.align((int) Math.round(x * scaleFactor), (int) Math.round(z * scaleFactor));
-    }
-
-    /**
      * Get a new Offset with the components of this offset <b>divided</b> by an arbitrary number and rounded.
      *
      * @param scaleFactor The factor to divide this offset by.

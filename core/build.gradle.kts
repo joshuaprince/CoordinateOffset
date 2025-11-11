@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":api"))
     implementation(libs.configlib.paper) // TODO: Minor leak of Paper platform into core
 
+    testCompileOnly(libs.jspecify)
     testImplementation(libs.test.junit.jupiter)
     testRuntimeOnly(libs.test.junit.platform)
 }
