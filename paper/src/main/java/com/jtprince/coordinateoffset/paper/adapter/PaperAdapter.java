@@ -73,6 +73,13 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
+    public void assertMainThread(String methodName) throws IllegalStateException {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("Method \"" + methodName + "\" must be called on the main server thread.");
+        }
+    }
+
+    @Override
     public void shutdown() {
         Bukkit.getPluginManager().disablePlugin(plugin);
     }

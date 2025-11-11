@@ -28,6 +28,13 @@ public interface CoordinateOffsetAdapter {
     OffsetSwapper getOffsetSwapper();
 
     /**
+     * Assert that the current thread is the main server thread, or throw an {@link IllegalStateException} if it is not.
+     *
+     * @param methodName Name of the method being called. Printed in the exception message for help tracking.
+     */
+    void assertMainThread(String methodName) throws IllegalStateException;
+
+    /**
      * Initiate internal shutdown of CoordinateOffset due to an error. Should not be called as part of server shutdown.
      */
     void shutdown();

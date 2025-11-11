@@ -36,6 +36,8 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
 
     @Override
     public OffsetChange regenerateOffset(OffsetPlayer player) {
+        CoordinateOffsetCore.get().getAdapter().assertMainThread("regenerateOffset"); // throws IllegalStateException
+
         OffsetChange result = core.getOffsetHolder().generateNextOffset(
             player, player.getLocation(), player.getLocation(), OffsetProviderContext.ProvideReason.PLUGIN_REGENERATE);
         if (result.offsetChanged()) {
@@ -46,6 +48,8 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
 
     @Override
     public OffsetChange setOffset(OffsetPlayer player, Offset offset) {
+        CoordinateOffsetCore.get().getAdapter().assertMainThread("setOffset"); // throws IllegalStateException
+
         OffsetChange result = core.getOffsetHolder().setNextOffsetByPlugin(player, offset);
         if (result.offsetChanged()) {
             core.getAdapter().getOffsetSwapper().forceOffsetSwap(player);
