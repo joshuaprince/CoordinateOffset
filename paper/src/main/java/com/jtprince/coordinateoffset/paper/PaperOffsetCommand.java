@@ -18,6 +18,7 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -193,6 +194,19 @@ public class PaperOffsetCommand {
 
         int x = IntegerArgumentType.getInteger(context, "x");
         int z = IntegerArgumentType.getInteger(context, "z");
+
+        if (x % 16 != 0) {
+            core.getMessages().set.invalidNotMultipleOf16.send(context.getSource().getSender(),
+                Placeholder.component("component", Component.text("x")),
+                Placeholder.component("value", Component.text(x)));
+            return 0;
+        }
+        if (z % 16 != 0) {
+            core.getMessages().set.invalidNotMultipleOf16.send(context.getSource().getSender(),
+                Placeholder.component("component", Component.text("z")),
+                Placeholder.component("value", Component.text(z)));
+            return 0;
+        }
 
         Offset offset;
         try {

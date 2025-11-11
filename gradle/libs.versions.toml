@@ -5,6 +5,7 @@ paper-apiversion = "1.21.4" # plugin.yml apiVersion
 
 [libraries]
 adventure-api = { group = "net.kyori", name = "adventure-api", version = "4.25.0" }
+adventure-minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version = "4.25.0" }
 bstats-bukkit = { group = "org.bstats", name = "bstats-bukkit", version = "3.1.0" }
 configlib-core = { group = "de.exlll", name = "configlib-core", version = "4.6.3" }
 configlib-paper = { group = "de.exlll", name = "configlib-paper", version = "4.6.3" }

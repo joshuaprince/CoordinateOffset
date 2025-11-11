@@ -26,8 +26,8 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
     }
 
     @Override
-    public Path getConfigPath() {
-        return plugin.getDataFolder().toPath().resolve("config.yml");
+    public Path getConfigDir() {
+        return plugin.getDataFolder().toPath();
     }
 
     @Override

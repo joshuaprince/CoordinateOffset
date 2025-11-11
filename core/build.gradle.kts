@@ -1,5 +1,6 @@
 dependencies {
     compileOnly(libs.adventure.api)
+    compileOnly(libs.adventure.minimessage)
     compileOnly(libs.geyser.api)
     compileOnly(libs.jspecify)
     compileOnly(libs.packetevents.api)

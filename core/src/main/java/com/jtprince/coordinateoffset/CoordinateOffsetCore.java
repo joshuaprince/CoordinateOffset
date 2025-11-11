@@ -7,6 +7,7 @@ import com.jtprince.coordinateoffset.command.OffsetCommandExecutor;
 import com.jtprince.coordinateoffset.config.ConfigHolder;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
+import com.jtprince.coordinateoffset.config.MessagesConfig;
 import com.jtprince.coordinateoffset.provider.ConstantOffsetProvider;
 import com.jtprince.coordinateoffset.provider.RandomOffsetProvider;
 import com.jtprince.coordinateoffset.provider.ZeroAtLocationOffsetProvider;
@@ -45,6 +46,7 @@ public class CoordinateOffsetCore {
         CoordinateOffsetCore core = new CoordinateOffsetCore(adapter);
         singleton = core;
 
+        core.configHolder.loadMessagesConfig();
         core.configHolder.loadBaseConfig();
 
         CoordinateOffsetAPI api = new CoordinateOffsetAPIImpl(core);
@@ -99,6 +101,10 @@ public class CoordinateOffsetCore {
 
     public CoordinateOffsetProviderConfig getProviderConfig() {
         return configHolder.getProviderConfig();
+    }
+
+    public MessagesConfig getMessages() {
+        return configHolder.getMessagesConfig();
     }
 
     public OffsetCommandExecutor getCommandExecutor() {

@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 @NullMarked
 public interface CoordinateOffsetAdapter {
-    Path getConfigPath();
+    Path getConfigDir();
 
     Logger getLogger();
 

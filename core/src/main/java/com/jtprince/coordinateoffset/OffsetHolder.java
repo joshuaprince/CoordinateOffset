@@ -304,7 +304,7 @@ public class OffsetHolder {
                     s.append(" (default provider)");
                 }
             }
-            case OffsetData.Source.SetCommand p -> s.append("command by ").append(p.command().getCommandSender());
+            case OffsetData.Source.SetCommand p -> s.append("command by ").append(p.command().getCommandSender().name());
         }
         s.append(" for player ");
         s.append(offset.context().player().getName());
