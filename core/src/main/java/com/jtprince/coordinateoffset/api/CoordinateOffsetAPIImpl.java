@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.api;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.OffsetChange;
 import com.jtprince.coordinateoffset.OffsetData;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
@@ -9,6 +10,7 @@ import com.jtprince.coordinateoffset.config.CoordinateOffsetConfig;
 import com.jtprince.coordinateoffset.config.CoordinateOffsetProviderConfig;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProviderConfig;
+import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -30,6 +32,25 @@ public class CoordinateOffsetAPIImpl implements CoordinateOffsetAPI {
     @Override
     public OffsetData getOffsetData(OffsetPlayer player) {
         return core.getOffsetHolder().getOffset(player);
+    }
+
+    @Override
+    public OffsetChange regenerateOffset(OffsetPlayer player) {
+        OffsetChange result = core.getOffsetHolder().generateNextOffset(
+            player, player.getLocation(), player.getLocation(), OffsetProviderContext.ProvideReason.PLUGIN_REGENERATE);
+        if (result.offsetChanged()) {
+            core.getAdapter().getOffsetSwapper().forceOffsetSwap(player);
+        }
+        return result;
+    }
+
+    @Override
+    public OffsetChange setOffset(OffsetPlayer player, Offset offset) {
+        OffsetChange result = core.getOffsetHolder().setNextOffsetByPlugin(player, offset);
+        if (result.offsetChanged()) {
+            core.getAdapter().getOffsetSwapper().forceOffsetSwap(player);
+        }
+        return result;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.api;
 
 import com.jtprince.coordinateoffset.Offset;
+import com.jtprince.coordinateoffset.OffsetChange;
 import com.jtprince.coordinateoffset.OffsetData;
 import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
@@ -50,6 +51,42 @@ public interface CoordinateOffsetAPI {
      * @return A container for all known data about the player's current offset.
      */
     OffsetData getOffsetData(OffsetPlayer player);
+
+    /**
+     * Immediately regenerate the player's current offset by selecting a new offset from the applicably configured
+     * offset provider. This forces a teleport effect on the player if their offset is changed, but it does not move
+     * them in real coordinate space.
+     *
+     * @param player A player currently logged in to the server. Use {@link #adaptPlayer(Object)} to convert
+     *               a platform-specific instance (such as a Bukkit <code>Player</code>) to an {@link OffsetPlayer}, or
+     *               {@link #getPlayer(UUID)} to get a player by their UUID.
+     * @return A container with the player's previous and new offset, which can be inspected to determine if the offset
+     *         was changed.
+     */
+    OffsetChange regenerateOffset(OffsetPlayer player);
+
+    /**
+     * Immediately set the player's current offset. This forces a teleport effect on the player if their offset is
+     * changed, but it does not move them in real coordinate space.
+     *
+     * <p>Use of this function is <b>discouraged</b> because any applied offset will be lost as soon as the player's
+     * offset has a chance to change. This means <b>any</b> teleport, world change, or relog will undo the offset
+     * applied here. This is the case even if <code>regenerateOn*</code> options in the configuration are set to
+     * false.</p>
+     * 
+     * <p>To apply an offset that persists, instead register an {@link OffsetProvider} with
+     * {@link CoordinateOffsetAPI#registerOffsetProviderClass}, apply the offset provider in the plugin's configuration,
+     * and call {@link #regenerateOffset}. Return the desired offset in your offset provider, and that offset will
+     * continue to be applied every time the player's offset might change.</p>
+     *
+     * @param player A player currently logged in to the server. Use {@link #adaptPlayer(Object)} to convert
+     *               a platform-specific instance (such as a Bukkit <code>Player</code>) to an {@link OffsetPlayer}, or
+     *               {@link #getPlayer(UUID)} to get a player by their UUID.
+     * @param offset The new offset to apply.
+     * @return A container with the player's previous and new offset, which can be inspected to determine if the offset
+     *         was changed.
+     */
+    OffsetChange setOffset(OffsetPlayer player, Offset offset);
 
     /**
      * Get an {@link OffsetPlayer} instance for a player currently connected to the server by their UUID.

@@ -21,7 +21,7 @@ public record OffsetData(
     OffsetProviderContext context
 ) {
     public sealed interface Source
-        permits Source.PermissionBypass, Source.BedrockBypass, Source.Provider, Source.SetCommand {
+        permits Source.PermissionBypass, Source.BedrockBypass, Source.Provider, Source.SetCommand, Source.PluginSet {
 
         /** This offset is zero and was generated because the player has permission to bypass offsets. */
         record PermissionBypass() implements Source {}
@@ -31,5 +31,7 @@ public record OffsetData(
         record Provider(OffsetProvider provider, boolean isOverride) implements Source {}
         /** This offset was explicitly set by a command. */
         record SetCommand(OffsetSetCommand command, @Nullable OffsetProvider affectedProvider) implements Source {}
+        /** This offset was directly set by a third-party plugin (NOT a provider defined by the plugin). */
+        record PluginSet() implements Source {}
     }
 }

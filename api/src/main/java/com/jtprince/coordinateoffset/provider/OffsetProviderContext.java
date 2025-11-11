@@ -60,7 +60,7 @@ public record OffsetProviderContext(
          * <code>/offset set</code>). Note that offset providers are never called to provide an offset for this
          * reason since the offset is predetermined by the command.
          *
-         * @see OffsetProvider#onOffsetSetByCommand(OffsetPlayer, Offset)
+         * @see OffsetProvider#onOffsetSetByCommand
          */
         COMMAND_SET,
 
@@ -68,6 +68,13 @@ public record OffsetProviderContext(
          * A player's offset is being generated immediately because a third-party plugin requested it.
          */
         PLUGIN_REGENERATE,
+
+        /**
+         * A player's offset is being set immediately because a third-party plugin called a method to set it.
+         * Note that offset providers are never called to provide an offset for this reason since the offset is
+         * predetermined by the plugin.
+         */
+        PLUGIN_SET
     }
 
     /**

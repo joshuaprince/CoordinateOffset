@@ -42,7 +42,7 @@ public final class ZeroAtLocationOffsetProvider extends CoreOffsetProvider {
                 Objects.requireNonNull(distanceTeleported);
                 yield regenerateConfig.isRegenOnDistantTeleport(distanceTeleported);
             }
-            case COMMAND_SET -> false; /* Should be unreachable - offset providers are not called for this reason */
+            case COMMAND_SET, PLUGIN_SET -> false; /* Should be unreachable - offset providers are not called for this reason */
         };
         if (willRegenerate) {
             offsetStore.clear(context.player().getUuid());

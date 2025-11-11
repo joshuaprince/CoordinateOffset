@@ -90,6 +90,10 @@ public class OffsetCommandExecutor {
                     core.getMessages().query.verbose.generatedByCommand.send(command.getCommandSender(),
                         Placeholder.component("sender", Component.text(setCommand.command().getCommandSender().name())));
                 }
+                case OffsetData.Source.PluginSet ignored -> {
+                    // "This offset was set by an external plugin"
+                    core.getMessages().query.verbose.generatedByPlugin.send(command.getCommandSender());
+                }
             }
         }
 
@@ -108,6 +112,7 @@ public class OffsetCommandExecutor {
                     case OffsetData.Source.PermissionBypass ignored -> core.getMessages().regenerate.unchangedPermission;
                     case OffsetData.Source.Provider ignored -> core.getMessages().regenerate.unchanged;
                     case OffsetData.Source.SetCommand ignored -> core.getMessages().regenerate.unchanged;
+                    case OffsetData.Source.PluginSet ignored -> core.getMessages().regenerate.unchanged;
                 };
                 msg.send(command.getCommandSender(),
                     Placeholder.component("target", Component.text(target.getName())));
@@ -137,13 +142,14 @@ public class OffsetCommandExecutor {
     public Result execute(OffsetSetCommand command) {
         List<OffsetPlayer> successfulTargets = new ArrayList<>();
         for (OffsetPlayer target : command.getTargets()) {
-            OffsetChange result = core.getOffsetHolder().setNextOffsetByCommand(target, target.getLocation(), command);
+            OffsetChange result = core.getOffsetHolder().setNextOffsetByCommand(target, command);
             if (!result.offsetChanged()) {
                 MessagesConfig.Message msg = switch (result.newOffsetData().source()) {
                     case OffsetData.Source.BedrockBypass ignored -> core.getMessages().set.unchangedBedrock;
                     case OffsetData.Source.PermissionBypass ignored -> core.getMessages().set.unchanged;
                     case OffsetData.Source.Provider ignored -> core.getMessages().set.unchanged;
                     case OffsetData.Source.SetCommand ignored -> core.getMessages().set.unchanged;
+                    case OffsetData.Source.PluginSet ignored -> core.getMessages().set.unchanged;
                 };
                 msg.send(command.getCommandSender(),
                     Placeholder.component("target", Component.text(target.getName())));
