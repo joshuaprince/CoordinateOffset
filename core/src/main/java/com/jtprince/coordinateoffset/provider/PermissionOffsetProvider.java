@@ -3,8 +3,6 @@ package com.jtprince.coordinateoffset.provider;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.ScalableOffset;
-import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.*;
@@ -95,11 +93,6 @@ public final class PermissionOffsetProvider extends CoreOffsetProvider {
                 prefix + ".x.z\" to hide this warning.");
             return sortedOffsets.getFirst();
         }
-    }
-
-    @Override
-    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
-        command.warnOffsetIsNotPersistentInProvider(this, target);
     }
 
     @Override
