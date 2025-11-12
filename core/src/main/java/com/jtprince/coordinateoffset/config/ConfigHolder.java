@@ -28,6 +28,7 @@ public class ConfigHolder {
             .header("""
                     CoordinateOffset Language/Messages File
                     Formatting help: https://webui.advntr.dev/
+                    Set a message to an empty string '' to disable it.
                     Comments and extra keys left in this file will be deleted when configuration is loaded.
                     """)
             .build();
