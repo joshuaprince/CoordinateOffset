@@ -1,3 +1,42 @@
+# v6.0.0
+*Supported Minecraft servers: Paper 1.21.4-1.21.10*
+
+CoordinateOffset 5.0.0 just came out a few weeks ago, but thanks to a breakthrough I made in **immediate offset 
+changes**, it's already time for another major release.
+
+"Immediate offset changes" means that the plugin no longer has to wait for the next opportune event to change a player's
+offset. By simulating a teleport, the plugin can change a player's offset at any time. This allows commands like
+`/offset regenerate` and `/offset set` to exist. It also allows safe offset changes when the player teleports any
+distance.
+
+If you like reading, check out the fully documented list of changes in the
+**[v6 Upgrade Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/v6-Upgrade-Guide)**. You should especially
+read this if you made any significant configuration changes or used the CoordinateOffset API. Otherwise, here's the
+summary of everything new:
+
+- **Regular backups are still mandatory.**
+- Add `/offset regenerate` and `/offset set` commands.
+- Add `PermissionOffsetProvider`.
+- Add option to specify `offsetProviderOverrides` rules based on player name, world key, and world UUID.
+- Add `regenerateOnTeleport` and `minimumTeleportDistance` options to RandomOffsetProvider and
+  ZeroAtLocationOffsetProvider. (Replaces `resetOnDistantTeleport` and `allowUnsafeResetOnDistantTeleport` settings)
+- Rename `resetOn*` offset provider options to `regenerateOn*` to match the new command. (Configuration will
+  automatically migrate and leave values unchanged.)
+- Rename `persistent` Random offset provider option to `regenerateOnJoin`. (Configuration will automatically migrate
+  and leave behavior unchanged; `false` and `true` are swapped automatically.)
+- Remove `persistenceKey` Random offset provider option in favor of using provider name.
+- Redesign internal handling for offsets between worlds.
+  - Offsets now scale automatically based on world coordinate scale (e.g. nether scales down by 8).
+  - Move `worldScaling` and `worldAlignment` options out of offset provider settings and into optional
+    `worldCoordinateScaleOverrides` global configuration. (Not automatically migrated from the previous version)
+- Automatically disable offsets for Bedrock players with no extra permissions/config required.
+- Add `messages.yml` to allow customization/translation of most plugin messages.
+- API Changes
+  - Offsets returned from custom offset providers are now split into `ScalableOffset` and `FixedOffset` to give fine
+    control over how providers interact with world coordinate scaling.
+  - Add new API endpoints to `regenerateOffset` and `setOffset` for immediate offset changes.
+  - Add `onOffsetSetByCommand` interface to offset providers.
+
 # v5.0.0
 *Supported Minecraft servers: Paper 1.21.4-1.21.10*
 
