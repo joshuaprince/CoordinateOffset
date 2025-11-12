@@ -118,7 +118,7 @@ public class ConfigHolder {
             e.printStackTrace();
         }
         if (success) {
-            CoordinateOffsetCore.get().getLogger().info("Config reloaded.");
+            CoordinateOffsetCore.get().getLogger().info("Config and messages reloaded.");
         } else {
             CoordinateOffsetCore.get().getLogger().warning("Failed to reload config. Running configuration has not been changed.");
         }
