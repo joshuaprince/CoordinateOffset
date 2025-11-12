@@ -34,7 +34,7 @@ Why?
 ----
 This plugin isn't intended for all servers. Here are a few ideas that might make CoordinateOffset useful:
 * **Prevent metagaming**: If you consider coordinate usage and sharing to be metagaming, this prevents it.
-* **Buff in-game items**: Coordinates no longer outclass compasses, lodestones, recovery compasses, and maps
+* **Amplify in-game items**: Coordinates no longer outclass compasses, lodestones, recovery compasses, and maps
   when those coordinates are inconsistent.
 * **Prevent coordinate leaks**: If everyone sees different coordinates, players cannot derive each other's coordinates
   from an accidental leak in a screenshot.
@@ -56,15 +56,17 @@ Features
 
 Requirements and Installation
 -----------------------------
+* **An understanding of the 
+  [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations)
+  — this plugin WILL break things.**
 * [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.10
 * [PacketEvents](https://github.com/retrooper/packetevents/releases) (latest release or [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) for Spigot)
-* An understanding of the [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
 Some known **incompatible** plugins are: Most anticheats, Geyser, Distant Horizons.
 
 After ensuring that you meet the requirements, just grab the latest
 [release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
-folder. Then follow the steps below to configure how coordinates are affected for each player.
+folder. Then follow the steps below to configure how coordinates are shifted for each player.
 
 Configuration
 -------------
@@ -83,6 +85,7 @@ matches the type of offsetting you're trying to achieve:
 * `disabled` - Players will see their real coordinates.
 * `random` - Individually randomize each player's offset. Optionally re-roll offsets upon player actions.
 * `zeroAtLocation` - Use an offset based on the player's starting location, so they see themselves near (0, 0).
+  Optionally re-center offsets upon player actions.
 * `permission` - Assign permissions to players, like `coordinateoffset.offset.160.-240`, to control their offset.
 
 You can customize these providers further, use different providers for different players/worlds/groups, and define your

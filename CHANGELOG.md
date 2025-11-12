@@ -1,17 +1,17 @@
 # v6.0.0
 *Supported Minecraft servers: Paper 1.21.4-1.21.10*
 
-CoordinateOffset 5.0.0 just came out a few weeks ago, but thanks to a breakthrough I made in **immediate offset 
-changes**, it's already time for another major release.
+CoordinateOffset [5.0.0](https://github.com/joshuaprince/CoordinateOffset/releases/tag/v5.0.0) just came out a few
+weeks ago, but thanks to a breakthrough I made in **immediate offset changes**, it's already time for another major
+release.
 
 "Immediate offset changes" means that the plugin no longer has to wait for the next opportune event to change a player's
-offset. By simulating a teleport, the plugin can change a player's offset at any time. This allows commands like
-`/offset regenerate` and `/offset set` to exist. It also allows safe offset changes when the player teleports any
-distance.
+offset. By simulating a teleport, the plugin can change a player's offset at any time. This allows for commands like
+`/offset regenerate` and `/offset set`. It also allows safe offset changes when the player teleports any distance.
 
 If you like reading, check out the fully documented list of changes in the
 **[v6 Upgrade Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/v6-Upgrade-Guide)**. You should especially
-read this if you made any significant configuration changes or used the CoordinateOffset API. Otherwise, here's the
+read this if you made any significant configuration changes or use the CoordinateOffset API. Otherwise, here's the
 summary of everything new:
 
 - **Regular backups are still mandatory.**
@@ -22,13 +22,19 @@ summary of everything new:
   ZeroAtLocationOffsetProvider. (Replaces `resetOnDistantTeleport` and `allowUnsafeResetOnDistantTeleport` settings)
 - Rename `resetOn*` offset provider options to `regenerateOn*` to match the new command. (Configuration will
   automatically migrate and leave values unchanged.)
-- Rename `persistent` Random offset provider option to `regenerateOnJoin`. (Configuration will automatically migrate
+- Rename `persistent` RandomOffsetProvider option to `regenerateOnJoin`. (Configuration will automatically migrate
   and leave behavior unchanged; `false` and `true` are swapped automatically.)
 - Remove `persistenceKey` Random offset provider option in favor of using provider name.
+- Add `regenerateOnJoin` option to `ZeroAtLocationOffsetProvider`, allowing zero-at-location offsets to persist across
+  joins and server restarts.
+- Make all `regenerateOn*` options default to false. (The `persistent` option previously defaulted to false; newly-
+  generated configurations now persist random offsets forever by default.)
 - Redesign internal handling for offsets between worlds.
   - Offsets now scale automatically based on world coordinate scale (e.g. nether scales down by 8).
   - Move `worldScaling` and `worldAlignment` options out of offset provider settings and into optional
     `worldCoordinateScaleOverrides` global configuration. (Not automatically migrated from the previous version)
+- Add a default `offsetProviderOverrides` rule that disables offsets in the end. (Only for newly generated configs;
+  can be removed if desired.)
 - Automatically disable offsets for Bedrock players with no extra permissions/config required.
 - Add `messages.yml` to allow customization/translation of most plugin messages.
 - API Changes
