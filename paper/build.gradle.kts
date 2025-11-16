@@ -101,7 +101,7 @@ hangarPublish {
 modrinth {
     token = providers.environmentVariable("MODRINTH_TOKEN")
     projectId = "coordinateoffset"
-    version = "CoordinateOffset ${project.version}"
+    versionName = "CoordinateOffset ${project.version}"
     versionNumber = "${project.version}"
     versionType = "release"
     uploadFile.set(tasks.shadowJar)
