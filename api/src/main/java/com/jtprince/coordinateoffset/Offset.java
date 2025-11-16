@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset;
 
+import com.jtprince.coordinateoffset.adapter.OffsetLocation;
 import org.checkerframework.dataflow.qual.Pure;
 import org.jspecify.annotations.NullMarked;
 
@@ -156,6 +157,30 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
     static int alignComponent(int component, int alignToChunksPower) {
         return Math.round((float) component / (1 << alignToChunksPower + 4)) * (1 << alignToChunksPower + 4);
     }
+
+    /**
+     * Apply this offset to a location.
+     *
+     * @param location Location to apply the offset to. This may either be a {@link OffsetLocation} or a
+     *                 platform-specific location object, such as a Bukkit Location.
+     * @return A new Location object with the offset applied and all other data (including type) matching the original.
+     * @param <T> Either {@link OffsetLocation} or a platform-specific location object.
+     * @throws ClassCastException if the provided object is not of an acceptable type for the running platform.
+     */
+    @Pure
+    <T> T apply(T location) throws ClassCastException;
+
+    /**
+     * Unapply this offset from a location.
+     *
+     * @param location Location to unapply the offset from. This may either be a {@link OffsetLocation} or a
+     *                 platform-specific location object, such as a Bukkit Location.
+     * @return A new Location object with the offset unapplied and all other data (including type) matching the original.
+     * @param <T> Either {@link OffsetLocation} or a platform-specific location object.
+     * @throws ClassCastException if the provided object is not of an acceptable type for the running platform.
+     */
+    @Pure
+    <T> T unapply(T location) throws ClassCastException;
 
     /**
      * Get a new Offset with the inverse components as this one (x -> -x, z -> -z).
