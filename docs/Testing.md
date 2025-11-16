@@ -65,6 +65,8 @@ These items and blocks have some kind of interactions that use packets that need
   * Die and verify that it properly points to the place you died.
   * Change worlds and verify that it spins when in a different world from where you died.
   * Log out and back in in the world you died, and verify that it still points to the place you died.
+  * Use `/offset regenerate` to change your offset. Verify that the compass still points to the place you died with the
+    new offset.
 * Lodestone/Lodestone Compass
   * NOTE: These behave differently in Creative mode and Survival mode. Do these tests once in both modes.
   * Verify that an attuned compass points to the Lodestone.
@@ -139,3 +141,11 @@ obfuscation is complex.
   * `/worldborder set 3000`
 * Teleport to `2499 ~ 2499` and ensure that the border is visible right next to you.
 * If using a packet sniffer, move far away from the border and ensure that border packets indicate a center of (0, 0).
+
+Forced Offset Change Tests
+--------------------------
+* With the default random offset provider, verify that `/offset regenerate` immediately changes the offset.
+  * Verify that no errors are printed in the console.
+  * Verify that nearby mobs are visible before and after the offset change.
+* Verify that `/offset set <x> <z>` immediately changes the offset.
+  * Verify that no errors are printed in the console.

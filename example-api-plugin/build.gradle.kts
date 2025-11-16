@@ -7,8 +7,8 @@ dependencies {
      *  shadow("io.papermc.paper:paper-api:<VERSION>-R0.1-SNAPSHOT")
      *  shadow("com.jtprince.coordinateoffset:coordinateoffset-api:<VERSION>")
      * CoordinateOffset API version examples:
-     *  - 5.0.0
-     *  - 5.1-SNAPSHOT
+     *  - 6.0.0
+     *  - 6.0.1-SNAPSHOT
      */
     compileOnly(libs.paper.api)
     compileOnly(project(":api"))

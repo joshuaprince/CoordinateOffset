@@ -1,9 +1,11 @@
+WARNING: This changelog is automatically parsed by various Gradle release tasks. Maintain the format, especially the
+"Supported Minecraft servers" line in each release — this line is parsed to set release versions on Hangar and Modrinth.
+
 # v6.0.0
 *Supported Minecraft servers: Paper 1.21.4-1.21.10*
 
-CoordinateOffset [5.0.0](https://github.com/joshuaprince/CoordinateOffset/releases/tag/v5.0.0) just came out a few
-weeks ago, but thanks to a breakthrough I made in **immediate offset changes**, it's already time for another major
-release.
+CoordinateOffset [5.0.0](https://github.com/joshuaprince/CoordinateOffset/releases/tag/v5.0.0) just came out last month,
+but thanks to a breakthrough I made in **immediate offset changes**, it's already time for another major release.
 
 "Immediate offset changes" means that the plugin no longer has to wait for the next opportune event to change a player's
 offset. By simulating a teleport, the plugin can change a player's offset at any time. This allows for commands like
@@ -17,7 +19,8 @@ summary of everything new:
 - **Regular backups are still mandatory.**
 - Add `/offset regenerate` and `/offset set` commands.
 - Add `PermissionOffsetProvider`.
-- Add option to specify `offsetProviderOverrides` rules based on player name, world key, and world UUID.
+- Add option to specify `offsetProviderOverrides` rules based on player name, world key, and world UUID. (Previously
+  only player UUID and world name were supported.)
 - Add `regenerateOnTeleport` and `minimumTeleportDistance` options to RandomOffsetProvider and
   ZeroAtLocationOffsetProvider. (Replaces `resetOnDistantTeleport` and `allowUnsafeResetOnDistantTeleport` settings)
 - Rename `resetOn*` offset provider options to `regenerateOn*` to match the new command. (Configuration will
@@ -27,9 +30,9 @@ summary of everything new:
 - Remove `persistenceKey` Random offset provider option in favor of using provider name.
 - Add `regenerateOnJoin` option to `ZeroAtLocationOffsetProvider`, allowing zero-at-location offsets to persist across
   joins and server restarts.
-- Make all `regenerateOn*` options default to false. (The `persistent` option previously defaulted to false; newly-
-  generated configurations now persist random offsets forever by default.)
-- Redesign internal handling for offsets between worlds.
+- Default all `regenerateOn*` options to false. (The `persistent` option previously defaulted to false; newly generated
+  configurations now persist random offsets forever by default.)
+- Redesign internal handling for scaling offsets between worlds.
   - Offsets now scale automatically based on world coordinate scale (e.g. nether scales down by 8).
   - Move `worldScaling` and `worldAlignment` options out of offset provider settings and into optional
     `worldCoordinateScaleOverrides` global configuration. (Not automatically migrated from the previous version)
@@ -38,7 +41,7 @@ summary of everything new:
 - Automatically disable offsets for Bedrock players with no extra permissions/config required.
 - Add `messages.yml` to allow customization/translation of most plugin messages.
 - API Changes
-  - Offsets returned from custom offset providers are now split into `ScalableOffset` and `FixedOffset` to give fine
+  - Offsets returned from custom offset providers are now split into `ScalableOffset` and `FixedOffset` to give explicit
     control over how providers interact with world coordinate scaling.
   - Add new API endpoints to `regenerateOffset` and `setOffset` for immediate offset changes.
   - Add `onOffsetSetByCommand` interface to offset providers.
@@ -68,7 +71,7 @@ If you just want to upgrade, be aware of the following:
 - Certain particles (like ender dragon breath) cause a network protocol error. This is a PacketEvents bug:
   [packetevents#1373](https://github.com/retrooper/packetevents/issues/1373). Use a dev build of PacketEvents after
   they fix it (no CoordinateOffset update should be needed).
-- `allowUnsafeResetOnDistantTeleport` is not working in 5.0.0. Set `unsafeResetOnDistantTeleport` in config.yml or use
+- `allowUnsafeResetOnDistantTel[PaperOffsetSwapper.java](paper/src/main/java/com/jtprince/coordinateoffset/paper/adapter/PaperOffsetSwapper.java)eport` is not working in 5.0.0. Set `unsafeResetOnDistantTeleport` in config.yml or use
   the latest
   [GitHub actions build](https://github.com/joshuaprince/CoordinateOffset/actions/runs/18637737025/artifacts/4312757481).
 
