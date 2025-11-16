@@ -61,3 +61,13 @@ jobs:
           prerelease: false
           make_latest: true
           files: paper/build/libs/*.jar
+      - name: Create Hangar release
+        # TODO: Re-enable configuration cache, https://github.com/HangarMC/hangar-publish-plugin/issues/40
+        run: ./gradlew publishPluginPublicationToHangar --no-configuration-cache
+        env:
+          HANGAR_TOKEN: ${{ secrets.HANGAR_TOKEN }}
+      - name: Create Modrinth release
+        # TODO: Re-enable configuration cache, https://github.com/HangarMC/hangar-publish-plugin/issues/40
+        run: ./gradlew modrinth --no-configuration-cache
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}

@@ -1,4 +1,11 @@
+import groovy.json.JsonSlurper
+import io.papermc.hangarpublishplugin.model.Platforms
+import java.net.URI
+import java.time.Instant
+
 plugins {
+    alias(libs.plugins.hangar.publish)
+    alias(libs.plugins.modrinth.minotaur)
     alias(libs.plugins.paperweight.userdev)
     alias(libs.plugins.shadow)
 }
@@ -62,4 +69,81 @@ tasks {
     test {
         useJUnitPlatform()
     }
+}
+
+hangarPublish {
+    publications.register("plugin") {
+        version.set(project.version as String)
+        channel.set("Release")
+        id.set("CoordinateOffset")
+        apiKey.set(providers.environmentVariable("HANGAR_TOKEN"))
+        changelog.set(providers.environmentVariable("RELEASE_CHANGELOG"))
+        platforms {
+            register(Platforms.PAPER) {
+                jar.set(tasks.shadowJar.flatMap { it.archiveFile })
+
+                val versionRange = providers.environmentVariable("SUPPORTED_MC_VERSIONS").get()
+                if (versionRange.isEmpty()) {
+                    throw GradleException("Environment variable SUPPORTED_MC_VERSIONS is not set")
+                }
+                platformVersions.set(listOf(versionRange))
+
+                dependencies {
+                    url("packetevents", "https://modrinth.com/plugin/packetevents") {
+                        required.set(true)
+                    }
+                }
+            }
+        }
+    }
+}
+
+modrinth {
+    token = providers.environmentVariable("MODRINTH_TOKEN")
+    projectId = "coordinateoffset"
+    version = "CoordinateOffset ${project.version}"
+    versionNumber = "${project.version}"
+    versionType = "release"
+    uploadFile.set(tasks.shadowJar)
+    gameVersions.set(project.provider {
+        gameVersionRangeToVersions(providers.environmentVariable("SUPPORTED_MC_VERSIONS").get())
+    })
+    loaders.addAll(listOf("paper", "purpur"))
+    dependencies {
+        required.project("packetevents")
+    }
+    changelog.set(providers.environmentVariable("RELEASE_CHANGELOG"))
+}
+
+/**
+ * Fun way to convert a range like "1.21.4-1.21.10" into Modrinth's required list of versions by using the Modrinth
+ * API to query supported game versions.
+ *
+ * @param range "1.21.4-1.21.10" or similar
+ * @return List of supported versions, e.g. ["1.21.4", "1.21.5", ..., "1.21.10"]
+ */
+fun gameVersionRangeToVersions(range: String): List<String> {
+    val url = URI("https://api.modrinth.com/v2/tag/game_version").toURL()
+    val json = url.readText()
+    @Suppress("UNCHECKED_CAST")
+    val parsed = JsonSlurper().parseText(json) as List<Map<String, Any>>
+
+    data class GameVersion(
+        val version: String,
+        val versionType: String,
+        val date: Instant,
+    )
+
+    val availableVersions = parsed.map { GameVersion(
+        it["version"] as String,
+        it["version_type"] as String,
+        Instant.parse(it["date"] as String)
+    )}
+
+    val minDate = availableVersions.first { it.version == range.split("-")[0] }.date
+    val maxDate = availableVersions.first { it.version == range.split("-")[1] }.date
+
+    return availableVersions
+        .filter { it.date in minDate..maxDate && it.versionType == "release" }
+        .map { it.version }
 }
