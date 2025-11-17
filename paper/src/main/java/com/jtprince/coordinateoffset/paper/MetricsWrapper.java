@@ -69,7 +69,7 @@ public class MetricsWrapper {
             String.valueOf(core.getProviderConfig().getOffsetProviderOverrides().size())));
 
         metrics.addCustomChart(new SimplePie("coord_scale_override_count", () ->
-            String.valueOf(core.getProviderConfig().getOffsetProviderOverrides().size())));
+            String.valueOf(core.getConfig().getWorldCoordinateScaleOverrides().size())));
     }
 
     private static String enabledDisabledStr(boolean enabled) {
