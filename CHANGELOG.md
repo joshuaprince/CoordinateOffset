@@ -1,6 +1,19 @@
 WARNING: This changelog is automatically parsed by various Gradle release tasks. Maintain the format, especially the
 "Supported Minecraft servers" line in each release — this line is parsed to set release versions on Hangar and Modrinth.
 
+Do not add hard newlines, GitHub markdown renders them as newlines.
+
+# v6.0.1
+*Supported Minecraft servers: Paper 1.21.4-1.21.10*
+
+This is a patch following v6.0.0 with minor fixes. Please see the full [v6.0.0 changelog](https://github.com/joshuaprince/CoordinateOffset/releases/tag/v6.0.0) and [v6 Upgrade Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/v6-Upgrade-Guide) if upgrading from before v6.0.0.
+
+- Fix version string in paper-plugin.yml being formatted incorrectly
+- Fix config.yml parsing of floating-point numbers with no decimal point
+- Allow zero values for `worldCoordinateScaleOverrides`
+- Fix metrics reporting wrong statistic for `worldCoordinateScaleOverrides`
+- API: Add `Offset#apply` method to all `Offset` types
+
 # v6.0.0
 *Supported Minecraft servers: Paper 1.21.4-1.21.10*
 
