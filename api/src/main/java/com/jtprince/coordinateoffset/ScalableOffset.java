@@ -85,6 +85,10 @@ public record ScalableOffset(int x, int z) implements Offset {
      * @return A new {@link FixedOffset} with scaled components.
      */
     public FixedOffset scaleDownBy(double divisor) {
+        if (divisor == 0.0) {
+            // Special case - 0 would naturally result in a NaN/infinity offset, but interpret 0 scale as 0 offset
+            return new FixedOffset(0, 0);
+        }
         return new FixedOffset(
             Offset.alignComponent((int) (x / divisor), 0),
             Offset.alignComponent((int) (z / divisor), 0)
