@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.client.*;
+import com.jtprince.coordinateoffset.offsetter.plugin.OffsetterPluginMessage;
 import com.jtprince.coordinateoffset.offsetter.server.*;
 import org.jspecify.annotations.NullMarked;
 
@@ -84,7 +85,10 @@ public class OffsetterRegistry {
             new OffsetterServerUpdateViewPosition(),
             new OffsetterServerVehicleMove(),
             new OffsetterServerWaypoint(),
-            new OffsetterServerWindowItems()
+            new OffsetterServerWindowItems(),
+
+            new OffsetterPluginMessage.Client(),
+            new OffsetterPluginMessage.Server()
     );
 
     static  {
