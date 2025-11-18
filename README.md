@@ -78,12 +78,12 @@ The main configuration file is automatically generated after the first run at `p
 defaultOffsetProvider: random
 ```
 
-The default configuration contains four predefined "offset providers". An "offset" refers to the amount that the
+The default configuration contains five predefined "offset providers". An "offset" refers to the amount that the
 player's coordinates should appear to be shifted from their real location. Get started by picking a strategy that
 matches the type of offsetting you're trying to achieve:
 * `constant` - Specify the exact offset you want players to have.
 * `disabled` - Players will see their real coordinates.
-* `random` - Individually randomize each player's offset. Optionally re-roll offsets upon player actions.
+* `random` - Individually randomize each player's offset. Optionally re-randomize offsets upon player actions.
 * `zeroAtLocation` - Use an offset based on the player's starting location, so they see themselves near (0, 0).
   Optionally re-center offsets upon player actions.
 * `permission` - Assign permissions to players, like `coordinateoffset.offset.160.-240`, to control their offset.
