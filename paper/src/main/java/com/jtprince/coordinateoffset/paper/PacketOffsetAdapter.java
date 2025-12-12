@@ -99,7 +99,7 @@ class PacketOffsetAdapter {
                 }
 
                 // Short-circuit when no offset is applied
-                if (offset.isZero()) return;
+//                if (offset.isZero()) return; // TODO
 
                 // Debug packets are hard to offset. Obfuscate them for anyone with a nonzero offset.
                 if (core.getConfig().getObfuscateDebugPropertySubscriptions()) {
@@ -135,7 +135,7 @@ class PacketOffsetAdapter {
 
             try {
                 FixedOffset offset = core.getOffsetHolder().getOffset(new PaperOffsetPlayer(event.getPlayer())).offset();
-                if (offset.isZero()) return;
+//                if (offset.isZero()) return; // TODO
 
                 OffsetterRegistry.attemptToUnOffset(event, offset);
             } catch (Exception e) {
@@ -182,6 +182,7 @@ class PacketOffsetAdapter {
             if (coPlugin.getWorldBorderObfuscator() != null) {
                 coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
             }
+            OffsetterRegistry.onUserDisconnect(event.getUser());
         }
     }
 }

@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.config;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import de.exlll.configlib.SerializeWith;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -83,6 +84,19 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     boolean verbose = false;
     public boolean getVerbose() {
         return verbose;
+    }
+
+    @Comment({
+        "",
+        "Round generated offsets to the nearest multiple of this number of blocks.",
+        "  Must be at least 16 and a power of 2 (16, 32, 64, 128, etc.).",
+        "  \"auto\" selects the lowest value compatible with other installed plugins,",
+        "  e.g. the Distant Horizons plugin requires 64+ for offsets to be compatible.",
+    })
+    @SerializeWith(serializer = OffsetMultipleConfig.Serializer.class)
+    public OffsetMultipleConfig offsetsAreMultiplesOfBlocks = OffsetMultipleConfig.AUTO;
+    public int getOffsetsAreMultiplesOfBlocks() {
+        return offsetsAreMultiplesOfBlocks.getMultiple();
     }
 
     @Comment({
