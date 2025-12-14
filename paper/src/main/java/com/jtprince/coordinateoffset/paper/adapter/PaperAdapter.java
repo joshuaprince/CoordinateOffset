@@ -72,6 +72,21 @@ public class PaperAdapter implements CoordinateOffsetAdapter {
         return offsetSwapper;
     }
 
+    private static boolean printedDHSupportWarning = false;
+    @Override
+    public int getMinimumOffsetMultiple() {
+        if (Bukkit.getPluginManager().getPlugin("DHSupport") != null) {
+            if (!printedDHSupportWarning) {
+                getLogger().info("DHSupport plugin is detected. Offset X and Z values must be divisible by 64 " +
+                    "blocks for offsets to be compatible with Distant Horizons LODs.");
+                printedDHSupportWarning = true;
+            }
+            return 64;
+        }
+
+        return 16;
+    }
+
     @Override
     public void assertMainThread(String methodName) throws IllegalStateException {
         if (!Bukkit.isPrimaryThread()) {

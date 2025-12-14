@@ -16,7 +16,7 @@ import java.util.Random;
  * overworld and subtract 100 blocks in the nether.</p>
  *
  * <p>Scalable offsets cannot be applied to coordinates directly. They must first be scaled to a {@link FixedOffset}
- * with the context of a world's coordinate scale. See {@link #scaleDownBy}.</p>
+ * with the context of a world's coordinate scale. See {@link #scaleDownAndRound}.</p>
  *
  * @param x X offset value in blocks. Will be scaled based on world, then subtracted from the player's real X
  *          coordinate.
@@ -79,11 +79,28 @@ public record ScalableOffset(int x, int z) implements Offset {
     }
 
     /**
+     * Scale the components of this offset down by the specified divisor, then round to the nearest configured
+     * <code>offsetsAreMultiplesOfBlocks</code> value, returning a {@link FixedOffset}.
+     *
+     * @param divisor Amount by which to scale down the components of this offset.
+     * @return A new {@link FixedOffset} with scaled components.
+     */
+    public FixedOffset scaleDownAndRound(double divisor) {
+        return new FixedOffset(
+            Offset.alignComponentToConfiguredMultiple((int) (x / divisor)),
+            Offset.alignComponentToConfiguredMultiple((int) (z / divisor))
+        );
+    }
+
+    /**
      * Scale the components of this offset down by the specified divisor, returning a {@link FixedOffset}.
      *
      * @param divisor Amount by which to scale the components of this offset.
      * @return A new {@link FixedOffset} with scaled components.
+     * @deprecated Use {@link #scaleDownAndRound(double)} instead to ensure offsets are always multiples of the
+     *             configured <code>offsetsAreMultiplesOfBlocks</code> value.
      */
+    @Deprecated(forRemoval = true)
     public FixedOffset scaleDownBy(double divisor) {
         if (divisor == 0.0) {
             // Special case - 0 would naturally result in a NaN/infinity offset, but interpret 0 scale as 0 offset
@@ -102,6 +119,6 @@ public record ScalableOffset(int x, int z) implements Offset {
      * @return A new {@link FixedOffset} with scaled components.
      */
     public FixedOffset scaleToWorld(OffsetWorld world) {
-        return this.scaleDownBy(world.getCoordinateScale());
+        return this.scaleDownAndRound(world.getCoordinateScale());
     }
 }

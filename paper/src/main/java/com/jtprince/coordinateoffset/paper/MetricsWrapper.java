@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigBase;
 import com.jtprince.coordinateoffset.provider.CoreOffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import org.bstats.bukkit.Metrics;
@@ -70,6 +71,9 @@ public class MetricsWrapper {
 
         metrics.addCustomChart(new SimplePie("coord_scale_override_count", () ->
             String.valueOf(core.getConfig().getWorldCoordinateScaleOverrides().size())));
+
+        metrics.addCustomChart(new SimplePie("offsets_are_multiples_of_blocks", () ->
+            ((CoordinateOffsetConfigBase) core.getConfig()).offsetsAreMultiplesOfBlocks.getMetricsString()));
     }
 
     private static String enabledDisabledStr(boolean enabled) {

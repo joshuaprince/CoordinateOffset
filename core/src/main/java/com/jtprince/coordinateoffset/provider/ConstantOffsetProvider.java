@@ -1,5 +1,6 @@
 package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.ScalableOffset;
 import org.jspecify.annotations.NullMarked;
@@ -63,7 +64,16 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
         if (offsetX == 0 && offsetZ == 0) {
             return new ConstantOffsetProvider(config.getUserDefinedProviderName(), null);
         } else {
-            return new ConstantOffsetProvider(config.getUserDefinedProviderName(), Offset.scalable(offsetX, offsetZ));
+            ScalableOffset directOffset = Offset.scalable(offsetX, offsetZ);
+            ScalableOffset alignedOffset = Offset.align(offsetX, offsetZ);
+            if (!directOffset.equals(alignedOffset)) {
+                CoordinateOffsetCore.get().getLogger().warning("Provider \"" + config.getUserDefinedProviderName() +
+                    "\": Constant offset " + directOffset + " contains a component which is not a multiple of " +
+                    CoordinateOffsetCore.get().getConfig().getOffsetsAreMultiplesOfBlocks() +
+                    " blocks; the offset will be rounded to " + alignedOffset + " to match the configured " +
+                    "offsetsAreMultiplesOfBlocks setting.");
+            }
+            return new ConstantOffsetProvider(config.getUserDefinedProviderName(), alignedOffset);
         }
     }
 

@@ -98,7 +98,7 @@ public class OffsetFactory {
             case ScalableOffset s -> {
                 double scale = context.playerLocation().getWorld().getCoordinateScale();
 
-                if (offset.isZero() || scale == 1.0 || !core.getConfig().getVerbose()) yield s.scaleDownBy(scale);
+                if (offset.isZero() || scale == 1.0 || !core.getConfig().getVerbose()) yield s.scaleDownAndRound(scale);
 
                 String prefix = switch (source) {
                     case OffsetData.Source.SetCommand cmd -> {
@@ -112,7 +112,7 @@ public class OffsetFactory {
                 };
                 core.getLogger().info(prefix + "Scaling offset " + s + " by " + scale + " to match coordinate scale of world \"" + context.playerLocation().getWorld().getName() + "\"");
 
-                yield s.scaleDownBy(scale);
+                yield s.scaleDownAndRound(scale);
             }
         };
     }

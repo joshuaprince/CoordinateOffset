@@ -23,6 +23,7 @@ public interface CoordinateOffsetConfig {
     boolean getFixCollisionDripstone();
     boolean getObfuscateWorldBorder();
     boolean getObfuscateDebugPropertySubscriptions();
+    int getOffsetsAreMultiplesOfBlocks();
     boolean getVerbose();
     SequencedMap<String, Double> getWorldCoordinateScaleOverrides();
 }
