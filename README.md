@@ -52,14 +52,14 @@ Features
 * Configure different offsets per-player, per-world, and with permissions
 * Automatic scaling for offsets to ensure coordinates still align when using a nether portal 
 * Extensible API to flexibly get and set offsets
-* Compatible with ViaVersion, ViaBackwards, and Velocity *(must be installed on Paper, not Velocity itself)*
+* Compatible with Distant Horizons, ViaVersion, and Velocity *(must be installed on Paper, not Velocity itself)*
 
 Requirements and Installation
 -----------------------------
 * **An understanding of the 
   [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations)
   — this plugin WILL break things.**
-* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.10
+* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.11
 * [PacketEvents](https://github.com/retrooper/packetevents/releases) (latest release or [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) for Spigot)
 
 Some known **incompatible** plugins are: Most anticheats, Geyser, Distant Horizons.
