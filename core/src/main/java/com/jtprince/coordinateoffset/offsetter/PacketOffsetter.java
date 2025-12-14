@@ -35,6 +35,8 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
 
     public abstract void offset(T packet, FixedOffset offset, User user);
 
+    public void onUserDisconnect(User user) {}
+
     protected static Vector3d apply(Vector3d vec, FixedOffset offset) {
         return new Vector3d(vec.x - offset.x(), vec.y, vec.z - offset.z());
     }

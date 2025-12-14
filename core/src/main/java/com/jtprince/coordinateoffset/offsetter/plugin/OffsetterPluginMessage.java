@@ -28,6 +28,7 @@ import java.util.Set;
 public final class OffsetterPluginMessage {
     /** Registry of all {@link PluginOffsetter} implementations. Add new ones here. */
     private static final List<PluginOffsetter> PLUGIN_OFFSETTER_OFFSETTERS = List.of(
+        new PluginOffsetterDistantHorizons(),
         new PluginOffsetterWorldEditCUI()
     );
 
@@ -69,6 +70,13 @@ public final class OffsetterPluginMessage {
                 offsetter.offset(packet, offset, user);
             }
         }
+
+        @Override
+        public void onUserDisconnect(User user) {
+            for (PluginOffsetter offsetter : PLUGIN_OFFSETTER_OFFSETTERS) {
+                offsetter.onUserDisconnect(user);
+            }
+        }
     }
 
     public static class Server extends PacketOffsetter<WrapperPlayServerPluginMessage> {
@@ -92,6 +100,7 @@ public final class OffsetterPluginMessage {
         Set<String> getHandledChannels();
         default @Nullable Client getClientOffsetter() { return null; }
         default @Nullable Server getServerOffsetter() { return null; }
+        default void onUserDisconnect(User user) {}
 
         abstract class Client extends PacketOffsetter<WrapperPlayClientPluginMessage> {
             public Client() {

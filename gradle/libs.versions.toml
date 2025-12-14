@@ -12,6 +12,7 @@ configlib-paper = { group = "de.exlll", name = "configlib-paper", version = "4.6
 geyser-api = { group = "org.geysermc.geyser", name = "api", version = "2.8.3-SNAPSHOT" }
 jspecify = { group = "org.jspecify", name = "jspecify", version = "1.0.0" }
 morepdt = { group = "com.jeff-media", name = "MorePersistentDataTypes", version = "2.4.0" }
+netty-buffer = { group = "io.netty", name = "netty-buffer", version = "4.2.7.Final" }
 packetevents-api = { group = "com.github.retrooper", name = "packetevents-api", version.ref = "packetevents" }
 paper-api = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper-api" }
 test-junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version = "5.11.4" }

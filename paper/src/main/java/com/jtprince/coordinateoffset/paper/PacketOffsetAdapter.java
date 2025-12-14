@@ -182,6 +182,7 @@ class PacketOffsetAdapter {
             if (coPlugin.getWorldBorderObfuscator() != null) {
                 coPlugin.getWorldBorderObfuscator().onPlayerDisconnect(playerUuid);
             }
+            OffsetterRegistry.onUserDisconnect(event.getUser());
         }
     }
 }
