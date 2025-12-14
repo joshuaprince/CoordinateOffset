@@ -79,15 +79,6 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
 
     @Comment({
         "",
-        "Enable a log message when a player's offset changes."
-    })
-    boolean verbose = false;
-    public boolean getVerbose() {
-        return verbose;
-    }
-
-    @Comment({
-        "",
         "Round generated offsets to the nearest multiple of this number of blocks.",
         "  Must be at least 16 and a power of 2 (16, 32, 64, 128, etc.).",
         "  \"auto\" selects the lowest value compatible with other installed plugins,",
@@ -97,6 +88,15 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     public OffsetMultipleConfig offsetsAreMultiplesOfBlocks = OffsetMultipleConfig.AUTO;
     public int getOffsetsAreMultiplesOfBlocks() {
         return offsetsAreMultiplesOfBlocks.getMultiple();
+    }
+
+    @Comment({
+        "",
+        "Enable a log message when a player's offset changes."
+    })
+    boolean verbose = false;
+    public boolean getVerbose() {
+        return verbose;
     }
 
     @Comment({
