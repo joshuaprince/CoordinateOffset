@@ -43,6 +43,8 @@ Multi-world Tests
 Item and Block Tests
 --------------------
 These items and blocks have some kind of interactions that use packets that need to be offsetted.
+* Bamboo/Dripstone
+  * Verify that you can move near and on these blocks without movement being glitchy.
 * Chest
   * Verify that the chest appears to open and makes a sound, both to the opener and a second player.
   * Verify that the items in the chest appear instantly when the window opens.
@@ -113,7 +115,8 @@ Entity Tests
 * Warden
   * Verify in survival mode that a sound/vibration particle visibly moves towards the Warden's head.
 * Creaking
-  * Verify that by hitting a creaking, particles fly between the creaking and its creaking heart located nearby.
+  * Visit a pale garden (`/locate biome minecraft:pale_garden`). Verify that by hitting a creaking, particles fly
+    between the creaking and its creaking heart located nearby.
 
 Multiplayer Tests
 -----------------
@@ -149,3 +152,14 @@ Forced Offset Change Tests
   * Verify that nearby mobs are visible before and after the offset change.
 * Verify that `/offset set <x> <z>` immediately changes the offset.
   * Verify that no errors are printed in the console.
+
+Distant Horizons Tests
+----------------------
+Install the Distant Horizons Support plugin on the server and the Distant Horizons mod on the client.
+* Verify that no warnings are printed in the console when a player with the mod installed logs in.
+* Verify that a few seconds after logging in, LOD data begins to load when an offset is applied.
+* Move into the LOD chunks and verify that the data matches up with real chunks correctly.
+* Place a beacon with a beam and move away from it (so it's not in real chunks). Log out, delete all DH data from the
+  client, and verify that the beacon is visible from afar in LOD chunks.
+* Change `offsetsAreMultiplesOfBlocks` to 16 and set an offset that is not a multiple of 64. Verify that a warning is
+  printed in console and that no LOD data is loaded.
