@@ -3,6 +3,11 @@ WARNING: This changelog is automatically parsed by various Gradle release tasks.
 
 Do not add hard newlines, GitHub markdown renders them as newlines.
 
+# v6.1.1
+*Supported Minecraft servers: Paper 1.21.4-1.21.11*
+
+- Fix offsets not regenerating when players enter an end portal from the overworld to the end
+
 # v6.1.0
 *Supported Minecraft servers: Paper 1.21.4-1.21.11*
 
