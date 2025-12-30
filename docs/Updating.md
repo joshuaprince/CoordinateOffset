@@ -9,9 +9,9 @@ are:
 * When a new packet is added to support a new feature
 * When an existing packet involving coordinates is changed
 
-All interaction with PacketEvents is contained within the package `com.jtprince.coordinateoffset.offsetter`. Logic for
-how to apply an offset to each packet type are contained within the subpackages `client` and `server` for packets
-sent by the client and server respectively.
+All interaction with PacketEvents is contained within the `core` module in the package
+`com.jtprince.coordinateoffset.offsetter`. Logic for how to apply an offset to each packet type are contained within
+the subpackages `client` and `server` for packets sent by the client and server respectively.
 
 PacketEvents does not provide wrappers for every packet type, and the provided wrappers for some packet types do not
 work with every protocol version. The preferred way to handle these packets is to define our own wrapper in the
@@ -22,7 +22,7 @@ Step 0: Wait
 Wait for the dependencies to be updated. That typically means PacketEvents. It must have at least released a development
 build that works with the new Minecraft version.
 
-When dependencies are fully updated, bump any dependency versions in `build.gradle.kts` at the root of the project. You
+When dependencies are fully updated, bump any dependency versions in `gradle/libs.versions.toml`. You
 should not need to bump the API version or Paper version in `gradle.properties`, and if you do, be sure to maintain 
 backwards compatibility with previous server versions.
 

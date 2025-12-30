@@ -34,7 +34,7 @@ Why?
 ----
 This plugin isn't intended for all servers. Here are a few ideas that might make CoordinateOffset useful:
 * **Prevent metagaming**: If you consider coordinate usage and sharing to be metagaming, this prevents it.
-* **Buff in-game items**: Compasses, lodestones, recovery compasses, and maps are no longer outclassed by coordinates 
+* **Amplify in-game items**: Coordinates no longer outclass compasses, lodestones, recovery compasses, and maps
   when those coordinates are inconsistent.
 * **Prevent coordinate leaks**: If everyone sees different coordinates, players cannot derive each other's coordinates
   from an accidental leak in a screenshot.
@@ -44,24 +44,29 @@ This plugin isn't intended for all servers. Here are a few ideas that might make
 Features
 --------
 * Fully-configurable, flexible methods of determining how to apply offsets
-* Randomize offset when the player joins, dies, or changes world
+* Generate offsets randomly for each player, or use fixed offsets for multiple players
 * Match offsets to the player's position, so they see themselves near the world's origin
-* Persist the same offset every time a player joins so that they don't notice coordinates changing
+* Optionally regenerate offsets based on various player actions, including death, world change, teleport, and server
+  join
+* Regenerate and set offsets immediately with commands
 * Configure different offsets per-player, per-world, and with permissions
+* Automatic scaling for offsets to ensure coordinates still align when using a nether portal 
 * Extensible API to flexibly get and set offsets
-* Compatible with ViaVersion, ViaBackwards, and Velocity *(must be installed on Paper, not Velocity itself)*
+* Compatible with Distant Horizons, ViaVersion, and Velocity *(must be installed on Paper, not Velocity itself)*
 
 Requirements and Installation
 -----------------------------
-* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.10
+* **An understanding of the 
+  [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations)
+  — this plugin WILL break things.**
+* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.11
 * [PacketEvents](https://github.com/retrooper/packetevents/releases) (latest release or [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) for Spigot)
-* An understanding of the [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations).
 
 Some known **incompatible** plugins are: Most anticheats, Geyser, Distant Horizons.
 
 After ensuring that you meet the requirements, just grab the latest
 [release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
-folder. Then follow steps below to configure how coordinates are affected for each player.
+folder. Then follow the steps below to configure how coordinates are shifted for each player.
 
 Configuration
 -------------
@@ -73,13 +78,15 @@ The main configuration file is automatically generated after the first run at `p
 defaultOffsetProvider: random
 ```
 
-The default configuration contains four predefined "offset providers". An "offset" refers to the amount that the
+The default configuration contains five predefined "offset providers". An "offset" refers to the amount that the
 player's coordinates should appear to be shifted from their real location. Get started by picking a strategy that
 matches the type of offsetting you're trying to achieve:
 * `constant` - Specify the exact offset you want players to have.
 * `disabled` - Players will see their real coordinates.
-* `random` - Individually randomize each player's offset every time they join the server.
+* `random` - Individually randomize each player's offset. Optionally re-randomize offsets upon player actions.
 * `zeroAtLocation` - Use an offset based on the player's starting location, so they see themselves near (0, 0).
+  Optionally re-center offsets upon player actions.
+* `permission` - Assign permissions to players, like `coordinateoffset.offset.160.-240`, to control their offset.
 
 You can customize these providers further, use different providers for different players/worlds/groups, and define your
 own providers. See the complete
@@ -88,14 +95,8 @@ own providers. See the complete
 Commands and Permissions
 ------------------------
 
-All permissions default to operators only.
-
-| Command                  | Permission                      | Description                                                                     |
-|--------------------------|---------------------------------|---------------------------------------------------------------------------------|
-| `/offset`                | `coordinateoffset.query`        | Show your current offset and real coordinates.                                  |
-| `/offset query [player]` | `coordinateoffset.query.others` | Show someone else's offset and real coordinates.                                |
-| `/offset reload`         | `coordinateoffset.reload`       | Reload plugin configuration from `config.yml`.                                  |
-|                          | `coordinateoffset.bypass`       | Players with this permission will always see the true coordinates of the world. |
+See the [Commands and Permissions Guide](https://github.com/joshuaprince/CoordinateOffset/wiki/Commands-and-Permissions)
+for details.
 
 API
 ---

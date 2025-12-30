@@ -3,9 +3,11 @@ package com.jtprince.coordinateoffset.offsetter;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.jtprince.coordinateoffset.FixedOffset;
 import com.jtprince.coordinateoffset.offsetter.client.*;
+import com.jtprince.coordinateoffset.offsetter.plugin.OffsetterPluginMessage;
 import com.jtprince.coordinateoffset.offsetter.server.*;
 import org.jspecify.annotations.NullMarked;
 
@@ -84,7 +86,10 @@ public class OffsetterRegistry {
             new OffsetterServerUpdateViewPosition(),
             new OffsetterServerVehicleMove(),
             new OffsetterServerWaypoint(),
-            new OffsetterServerWindowItems()
+            new OffsetterServerWindowItems(),
+
+            new OffsetterPluginMessage.Client(),
+            new OffsetterPluginMessage.Server()
     );
 
     static  {
@@ -122,6 +127,17 @@ public class OffsetterRegistry {
             associatedOffsetter.offset(wrapper, offset, event.getUser());
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void onUserDisconnect(User user) {
+        for (PacketOffsetter offsetter : offsetters) {
+            try {
+                offsetter.onUserDisconnect(user);
+            } catch (Exception e) {
+                new RuntimeException("Error informing offsetter " + offsetter.getClass().getSimpleName() +
+                    " of user disconnect.", e).printStackTrace();
+            }
         }
     }
 }

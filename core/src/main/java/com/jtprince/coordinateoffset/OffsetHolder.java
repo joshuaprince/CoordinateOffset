@@ -325,8 +325,8 @@ public class OffsetHolder {
             case OffsetData.Source.BedrockBypass ignored -> { return; /* Warning logged in OffsetCreator on Join only */ }
             case OffsetData.Source.Provider p -> {
                 s.append("provider \"").append(p.provider().name).append("\"");
-                if (p.isOverride()) {
-                    s.append(" (config.yml override)");
+                if (p.overrideRuleIndex() != null) {
+                    s.append(" (provider override rule #").append(p.overrideRuleIndex()).append(")");
                 } else {
                     s.append(" (default provider)");
                 }

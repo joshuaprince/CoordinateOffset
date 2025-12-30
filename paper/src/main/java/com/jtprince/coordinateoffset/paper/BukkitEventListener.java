@@ -68,7 +68,7 @@ class BukkitEventListener implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         /*
          * Paper fires a Respawn event after using an End exit portal.
-         * (Also a Teleport event, but only when the player hasn't seen the end credits before.)
+         * (Also a Teleport event with UNKNOWN reason, but only when the player has already seen the end credits.)
          * Users probably expect this to be consistently a world change, not a death-respawn.
          */
         OffsetProviderContext.ProvideReason reason;
@@ -93,7 +93,6 @@ class BukkitEventListener implements Listener {
         // Defined as strings instead of the enum because values get added and removed between versions.
         "DISMOUNT",
         "EXIT_BED",
-        "END_PORTAL", // Handled in PlayerRespawnEvent
         "UNKNOWN" // Also fired when entering the end portal for some reason, despite END_PORTAL being available
     );
 

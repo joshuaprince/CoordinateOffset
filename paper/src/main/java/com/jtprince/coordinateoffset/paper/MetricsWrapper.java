@@ -1,11 +1,14 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
+import com.jtprince.coordinateoffset.config.CoordinateOffsetConfigBase;
 import com.jtprince.coordinateoffset.provider.CoreOffsetProvider;
 import com.jtprince.coordinateoffset.provider.OffsetProvider;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.HashMap;
@@ -69,7 +72,20 @@ public class MetricsWrapper {
             String.valueOf(core.getProviderConfig().getOffsetProviderOverrides().size())));
 
         metrics.addCustomChart(new SimplePie("coord_scale_override_count", () ->
-            String.valueOf(core.getProviderConfig().getOffsetProviderOverrides().size())));
+            String.valueOf(core.getConfig().getWorldCoordinateScaleOverrides().size())));
+
+        metrics.addCustomChart(new SimplePie("offsets_are_multiples_of_blocks", () ->
+            ((CoordinateOffsetConfigBase) core.getConfig()).offsetsAreMultiplesOfBlocks.getMetricsString()));
+
+        // Distant Horizons Support plugin
+        metrics.addCustomChart(new SimplePie("dhsupport_version", () -> {
+            Plugin dhs = Bukkit.getPluginManager().getPlugin("DHSupport");
+            if (dhs == null) {
+                return "none";
+            } else {
+                return dhs.getPluginMeta().getVersion();
+            }
+        }));
     }
 
     private static String enabledDisabledStr(boolean enabled) {

@@ -1,9 +1,8 @@
 package com.jtprince.coordinateoffset.provider;
 
+import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.ScalableOffset;
-import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -23,11 +22,6 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
     @Override
     public Offset provideOffset(OffsetProviderContext context) {
         return Objects.requireNonNullElse(offset, Offset.ZERO);
-    }
-
-    @Override
-    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
-        command.warnOffsetIsNotPersistentInProvider(this, target);
     }
 
     @Override
@@ -70,7 +64,16 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
         if (offsetX == 0 && offsetZ == 0) {
             return new ConstantOffsetProvider(config.getUserDefinedProviderName(), null);
         } else {
-            return new ConstantOffsetProvider(config.getUserDefinedProviderName(), Offset.scalable(offsetX, offsetZ));
+            ScalableOffset directOffset = Offset.scalable(offsetX, offsetZ);
+            ScalableOffset alignedOffset = Offset.align(offsetX, offsetZ);
+            if (!directOffset.equals(alignedOffset)) {
+                CoordinateOffsetCore.get().getLogger().warning("Provider \"" + config.getUserDefinedProviderName() +
+                    "\": Constant offset " + directOffset + " contains a component which is not a multiple of " +
+                    CoordinateOffsetCore.get().getConfig().getOffsetsAreMultiplesOfBlocks() +
+                    " blocks; the offset will be rounded to " + alignedOffset + " to match the configured " +
+                    "offsetsAreMultiplesOfBlocks setting.");
+            }
+            return new ConstantOffsetProvider(config.getUserDefinedProviderName(), alignedOffset);
         }
     }
 

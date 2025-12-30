@@ -2,6 +2,7 @@ package com.jtprince.coordinateoffset.config;
 
 import de.exlll.configlib.Comment;
 import de.exlll.configlib.Configuration;
+import de.exlll.configlib.SerializeWith;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -18,16 +19,26 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
         return configVersion;
     }
 
+    @Comment({
+        "",
+        "############################################################################ #", // keep this header at the top
+        "################### General CoordinateOffset Configuration ################# #",
+        "############################################################################ #",
+        "",
+        "If true, players with the `coordinateoffset.bypass` permission will always",
+        "  see their real coordinates (no offsets). Disable this to test the plugin."
+    })
+    boolean bypassByPermission = true;
+    public boolean getBypassByPermission() {
+        return bypassByPermission;
+    }
+
     @Configuration
     public static class FixCollision {
         boolean bamboo = true;
         boolean dripstone = true;
     }
     @Comment({
-        "",
-        "############################################################################ #", // keep this header at the top
-        "################### General CoordinateOffset Configuration ################# #",
-        "############################################################################ #",
         "",
         "Disable server-side collision checks for the listed blocks.",
         "  If collision checks are left enabled, movement near these blocks will be",
@@ -42,16 +53,6 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     }
     public boolean getFixCollisionDripstone() {
         return fixCollision.dripstone;
-    }
-
-    @Comment({
-        "",
-        "If true, players with the `coordinateoffset.bypass` permission will always",
-        "  see their real coordinates (no offsets). Disable this to test the plugin."
-    })
-    boolean bypassByPermission = true;
-    public boolean getBypassByPermission() {
-        return bypassByPermission;
     }
 
     @Comment({
@@ -74,6 +75,19 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
     boolean obfuscateDebugPropertySubscriptions = true;
     public boolean getObfuscateDebugPropertySubscriptions() {
         return obfuscateDebugPropertySubscriptions;
+    }
+
+    @Comment({
+        "",
+        "Round generated offsets to the nearest multiple of this number of blocks.",
+        "  Must be at least 16 and a power of 2 (16, 32, 64, 128, etc.).",
+        "  \"auto\" selects the lowest value compatible with other installed plugins,",
+        "  e.g. the Distant Horizons plugin requires 64+ for offsets to be compatible.",
+    })
+    @SerializeWith(serializer = OffsetMultipleConfig.Serializer.class)
+    public OffsetMultipleConfig offsetsAreMultiplesOfBlocks = OffsetMultipleConfig.AUTO;
+    public int getOffsetsAreMultiplesOfBlocks() {
+        return offsetsAreMultiplesOfBlocks.getMultiple();
     }
 
     @Comment({

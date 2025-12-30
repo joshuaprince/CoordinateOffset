@@ -3,8 +3,6 @@ package com.jtprince.coordinateoffset.provider;
 import com.jtprince.coordinateoffset.CoordinateOffsetCore;
 import com.jtprince.coordinateoffset.Offset;
 import com.jtprince.coordinateoffset.ScalableOffset;
-import com.jtprince.coordinateoffset.adapter.OffsetPlayer;
-import com.jtprince.coordinateoffset.command.OffsetSetCommand;
 import org.jspecify.annotations.NullMarked;
 
 import java.util.*;
@@ -43,12 +41,15 @@ public final class PermissionOffsetProvider extends CoreOffsetProvider {
                 int x = Integer.parseInt(matcher.group(1));
                 int z = Integer.parseInt(matcher.group(2));
                 ScalableOffset directOffset = Offset.scalable(x, z);
-                ScalableOffset alignedOffset = Offset.align(x, z, 0);
+                ScalableOffset alignedOffset = Offset.align(x, z);
                 if (!directOffset.equals(alignedOffset)) {
                     CoordinateOffsetCore.get().getLogger().warning("Provider \"" + name +
                         "\": Offset defined in " + context.player().getName() + "'s permission \"" + perm +
-                        "\" is not aligned with chunks; it will be rounded to " + alignedOffset +
-                        ". Change the permission to \"" + prefix + "." + alignedOffset.x() + "." + alignedOffset.z() +
+                        "\" contains a component which is not a multiple of " +
+                        CoordinateOffsetCore.get().getConfig().getOffsetsAreMultiplesOfBlocks() +
+                        " blocks; the offset will be rounded to " + alignedOffset + " to match the configured " +
+                        "offsetsAreMultiplesOfBlocks setting. Change the permission to \"" +
+                        prefix + "." + alignedOffset.x() + "." + alignedOffset.z() +
                         "\" to hide this warning.");
                 }
 
@@ -95,11 +96,6 @@ public final class PermissionOffsetProvider extends CoreOffsetProvider {
                 prefix + ".x.z\" to hide this warning.");
             return sortedOffsets.getFirst();
         }
-    }
-
-    @Override
-    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
-        command.warnOffsetIsNotPersistentInProvider(this, target);
     }
 
     @Override

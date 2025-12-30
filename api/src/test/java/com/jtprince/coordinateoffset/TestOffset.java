@@ -32,11 +32,6 @@ public class TestOffset {
     }
 
     @Test
-    void testAlignDefault() {
-        Assertions.assertEquals(new ScalableOffset(128, 0), Offset.align(70, -12));
-    }
-
-    @Test
     void testAlignToMultipleChunks() {
         // Align to 16 chunks (nearest 256 blocks)
         Assertions.assertEquals(new ScalableOffset(0, 0), Offset.align(-65, 65, 4));

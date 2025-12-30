@@ -92,7 +92,11 @@ public abstract class OffsetProvider {
      *                respond to the command.
      * @param target A player whose current offset was created by this provider and who was targeted by the command.
      */
-    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {}
+    public void onOffsetSetByCommand(OffsetSetCommand command, OffsetPlayer target) {
+        // Default implementation: inform the command sender that the offset is not persistent (will be lost the next
+        //   time provideOffset is called)
+        command.warnOffsetIsNotPersistentInProvider(this, target);
+    }
 
     /**
      * Serialize this offset provider.

@@ -7,8 +7,6 @@ import com.jtprince.coordinateoffset.provider.OffsetProviderContext;
 import org.geysermc.geyser.api.GeyserApi;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.Optional;
-
 @NullMarked
 public class OffsetFactory {
     private final CoordinateOffsetCore core;
@@ -25,7 +23,6 @@ public class OffsetFactory {
      */
     OffsetData createOffset(OffsetProviderContext context) {
         OffsetProvider provider = null;
-        boolean providerIsOverride = false;
 
         // Note for all Priority 0 checks: Be sure to update /offset commands which check for similar things.
         //  (e.g. /offset regenerate has a special response for bypasses by permissions or Bedrock)
@@ -49,14 +46,16 @@ public class OffsetFactory {
         }
 
         // Priority 1: Config override rule
+        Integer overrideRuleIndex = null;
         //noinspection ConstantValue
         if (provider == null) {
-            Optional<OffsetProviderOverrideConfig> appliedOverride =
-                core.getProviderConfig().getOffsetProviderOverrides().stream()
-                    .filter(o -> o.appliesTo(context)).findFirst();
-            if (appliedOverride.isPresent()) {
-                provider = appliedOverride.get().getOffsetProvider();
-                providerIsOverride = true;
+            for (int i = 0; i < core.getProviderConfig().getOffsetProviderOverrides().size(); i++) {
+                OffsetProviderOverrideConfig override = core.getProviderConfig().getOffsetProviderOverrides().get(i);
+                if (override.appliesTo(context)) {
+                    overrideRuleIndex = i + 1; // 1-index for user readability
+                    provider = override.getOffsetProvider();
+                    break;
+                }
             }
         }
 
@@ -67,8 +66,8 @@ public class OffsetFactory {
 
         // With provider selected, get the offset and scale it if needed.
         Offset offset = provider.provideOffset(context);
-        FixedOffset fixed = fixOffsetVerbosely(offset, new OffsetData.Source.Provider(provider, providerIsOverride), context);
-        return new OffsetData(fixed, new OffsetData.Source.Provider(provider, providerIsOverride), context);
+        FixedOffset fixed = fixOffsetVerbosely(offset, new OffsetData.Source.Provider(provider, overrideRuleIndex), context);
+        return new OffsetData(fixed, new OffsetData.Source.Provider(provider, overrideRuleIndex), context);
     }
 
     /**
@@ -99,7 +98,7 @@ public class OffsetFactory {
             case ScalableOffset s -> {
                 double scale = context.playerLocation().getWorld().getCoordinateScale();
 
-                if (offset.isZero() || scale == 1.0 || !core.getConfig().getVerbose()) yield s.scaleDownBy(scale);
+                if (offset.isZero() || scale == 1.0 || !core.getConfig().getVerbose()) yield s.scaleDownAndRound(scale);
 
                 String prefix = switch (source) {
                     case OffsetData.Source.SetCommand cmd -> {
@@ -113,7 +112,7 @@ public class OffsetFactory {
                 };
                 core.getLogger().info(prefix + "Scaling offset " + s + " by " + scale + " to match coordinate scale of world \"" + context.playerLocation().getWorld().getName() + "\"");
 
-                yield s.scaleDownBy(scale);
+                yield s.scaleDownAndRound(scale);
             }
         };
     }
@@ -137,7 +136,7 @@ public class OffsetFactory {
                 if (context.reason() == OffsetProviderContext.ProvideReason.JOIN) {
                     core.getLogger().warning("Coordinate offsets are disabled for Bedrock player " +
                         context.player().getName() + ". (Give permission coordinateoffset.bypass to disable offsets " +
-                        " and hide this warning)");
+                        "and hide this warning)");
                 }
                 return true;
             }
