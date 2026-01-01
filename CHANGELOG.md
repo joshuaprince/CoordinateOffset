@@ -3,6 +3,12 @@ WARNING: This changelog is automatically parsed by various Gradle release tasks.
 
 Do not add hard newlines, GitHub markdown renders them as newlines.
 
+# v6.1.2
+*Supported Minecraft servers: Paper 1.21.4-1.21.11*
+
+- Fix world border being placed incorrectly in the nether in 1.21.9 and later (causing blocks to become unplaceable and unbreakable)
+- Fix world border not appearing until a player moves when joining the game
+
 # v6.1.1
 *Supported Minecraft servers: Paper 1.21.4-1.21.11*
 
