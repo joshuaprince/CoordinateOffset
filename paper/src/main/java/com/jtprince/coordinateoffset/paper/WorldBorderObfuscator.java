@@ -1,6 +1,7 @@
 package com.jtprince.coordinateoffset.paper;
 
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerInitializeWorldBorder;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWorldBorderCenter;
@@ -94,16 +95,21 @@ class WorldBorderObfuscator {
         FixedOffset offset = CoordinateOffsetCore.get().getOffsetHolder().getOffset(new PaperOffsetPlayer(player)).offset();
 
         /*
-         * For reasons I cannot fathom, the Minecraft protocol applies the world's coordinate scaling to the world
-         * border center location. (e.g. if I wanted to center a border at Nether coordinates (100,100), I would need to
-         * send a packet containing (800, 800) as the center.)
+         * For reasons I cannot fathom, *BEFORE 1.21.9* the Minecraft protocol applies the world's coordinate scaling to
+         * the world border center location. (e.g. if I wanted to center a border at Nether coordinates (100,100), I
+         * would need to send a packet containing (800, 800) as the center.)
          *
          * This could cause problems if the server is running a custom world with a different coordinateScale (which is
          * only accessible through NMS as DimensionType::coordinateScale). For now, just checking environment should be
          * enough.
+         *
+         * This changed in 1.21.9, thankfully, so sending the direct border location is enough for all worlds.
+         * We check the server version here and not the client version because ViaVersion automatically handles the
+         * translation if crossing this version boundary.
          */
         double scaleFactor;
-        if (player.getWorld().getEnvironment() == World.Environment.NETHER) {
+        if (packet.getServerVersion().isOlderThan(ServerVersion.V_1_21_9)
+            && player.getWorld().getEnvironment().equals(World.Environment.NETHER)) {
             scaleFactor = 8.0;
         } else {
             scaleFactor = 1.0;
