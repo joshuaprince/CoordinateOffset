@@ -47,6 +47,8 @@ class BukkitEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
+        worldBorderObfuscator.tryUpdatePlayerBorders(event.getPlayer(), event.getPlayer().getLocation());
+
         PaperOffsetPlayer player = new PaperOffsetPlayer(event.getPlayer());
         core.getOffsetHolder().generateNextOffset(
             player,

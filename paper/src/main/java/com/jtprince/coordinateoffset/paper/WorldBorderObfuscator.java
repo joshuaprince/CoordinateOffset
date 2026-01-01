@@ -16,7 +16,10 @@ import org.bukkit.WorldBorder;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * World border packets require special handling, since applying a plain offset would run into two problems:
@@ -31,7 +34,7 @@ class WorldBorderObfuscator {
     private static final double BASELINE_SIZE = 60_000_000;
 
     private final CoordinateOffsetPaperPlugin plugin;
-    private final Map<UUID, EnumSet<Wall>> knownSeenWalls = new HashMap<>();
+    private final ConcurrentHashMap<UUID, EnumSet<Wall>> knownSeenWalls = new ConcurrentHashMap<>();
 
     WorldBorderObfuscator(CoordinateOffsetPaperPlugin plugin) {
         this.plugin = plugin;
