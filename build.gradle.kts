@@ -11,7 +11,7 @@ allprojects {
     }
 
     group = "com.jtprince.coordinateoffset"
-    version = "6.1.2"
+    version = "6.1.3-SNAPSHOT"
 }
 
 subprojects {
