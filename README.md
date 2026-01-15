@@ -60,9 +60,10 @@ Requirements and Installation
   [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations)
   — this plugin WILL break things.**
 * [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–1.21.11
-* [PacketEvents](https://github.com/retrooper/packetevents/releases) (latest release or [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/) for Spigot)
+* [PacketEvents](https://github.com/retrooper/packetevents/releases), Spigot edition (latest release or
+  [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/))
 
-Some known **incompatible** plugins are: Most anticheats, Geyser, Distant Horizons.
+Some known **incompatible** plugins are: Most anticheats, Geyser.
 
 After ensuring that you meet the requirements, just grab the latest
 [release](https://github.com/joshuaprince/CoordinateOffset/releases/latest) and drop it in your server's `plugins`
