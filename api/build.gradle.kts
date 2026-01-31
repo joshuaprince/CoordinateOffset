@@ -1,11 +1,13 @@
 plugins {
     alias(libs.plugins.maven.publish)
     idea
+    `java-library`
 }
 
 dependencies {
+    api(libs.configlib.core)
+
     compileOnly(libs.jspecify)
-    compileOnly(libs.configlib.core)
     compileOnly(libs.paper.api)
 
     testImplementation(libs.paper.api)
