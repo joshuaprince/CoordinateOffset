@@ -3,6 +3,11 @@ WARNING: This changelog is automatically parsed by various Gradle release tasks.
 
 Do not add hard newlines, GitHub markdown renders them as newlines.
 
+# v6.1.4
+*Supported Minecraft servers: Paper 1.21.4-26.1.1*
+
+- Support 26.1.1
+
 # v6.1.2
 *Supported Minecraft servers: Paper 1.21.4-1.21.11*
 
