@@ -59,7 +59,7 @@ Requirements and Installation
 * **An understanding of the 
   [implications of installing and incompatible plugins](https://github.com/joshuaprince/CoordinateOffset/wiki/Implications-and-Limitations)
   — this plugin WILL break things.**
-* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–26.1.1
+* [Paper](https://papermc.io/) or a fork for Minecraft 1.21.4–26.1.2
 * [PacketEvents](https://github.com/retrooper/packetevents/releases), Spigot edition (latest release or
   [dev build](https://ci.codemc.io/job/retrooper/job/packetevents/))
 
