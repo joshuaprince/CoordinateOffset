@@ -17,8 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @NullMarked
 public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.PluginOffsetter {
-    private static final String CHANNEL = "distant_horizons:message";
-    private static final Set<String> CHANNELS = Set.of(CHANNEL);
+    /* Channel name changed in Distant Horizons 3.0 (DHSupport 0.13, Minecraft 26.1 timeframe). */
+    private static final String CHANNEL_DHS_PRE_3_0 = "distant_horizons:message";
+    private static final String CHANNEL_DHS_3_0_PLUS = "distant_horizons:msg";
+    private static final Set<String> CHANNELS = Set.of(CHANNEL_DHS_PRE_3_0, CHANNEL_DHS_3_0_PLUS);
 
     /* DHS protocol version is defined in DHS plugin PluginMessageHandler class  */
     private static final short SUPPORTED_PROTOCOL_VERSION_MIN = 11;
@@ -36,6 +38,8 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
     private static final int DH_MSG_EXCEPTION_REQUEST_REJECTED = 2;
     private static final int DH_MSG_EXCEPTION_SECTION_REQUIRES_SPLITTING = 3;
 
+    private @Nullable String activeChannelName = null;
+
     @Override
     public Set<String> getHandledChannels() {
         return CHANNELS;
@@ -48,6 +52,11 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
     public class Server extends OffsetterPluginMessage.PluginOffsetter.Server {
         @Override
         public void offset(WrapperPlayServerPluginMessage packet, FixedOffset offset, User user) {
+            if (activeChannelName == null) {
+                /* The first packet the server sends should have the channel name that all messages use. */
+                activeChannelName = packet.getChannelName();
+            }
+
             ByteBuf data = Unpooled.wrappedBuffer(packet.getData());
 
             short protocolVersion = data.readShort();
@@ -209,7 +218,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                      * For now, DHS itself supports detail level 6 ONLY. We can avoid trying to offset any request that
                      * DHS would reject anyway by dropping the request and sending the "exception" response ourselves.
                      */
-                    packet.setChannelName(CHANNEL + "_cancelled_by_coordinateoffset"); // This "cancels" the packet
+                    packet.setChannelName(packet.getChannelName() + "_cancelled_by_coordinateoffset"); // This "cancels" the packet
                     sendDHExceptionMessage(user, protocolVersion, tracker,
                         DH_MSG_EXCEPTION_SECTION_REQUIRES_SPLITTING, "Only detail level 6 is supported"); // Match DHS LodHandler.java message
                 } else {
@@ -218,7 +227,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                      * Configuration offsetsAreMultiplesOfBlocks attempts to ensure this doesn't happen, but it's
                      * still possible. In that case, drop the request and send a unique "exception" response.
                      */
-                    packet.setChannelName(CHANNEL + "_cancelled_by_coordinateoffset"); // This "cancels" the packet
+                    packet.setChannelName(packet.getChannelName() + "_cancelled_by_coordinateoffset"); // This "cancels" the packet
                     sendDHExceptionMessage(user, protocolVersion, tracker,
                         DH_MSG_EXCEPTION_REQUEST_REJECTED, "Incompatible with current coordinate offset");
 
@@ -249,7 +258,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
 
             byte[] responseDataArray = new byte[responseData.readableBytes()];
             responseData.readBytes(responseDataArray);
-            WrapperPlayServerPluginMessage responseMsg = new WrapperPlayServerPluginMessage(CHANNEL, responseDataArray);
+            WrapperPlayServerPluginMessage responseMsg = new WrapperPlayServerPluginMessage(activeChannelName, responseDataArray);
             user.sendPacket(responseMsg);
             responseData.release();
         }
