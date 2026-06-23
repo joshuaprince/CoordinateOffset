@@ -3,6 +3,12 @@ WARNING: This changelog is automatically parsed by various Gradle release tasks.
 
 Do not add hard newlines, GitHub markdown renders them as newlines.
 
+# v6.1.6
+*Supported Minecraft servers: Paper 1.21.4-26.2*
+
+- Support 26.2
+- Add sulfur spikes to blocks affected by `fixCollision.dripstone`
+
 # v6.1.5
 *Supported Minecraft servers: Paper 1.21.4-26.1.2*
 
