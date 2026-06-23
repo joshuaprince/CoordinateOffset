@@ -44,6 +44,7 @@ public class CoordinateOffsetConfigBase implements CoordinateOffsetConfig {
         "  If collision checks are left enabled, movement near these blocks will be",
         "  extremely glitchy for all players with an offset applied.",
         "  More info: https://github.com/joshuaprince/CoordinateOffset/issues/8",
+        "\"dripstone\" applies to both dripstone and sulfur spike blocks.",
         "Note: Requires a server restart for changes to take effect."
     })
     FixCollision fixCollision = new FixCollision();

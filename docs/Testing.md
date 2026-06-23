@@ -7,7 +7,6 @@ so that they can hit the majority of possible issues before release. General gui
 * There should be no errors or warnings printed in the console from any of the tests.
 * At all times, the coordinates shown for a player with an offset should properly reflect that offset.
 * Enable "verbose" mode and disable "bypassByPermission" in the plugin configuration YAML.
-* Validate at least a few cases on at least Spigot and Paper servers.
 * If possible, use a packet sniffer like [SniffCraft](https://github.com/adepierre/SniffCraft),
   [Pakkit](https://github.com/Heath123/pakkit), or another one using
   [node-minecraft-protocol](https://github.com/PrismarineJS/node-minecraft-protocol) to make sure that no packets are
@@ -34,7 +33,8 @@ Multi-world Tests
 * Build a Nether portal and enter it. Verify that "(player changed worlds)" is printed in the console debug message.
 * Verify that on a default plugin configuration, the offset in the Nether is 1/8th of that in the Overworld.
 * Go to The End (`/execute in minecraft:the_end run tp @p 0 64 0`).
-  * Verify that there is an offset present in the End.
+  * Verify that there is no offset present in the End.
+  * Set an offset (`/offset set 1008 1008`).
   * Verify that the Dragon appears to move naturally and connect to End Crystals.
   * Kill the Dragon (`/damage @e[type=minecraft:ender_dragon,limit=1] 10000 minecraft:player_attack by @s`) and verify 
     that the death animation plays properly and the exit portal appears correctly.
@@ -43,7 +43,7 @@ Multi-world Tests
 Item and Block Tests
 --------------------
 These items and blocks have some kind of interactions that use packets that need to be offsetted.
-* Bamboo/Dripstone
+* Bamboo/Dripstone/Sulfur Spikes
   * Verify that you can move near and on these blocks without movement being glitchy.
 * Chest
   * Verify that the chest appears to open and makes a sound, both to the opener and a second player.

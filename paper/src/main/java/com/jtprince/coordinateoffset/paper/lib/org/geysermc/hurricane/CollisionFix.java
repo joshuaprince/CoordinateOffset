@@ -71,12 +71,18 @@ public final class CollisionFix implements Listener {
         if (pointedDripstoneEnabled) {
             // We need to disable all dripstone collision, and there's six...
             try {
-                final Class<?> dripstoneBlockClass = NMSReflection.getMojmapNMSClass("world.level.block.PointedDripstoneBlock");
+                // CoordinateOffset start - 26.2 generified "Dripstone" to "Speleothem" to support sulfur spikes.
+                Class<?> speleothemBlockClass = NMSReflection.getMojmapNMSClass("world.level.block.SpeleothemBlock");
+                if (speleothemBlockClass == null) {
+                    // <26.2: Speleothem block classes don't exist yet, bounding box fields are on PointedDripstoneBlock
+                    speleothemBlockClass = NMSReflection.getMojmapNMSClass("world.level.block.PointedDripstoneBlock");
+                }
+                // CoordinateOffset end
                 // The method names change between versions, but there's always six next to each other.
                 // There is one we do not need to touch (1.18+) because it doesn't deal with collision.
                 boolean foundBoundingBoxes = false;
                 int boundingBoxCount = 0;
-                for (Field field : dripstoneBlockClass.getDeclaredFields()) {
+                for (Field field : speleothemBlockClass.getDeclaredFields()) {  // CoordinateOffset
                     if (boundingBoxCount >= 6) {
                         // Don't apply more than necessary
                         break;
@@ -89,7 +95,13 @@ public final class CollisionFix implements Listener {
                         break;
                     }
                 }
-                plugin.getLogger().info("Dripstone collision hack enabled.");
+                // CoordinateOffset start - log error if no fields found
+                if (foundBoundingBoxes) {
+                    plugin.getLogger().info("Dripstone collision hack enabled.");
+                } else {
+                    plugin.getLogger().severe("Failed to enable dripstone collision hack.");
+                }
+                // CoordinateOffset end
             } catch (Exception e) {
                 e.printStackTrace();
             }
