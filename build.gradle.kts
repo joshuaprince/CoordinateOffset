@@ -6,6 +6,7 @@ allprojects {
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://repo.codemc.org/repository/maven-releases/") // PacketEvents
         maven("https://repo.codemc.org/repository/maven-snapshots/") // PacketEvents
         maven("https://repo.opencollab.dev/main/") // Geyser
     }
