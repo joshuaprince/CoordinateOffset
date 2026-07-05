@@ -3,6 +3,11 @@ WARNING: This changelog is automatically parsed by various Gradle release tasks.
 
 Do not add hard newlines, GitHub markdown renders them as newlines.
 
+# v6.1.7
+*Supported Minecraft servers: Paper 1.21.4-26.2*
+
+- Fix Distant Horizons Support plugin compatibility for DH 3.1+/DHS 0.15 dev build/Minecraft 26.2
+
 # v6.1.6
 *Supported Minecraft servers: Paper 1.21.4-26.2*
 
