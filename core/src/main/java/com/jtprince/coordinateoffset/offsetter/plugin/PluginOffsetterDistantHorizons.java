@@ -24,15 +24,40 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
 
     /* DHS protocol version is defined in DHS plugin PluginMessageHandler class  */
     private static final short SUPPORTED_PROTOCOL_VERSION_MIN = 11;
-    private static final short SUPPORTED_PROTOCOL_VERSION_MAX = 13;
+    private static final short SUPPORTED_PROTOCOL_VERSION_MAX = 15;
 
-    /* IDs below are defined in DHS plugin PluginMessageHandler class */
-    private static final int DH_MSG_ID_CONFIG = 3;
-    private static final int DH_MSG_ID_EXCEPTION_MSG = 5;
-    private static final int DH_MSG_ID_FULL_DATA_SOURCE_REQUEST = 6;
-    private static final int DH_MSG_ID_FULL_DATA_SOURCE_RESPONSE = 7;
-    private static final int DH_MSG_ID_FULL_DATA_PARTIAL_UPDATE = 8;
-    private static final int DH_MSG_ID_FULL_DATA_CHUNK = 9;
+    private enum DhPluginMessageType {
+        REMOTE_PLAYER_CONFIG,
+        EXCEPTION,
+        FULL_DATA_SOURCE_REQUEST,
+        FULL_DATA_SOURCE_RESPONSE,
+        FULL_DATA_PARTIAL_UPDATE,
+        FULL_DATA_CHUNK,
+        ;
+
+        int getMessageId(int protocolVersion) {
+            /* IDs are defined in DHS plugin PluginMessageHandler class and may change across versions */
+            if (protocolVersion < 14) {
+                return switch (this) {
+                    case REMOTE_PLAYER_CONFIG -> 3;
+                    case EXCEPTION -> 5;
+                    case FULL_DATA_SOURCE_REQUEST -> 6;
+                    case FULL_DATA_SOURCE_RESPONSE -> 7;
+                    case FULL_DATA_PARTIAL_UPDATE -> 8;
+                    case FULL_DATA_CHUNK -> 9;
+                };
+            } else {  // protocol 14+
+                return switch (this) {
+                    case REMOTE_PLAYER_CONFIG -> 4;
+                    case EXCEPTION -> 6;
+                    case FULL_DATA_SOURCE_REQUEST -> 7;
+                    case FULL_DATA_SOURCE_RESPONSE -> 8;
+                    case FULL_DATA_PARTIAL_UPDATE -> 9;
+                    case FULL_DATA_CHUNK -> 10;
+                };
+            }
+        }
+    }
 
     /* Exception message IDs. Defined in DHS plugin ExceptionMessage class */
     private static final int DH_MSG_EXCEPTION_REQUEST_REJECTED = 2;
@@ -80,7 +105,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                 }
             }
 
-            if (messageTypeId == DH_MSG_ID_CONFIG) {
+            if (messageTypeId == DhPluginMessageType.REMOTE_PLAYER_CONFIG.getMessageId(protocolVersion)) {
                 boolean distantGenerationEnabled = data.readBoolean();
                 int renderDistance = data.readInt();
 
@@ -115,7 +140,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                 }
             }
 
-            if (messageTypeId == DH_MSG_ID_EXCEPTION_MSG) {
+            if (messageTypeId == DhPluginMessageType.EXCEPTION.getMessageId(protocolVersion)) {
                 int tracker = data.readInt();
                 int typeId = data.readInt();
                 short messageLen = data.readShort();
@@ -123,7 +148,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                 exceptionMessage.getBytes();
             }
 
-            if (messageTypeId == DH_MSG_ID_FULL_DATA_SOURCE_RESPONSE) {
+            if (messageTypeId == DhPluginMessageType.FULL_DATA_SOURCE_RESPONSE.getMessageId(protocolVersion)) {
                 int tracker = data.readInt();
                 boolean hasBufferId = data.readBoolean();
                 if (hasBufferId) {
@@ -140,7 +165,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                 }
             }
 
-            if (messageTypeId == DH_MSG_ID_FULL_DATA_PARTIAL_UPDATE) {
+            if (messageTypeId == DhPluginMessageType.FULL_DATA_PARTIAL_UPDATE.getMessageId(protocolVersion)) {
                 short worldNameLen = data.readShort();
                 data.skipBytes(worldNameLen);
 
@@ -156,7 +181,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
                 }
             }
 
-            if (messageTypeId == DH_MSG_ID_FULL_DATA_CHUNK) {
+            if (messageTypeId == DhPluginMessageType.FULL_DATA_CHUNK.getMessageId(protocolVersion)) {
                 int bufferId = data.readInt();
                 int dataLength = data.readInt();
 
@@ -191,11 +216,12 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
             short protocolVersion = data.readShort();
             short messageTypeId = data.readShort();
 
-            if (messageTypeId == DH_MSG_ID_CONFIG && CoordinateOffsetCore.get().isDebugEnabled()) {
+            if (messageTypeId == DhPluginMessageType.REMOTE_PLAYER_CONFIG.getMessageId(protocolVersion)
+                    && CoordinateOffsetCore.get().isDebugEnabled()) {
                 printConfig(data, true);
             }
 
-            if (messageTypeId == DH_MSG_ID_FULL_DATA_SOURCE_REQUEST) {
+            if (messageTypeId == DhPluginMessageType.FULL_DATA_SOURCE_REQUEST.getMessageId(protocolVersion)) {
                 int tracker = data.readInt();
                 short worldNameLen = data.readShort();
                 data.skipBytes(worldNameLen);
@@ -250,7 +276,7 @@ public class PluginOffsetterDistantHorizons implements OffsetterPluginMessage.Pl
             // Match DHS ExceptionMessage.java packet format
             ByteBuf responseData = Unpooled.buffer();
             responseData.writeShort(protocolVersion);
-            responseData.writeShort(DH_MSG_ID_EXCEPTION_MSG);
+            responseData.writeShort(DhPluginMessageType.EXCEPTION.getMessageId(protocolVersion));
             responseData.writeInt(tracker);
             responseData.writeInt(exceptionType);
             responseData.writeShort((short) message.length());
