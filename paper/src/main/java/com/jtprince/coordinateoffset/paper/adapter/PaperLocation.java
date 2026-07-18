@@ -37,12 +37,12 @@ public class PaperLocation implements OffsetLocation {
 
     @Override
     public OffsetLocation apply(FixedOffset offset) {
-        return new PaperLocation(location.clone().subtract(offset.x(), 0, offset.z()));
+        return new PaperLocation(location.clone().subtract(offset.x(), offset.y(), offset.z()));
     }
 
     @Override
     public OffsetLocation unapply(FixedOffset offset) {
-        return new PaperLocation(location.clone().add(offset.x(), 0, offset.z()));
+        return new PaperLocation(location.clone().add(offset.x(), offset.y(), offset.z()));
     }
 
     @Override

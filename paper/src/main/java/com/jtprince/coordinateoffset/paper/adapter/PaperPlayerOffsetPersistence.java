@@ -75,11 +75,15 @@ public class PaperPlayerOffsetPersistence implements OffsetPersistenceAdapter {
     }
 
     private static ScalableOffset fromPdt(int[] arr) {
-        return Offset.scalable(arr[0], arr[1]);
+        if (arr.length >= 3) {
+            return Offset.scalable(arr[0], arr[1], arr[2]);
+        } else {
+            return Offset.scalable(arr[0], 0, arr[1]);
+        }
     }
 
     private static int[] toPdt(ScalableOffset offset) {
-        return new int[] { offset.x(), offset.z() };
+        return new int[] { offset.x(), offset.y(), offset.z() };
     }
 
     private NamespacedKey persistenceKeyToBukkitKey(Key persistenceKey) {

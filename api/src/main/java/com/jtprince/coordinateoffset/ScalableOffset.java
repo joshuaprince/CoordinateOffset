@@ -8,8 +8,8 @@ import org.jspecify.annotations.NullMarked;
 import java.util.Random;
 
 /**
- * Amount by which a player's clientside X and Z coordinates will appear shifted compared to their real position in a
- * world.
+ * Amount by which a player's clientside X, Y, and Z coordinates will appear shifted compared to their real
+ * position in a world.
  *
  * <p>A scalable offset is scaled based on the coordinate system of the world the offset is applied in. For example,
  * a scalable offset of <code>(800, 800)</code> may subtract 800 blocks from the player's coordinates in the
@@ -18,18 +18,17 @@ import java.util.Random;
  * <p>Scalable offsets cannot be applied to coordinates directly. They must first be scaled to a {@link FixedOffset}
  * with the context of a world's coordinate scale. See {@link #scaleDownAndRound}.</p>
  *
- * @param x X offset value in blocks. Will be scaled based on world, then subtracted from the player's real X
- *          coordinate.
- * @param z Z offset value in blocks. Will be scaled based on world, then subtracted from the player's real Z
- *          coordinate.
+ * @param x X offset value in blocks. Will be scaled based on world, then subtracted from the player's real X coordinate.
+ * @param y Y offset value in blocks. Will be subtracted from the player's real Y coordinate.
+ * @param z Z offset value in blocks. Will be scaled based on world, then subtracted from the player's real Z coordinate.
  */
 @NullMarked
-public record ScalableOffset(int x, int z) implements Offset {
+public record ScalableOffset(int x, int y, int z) implements Offset {
     static final Random RANDOM = new Random();
 
     @Override
     public String toString() {
-        return "[x=" + x + ", z=" + z + "]";
+        return "[x=" + x + ", y=" + y + ", z=" + z + "]";
     }
 
     @Override
@@ -70,12 +69,12 @@ public record ScalableOffset(int x, int z) implements Offset {
 
     @Override
     public ScalableOffset negate() {
-        return new ScalableOffset(-x, -z);
+        return new ScalableOffset(-x, -y, -z);
     }
 
     @Override
     public boolean isZero() {
-        return x == 0 && z == 0;
+        return x == 0 && y == 0 && z == 0;
     }
 
     /**
@@ -88,6 +87,7 @@ public record ScalableOffset(int x, int z) implements Offset {
     public FixedOffset scaleDownAndRound(double divisor) {
         return new FixedOffset(
             Offset.alignComponentToConfiguredMultiple((int) (x / divisor)),
+            y,
             Offset.alignComponentToConfiguredMultiple((int) (z / divisor))
         );
     }
@@ -104,10 +104,11 @@ public record ScalableOffset(int x, int z) implements Offset {
     public FixedOffset scaleDownBy(double divisor) {
         if (divisor == 0.0) {
             // Special case - 0 would naturally result in a NaN/infinity offset, but interpret 0 scale as 0 offset
-            return new FixedOffset(0, 0);
+            return new FixedOffset(0, y, 0);
         }
         return new FixedOffset(
             Offset.alignComponent((int) (x / divisor), 0),
+            y,
             Offset.alignComponent((int) (z / divisor), 0)
         );
     }

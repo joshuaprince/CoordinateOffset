@@ -5,8 +5,8 @@ import com.jtprince.coordinateoffset.api.CoordinateOffset;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Amount by which a player's clientside X and Z coordinates will appear shifted compared to their real position in a
- * world.
+ * Amount by which a player's clientside X, Y, and Z coordinates will appear shifted compared to their real
+ * position in a world.
  *
  * <p>Fixed offsets are absolute in any coordinate space. For example, a fixed offset of <code>(800, 800)</code>
  * will <i>always</i> subtract 800 from the player's coordinates. This may break coordinate-based alignment between
@@ -14,11 +14,12 @@ import org.jspecify.annotations.NullMarked;
  *
  * <p>A fixed offset is fully resolved and may be applied to coordinates directly.</p>
  *
- * @param x X offset value in blocks. Will be subtracted from the player's real X coordinate.
- * @param z Z offset value in blocks. Will be subtracted from the player's real Z coordinate.
+ * @param x X offset value in blocks. Must be a multiple of 16. Will be subtracted from the player's real X coordinate.
+ * @param y Y offset value in blocks. Will be subtracted from the player's real Y coordinate.
+ * @param z Z offset value in blocks. Must be a multiple of 16. Will be subtracted from the player's real Z coordinate.
  */
 @NullMarked
-public record FixedOffset(int x, int z) implements Offset {
+public record FixedOffset(int x, int y, int z) implements Offset {
     public FixedOffset {
         if (x % 16 != 0) {
             throw new IllegalArgumentException("Offset x=" + x + " is not chunk-aligned! (must be a multiple of 16)");
@@ -30,17 +31,17 @@ public record FixedOffset(int x, int z) implements Offset {
 
     @Override
     public String toString() {
-        return "[x=" + x + ", z=" + z + "]";
+        return "[x=" + x + ", y=" + y + ", z=" + z + "]";
     }
 
     @Override
     public FixedOffset negate() {
-        return new FixedOffset(-x, -z);
+        return new FixedOffset(-x, -y, -z);
     }
 
     @Override
     public boolean isZero() {
-        return x == 0 && z == 0;
+        return x == 0 && y == 0 && z == 0;
     }
 
     public int chunkX() {

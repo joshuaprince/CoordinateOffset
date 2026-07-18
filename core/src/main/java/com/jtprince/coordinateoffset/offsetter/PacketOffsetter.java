@@ -38,38 +38,38 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
     public void onUserDisconnect(User user) {}
 
     protected static Vector3d apply(Vector3d vec, FixedOffset offset) {
-        return new Vector3d(vec.x - offset.x(), vec.y, vec.z - offset.z());
+        return new Vector3d(vec.x - offset.x(), vec.y - offset.y(), vec.z - offset.z());
     }
 
     protected static Vector3f apply(Vector3f vec, FixedOffset offset) {
-        return new Vector3f(vec.x - offset.x(), vec.y, vec.z - offset.z());
+        return new Vector3f(vec.x - offset.x(), vec.y - offset.y(), vec.z - offset.z());
     }
 
     protected static Vector3i apply(Vector3i vec, FixedOffset offset) {
-        return new Vector3i(vec.x - offset.x(), vec.y, vec.z - offset.z());
+        return new Vector3i(vec.x - offset.x(), vec.y - offset.y(), vec.z - offset.z());
     }
 
     protected static Vector3d unapply(Vector3d vec, FixedOffset offset) {
-        return new Vector3d(vec.x + offset.x(), vec.y, vec.z + offset.z());
+        return new Vector3d(vec.x + offset.x(), vec.y + offset.y(), vec.z + offset.z());
     }
 
     protected static Vector3f unapply(Vector3f vec, FixedOffset offset) {
-        return new Vector3f(vec.x + offset.x(), vec.y, vec.z + offset.z());
+        return new Vector3f(vec.x + offset.x(), vec.y + offset.y(), vec.z + offset.z());
     }
 
     protected static Vector3i unapply(Vector3i vec, FixedOffset offset) {
-        return new Vector3i(vec.x + offset.x(), vec.y, vec.z + offset.z());
+        return new Vector3i(vec.x + offset.x(), vec.y + offset.y(), vec.z + offset.z());
     }
 
     protected static Location unapply(Location loc, FixedOffset offset) {
-        loc.setPosition(new Vector3d(loc.getX() + offset.x(), loc.getY(), loc.getZ() + offset.z()));
+        loc.setPosition(new Vector3d(loc.getX() + offset.x(), loc.getY() + offset.y(), loc.getZ() + offset.z()));
         return loc;
     }
 
     protected static WorldBlockPosition apply(WorldBlockPosition pos, FixedOffset offset) {
         // TODO: When available, this could respect the offset of the specific world instead of the Player's current one
         return new WorldBlockPosition(pos.getWorld(),
-                pos.getBlockPosition().x - offset.x(), pos.getBlockPosition().y, pos.getBlockPosition().z - offset.z());
+                pos.getBlockPosition().x - offset.x(), pos.getBlockPosition().y - offset.y(), pos.getBlockPosition().z - offset.z());
     }
 
     protected static Vector3i applyChunk(Vector3i vec, FixedOffset offset) {
@@ -103,7 +103,7 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
 
     protected static Vector3i applyTimes8(Vector3i vec, FixedOffset offset) {
         // Used for sound effects
-        return new Vector3i(vec.x - (offset.x() * 8), vec.y, vec.z - (offset.z() * 8));
+        return new Vector3i(vec.x - (offset.x() * 8), vec.y - (offset.y() * 8), vec.z - (offset.z() * 8));
     }
 
     /**
