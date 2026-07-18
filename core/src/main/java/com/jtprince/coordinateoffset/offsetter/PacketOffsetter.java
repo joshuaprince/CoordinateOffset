@@ -84,6 +84,10 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         return x - offset.x();
     }
 
+    protected static double applyY(double y, FixedOffset offset) {
+        return y - offset.y();
+    }
+
     protected static double applyZ(double z, FixedOffset offset) {
         return z - offset.z();
     }
