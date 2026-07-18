@@ -29,9 +29,11 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
         SequencedMap<String, Object> map = new LinkedHashMap<>();
         if (offset == null) {
             map.put("offsetX", (long) 0);
+            map.put("offsetY", (long) 0);
             map.put("offsetZ", (long) 0);
         } else {
             map.put("offsetX", (long) offset.x());
+            map.put("offsetY", (long) offset.y());
             map.put("offsetZ", (long) offset.z());
         }
         return map;
@@ -48,9 +50,10 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
                 "\": Required key offsetZ for ConstantOffsetProvider is missing or invalid.");
         }
-
         int offsetX = offsetXNum.intValue();
         int offsetZ = offsetZNum.intValue();
+        int offsetY = s.containsKey("offsetY") && s.get("offsetY") instanceof Number offsetYNum
+            ? offsetYNum.intValue() : 0;
 
         if (Math.abs(offsetX) > OffsetProvider.OFFSET_MAX) {
             throw new IllegalArgumentException("Provider \"" + config.getUserDefinedProviderName() +
@@ -61,11 +64,15 @@ public final class ConstantOffsetProvider extends CoreOffsetProvider {
                 "\": offsetZ value " + offsetZ + " is too large! (Max 30M)");
         }
 
-        if (offsetX == 0 && offsetZ == 0) {
+        if (offsetX == 0 && offsetY == 0 && offsetZ == 0) {
             return new ConstantOffsetProvider(config.getUserDefinedProviderName(), null);
         } else {
-            ScalableOffset directOffset = Offset.scalable(offsetX, offsetZ);
-            ScalableOffset alignedOffset = Offset.align(offsetX, offsetZ);
+            ScalableOffset directOffset = Offset.scalable(offsetX, offsetY, offsetZ);
+            ScalableOffset alignedOffset = new ScalableOffset(
+                Offset.alignComponentToConfiguredMultiple(offsetX),
+                offsetY,
+                Offset.alignComponentToConfiguredMultiple(offsetZ)
+            );
             if (!directOffset.equals(alignedOffset)) {
                 CoordinateOffsetCore.get().getLogger().warning("Provider \"" + config.getUserDefinedProviderName() +
                     "\": Constant offset " + directOffset + " contains a component which is not a multiple of " +
