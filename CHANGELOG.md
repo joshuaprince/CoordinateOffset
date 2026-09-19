@@ -3,6 +3,12 @@ WARNING: This changelog is automatically parsed by various Gradle release tasks.
 
 Do not add hard newlines, GitHub markdown renders them as newlines.
 
+# v6.2.0
+*Supported Minecraft servers: Paper 26.1.2-26.3*
+
+- Support 26.3
+- Increase minimum Minecraft version to 26.1.2
+
 # v6.1.7
 *Supported Minecraft servers: Paper 1.21.4-26.2*
 
