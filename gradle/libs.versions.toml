@@ -1,7 +1,7 @@
 [versions]
 adventure = "4.26.1"
 configlib = "4.8.1"
-packetevents = "2.13.0"
+packetevents = "2.14.0-SNAPSHOT"
 paper-api = "1.21.4-R0.1-SNAPSHOT"
 paper-apiversion = "1.21.4" # plugin.yml apiVersion
 
@@ -22,7 +22,7 @@ test-junit-platform = { group = "org.junit.platform", name = "junit-platform-lau
 
 [plugins]
 hangar-publish = { id = "io.papermc.hangar-publish-plugin", version = "0.1.4" }
-maven-publish = { id = "com.vanniktech.maven.publish", version = "0.36.0" }
-modrinth-minotaur = { id = "com.modrinth.minotaur", version = "2.9.0" }
-paperweight-userdev = { id = "io.papermc.paperweight.userdev", version = "2.0.0-beta.21" }
-shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
+maven-publish = { id = "com.vanniktech.maven.publish", version = "0.37.0" }
+modrinth-minotaur = { id = "com.modrinth.minotaur", version = "2.10.0" }
+paperweight-userdev = { id = "io.papermc.paperweight.userdev", version = "2.0.0-beta.23" }
+shadow = { id = "com.gradleup.shadow", version = "9.6.1" }

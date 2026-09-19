@@ -36,6 +36,7 @@ public class OffsetterRegistry {
             new OffsetterClientPlayerPosition(),
             new OffsetterClientSetStructureBlock(),
             new OffsetterClientSetTestBlock(),
+            new OffsetterClientTeleportConfirm(),
             new OffsetterClientTestInstanceBlockAction(),
             new OffsetterClientUpdateCommandBlock(),
             new OffsetterClientUpdateJigsawBlock(),
@@ -43,6 +44,7 @@ public class OffsetterRegistry {
             new OffsetterClientVehicleMove(),
 
             new OffsetterServerAcknowledgePlayerDigging(),
+            new OffsetterServerAddTransientBlock(),
             new OffsetterServerBlockAction(),
             new OffsetterServerBlockBreakAnimation(),
             new OffsetterServerBlockChange(),

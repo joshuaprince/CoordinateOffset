@@ -8,6 +8,9 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTInt;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.protocol.vector.positionpath.LinearPositionPath;
+import com.github.retrooper.packetevents.protocol.vector.positionpath.PositionPath;
+import com.github.retrooper.packetevents.protocol.vector.positionpath.SteppedPositionPath;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.protocol.world.WorldBlockPosition;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
@@ -70,6 +73,21 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
         // TODO: When available, this could respect the offset of the specific world instead of the Player's current one
         return new WorldBlockPosition(pos.getWorld(),
                 pos.getBlockPosition().x - offset.x(), pos.getBlockPosition().y, pos.getBlockPosition().z - offset.z());
+    }
+
+    protected static PositionPath apply(PositionPath path, FixedOffset offset) {
+        if (path instanceof LinearPositionPath linearPositionPath) {
+            return new LinearPositionPath(apply(linearPositionPath.getEndPosition(), offset));
+        } else if (path instanceof SteppedPositionPath steppedPositionPath) {
+            return new SteppedPositionPath(steppedPositionPath.getSteps().stream().map(step ->
+                    new SteppedPositionPath.Step(apply(step.position(), offset), step.tickOffset())).toList());
+        } else {
+            throw new IllegalArgumentException("Unsupported PositionPath type: " + path.getClass().getName());
+        }
+    }
+
+    protected static PositionPath unapply(PositionPath path, FixedOffset offset) {
+        return apply(path, offset.negate());
     }
 
     protected static Vector3i applyChunk(Vector3i vec, FixedOffset offset) {
@@ -153,5 +171,13 @@ public abstract class PacketOffsetter<T extends PacketWrapper<T>> {
      */
     protected static @Nullable ItemStack unapplyItemStack(ItemStack item, FixedOffset offset) {
         return applyItemStack(item, offset.negate());
+    }
+
+    protected static double unapplyX(double x, FixedOffset offset) {
+        return x + offset.x();
+    }
+
+    protected static double unapplyZ(double z, FixedOffset offset) {
+        return z + offset.z();
     }
 }

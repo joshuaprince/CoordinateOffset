@@ -93,6 +93,9 @@ These items and blocks have some kind of interactions that use packets that need
     * Move the boat ~100 blocks
     * Unfreeze the server and ensure the boat moves back to near where you started without getting kicked
     * Ignore "moved too quickly" warnings printed on unfreeze
+* Sand/Gravel
+  * Verify that when falling, the blocks do not flicker as they hit the ground. (26.3+ has a packet for this; it's
+    subtle, compare behavior to the falling animation with no offset)
 * Technical Blocks (in Operator Items creative tab)
   * *There are probably more involved tests to do here, but these tests are implied by the packet contents.*
   * Structure blocks: Place one and type a name into the "Structure name" field. Verify that the name is saved when

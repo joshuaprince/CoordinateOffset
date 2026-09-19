@@ -16,5 +16,8 @@ public class OffsetterServerEntityPositionSync extends PacketOffsetter<WrapperPl
     @Override
     public void offset(WrapperPlayServerEntityPositionSync packet, FixedOffset offset, User user) {
         packet.getValues().setPosition(apply(packet.getValues().getPosition(), offset));
+
+        // 26.3+: PositionPath
+        packet.setPosition(apply(packet.getPosition(), offset));
     }
 }
