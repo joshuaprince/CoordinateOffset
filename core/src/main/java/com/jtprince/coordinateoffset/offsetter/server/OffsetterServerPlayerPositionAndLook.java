@@ -19,6 +19,9 @@ public class OffsetterServerPlayerPositionAndLook extends PacketOffsetter<Wrappe
         if (!packet.isRelativeFlag(RelativeFlag.X)) {
             packet.setX(applyX(packet.getX(), offset));
         }
+        if (!packet.isRelativeFlag(RelativeFlag.Y)) {
+            packet.setY(applyY(packet.getY(), offset));
+        }
         if (!packet.isRelativeFlag(RelativeFlag.Z)) {
             packet.setZ(applyZ(packet.getZ(), offset));
         }

@@ -35,14 +35,24 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
      * <p>{@link ScalableOffset} is recommended for most use cases. {@link FixedOffset} is only recommended if vanilla
      * nether portal travel is disabled, or if the offset provider is manually performing coordinate scaling.</p>
      *
-     * @param x X offset value in blocks. Must be a multiple of 16. Will be subtracted from the player's real X
-     *          coordinate.
-     * @param z Z offset value in blocks. Must be a multiple of 16. Will be subtracted from the player's real Z
-     *          coordinate.
+     * @param x X offset value in blocks. Must be a multiple of 16.
+     * @param z Z offset value in blocks. Must be a multiple of 16.
      * @return A new FixedOffset.
      */
     static FixedOffset fixed(int x, int z) {
-        return new FixedOffset(x, z);
+        return new FixedOffset(x, 0, z);
+    }
+
+    /**
+     * Create a new fixed offset with the given X, Y, and Z components.
+     *
+     * @param x X offset value in blocks. Must be a multiple of 16.
+     * @param y Y offset value in blocks.
+     * @param z Z offset value in blocks. Must be a multiple of 16.
+     * @return A new FixedOffset.
+     */
+    static FixedOffset fixed(int x, int y, int z) {
+        return new FixedOffset(x, y, z);
     }
 
     /**
@@ -60,22 +70,30 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
      * worlds. Players expect that entering a nether portal they see at <code>(-4000, 4000)</code> will bring them to
      * <code>(-500, 500)</code> in the nether.</p>
      *
-     * @param x X offset value in blocks. Will be scaled based on world, rounded to the nearest
-     *          <code>offsetsAreMultiplesOfBlocks</code> (likely 16) blocks, then subtracted from the player's real X
-     *          coordinate.
-     * @param z Z offset value in blocks. Will be scaled based on world, rounded to the nearest
-     *          <code>offsetsAreMultiplesOfBlocks</code> (likely 16) blocks, then subtracted from the player's real Z
-     *          coordinate.
+     * @param x X offset value in blocks.
+     * @param z Z offset value in blocks.
      * @return A new ScalableOffset.
      */
     static ScalableOffset scalable(int x, int z) {
-        return new ScalableOffset(x, z);
+        return new ScalableOffset(x, 0, z);
+    }
+
+    /**
+     * Create a new scalable offset with the given X, Y, and Z components.
+     *
+     * @param x X offset value in blocks.
+     * @param y Y offset value in blocks.
+     * @param z Z offset value in blocks.
+     * @return A new ScalableOffset.
+     */
+    static ScalableOffset scalable(int x, int y, int z) {
+        return new ScalableOffset(x, y, z);
     }
 
     /**
      * The "zero" or identity offset. This offset results in no transformation from real-world coordinates.
      */
-    FixedOffset ZERO = new FixedOffset(0, 0);
+    FixedOffset ZERO = new FixedOffset(0, 0, 0);
 
     /**
      * Align offset components to the nearest 8 chunks. This number is selected because the default nether has a
@@ -107,6 +125,7 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
     static ScalableOffset align(int x, int z) {
         return new ScalableOffset(
             alignComponentToConfiguredMultiple(x),
+            0,
             alignComponentToConfiguredMultiple(z)
         );
     }
@@ -133,7 +152,7 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
      */
     @Deprecated(forRemoval = true)
     static ScalableOffset align(int x, int z, int toChunksPower) {
-        return new ScalableOffset(alignComponent(x, toChunksPower), alignComponent(z, toChunksPower));
+        return new ScalableOffset(alignComponent(x, toChunksPower), 0, alignComponent(z, toChunksPower));
     }
 
     /**
@@ -149,6 +168,7 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
     static ScalableOffset random(int bound) {
         return new ScalableOffset(
             Offset.alignComponentToConfiguredMultiple(ScalableOffset.RANDOM.nextInt(bound)),
+            0,
             Offset.alignComponentToConfiguredMultiple(ScalableOffset.RANDOM.nextInt(bound))
         );
     }
@@ -176,6 +196,7 @@ public sealed interface Offset permits FixedOffset, ScalableOffset {
     static ScalableOffset random(int bound, int alignToChunksPower) {
         return new ScalableOffset(
             alignComponent(ScalableOffset.RANDOM.nextInt(bound), alignToChunksPower),
+            0,
             alignComponent(ScalableOffset.RANDOM.nextInt(bound), alignToChunksPower)
         );
     }
